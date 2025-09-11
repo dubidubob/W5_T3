@@ -1,2 +1,4 @@
-# GTLWeek02
-Game Tech Lab Week 2 - Team 1
+# GTLWeek03
+
+Game Tech Lab Week 3 - Team 1
+
