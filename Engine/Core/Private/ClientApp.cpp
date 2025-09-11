@@ -123,8 +123,7 @@ void FClientApp::UpdateSystem()
 	InputManager.Update(Window);
 	LevelManager.Update();
 	UiManager.Update();
-	Editor->RenderEditor();
-	Renderer.Update();
+	Renderer.Update(Editor);
 }
 
 /**
