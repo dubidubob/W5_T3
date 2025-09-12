@@ -552,6 +552,7 @@ FPipelineInfo URenderer::CreatePipelineInfo(const FRenderState& InRenderState)
 	{
 	case EViewModeIndex::Wireframe:
 		ModifiedRenderState.FillMode = EFillMode::WireFrame;
+		ModifiedRenderState.CullMode = ECullMode::None;
 		break;
 	case EViewModeIndex::Lit:
 	case EViewModeIndex::Unlit:
@@ -568,16 +569,16 @@ FPipelineInfo URenderer::CreatePipelineInfo(const FRenderState& InRenderState)
 ID3D11RasterizerState* URenderer::GetRasterizerState(const FRenderState& InRenderState)
 {
 	D3D11_FILL_MODE FillMode = ToD3D11(InRenderState.FillMode);
-	D3D11_CULL_MODE CillMode = ToD3D11(InRenderState.CullMode);
+	D3D11_CULL_MODE CullMode = ToD3D11(InRenderState.CullMode);
 
-	const FRasterKey Key{ FillMode, CillMode };
+	const FRasterKey Key{ FillMode, CullMode };
 	if (auto It = RasterCache.find(Key); It != RasterCache.end())
 		return It->second;
 
 	ID3D11RasterizerState* RasterizerState = nullptr;
 	D3D11_RASTERIZER_DESC RasterizerDesc = {};
 	RasterizerDesc.FillMode = FillMode;
-	RasterizerDesc.CullMode = CillMode;
+	RasterizerDesc.CullMode = CullMode;
 	RasterizerDesc.DepthClipEnable = TRUE; // ✅ 근/원거리 평면 클리핑 활성화 (핵심)
 
 	HRESULT Hr = GetDevice()->CreateRasterizerState(&RasterizerDesc, &RasterizerState);
