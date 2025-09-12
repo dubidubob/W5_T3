@@ -64,10 +64,10 @@ using filesystem::create_directories;
 #pragma comment(lib, "d3dcompiler")
 
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include "Render/UI/Window/Public/ConsoleWindow.h"
+#include "Render/UI/Window/ConsoleWindow.h"
 
 // DT Include Once
 #ifndef TIME_MANAGER
 #define TIME_MANAGER
-#include "Manager/Time/Public/TimeManager.h"
+#include "Manager/Time/TimeManager.h"
 #endif // _TIME_MANAGER

@@ -1,5 +1,5 @@
-﻿#include "pch.h"
-#include "Core/Public/ClientApp.h"
+#include "pch.h"
+#include "Core/ClientApp.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
