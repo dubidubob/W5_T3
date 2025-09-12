@@ -114,6 +114,8 @@ void UCameraControlWidget::RenderWidget()
 		UiFarZ = 1000.0f;
 		PushToCamera();
 	}
+
+	ImGui::Separator();
 }
 
 

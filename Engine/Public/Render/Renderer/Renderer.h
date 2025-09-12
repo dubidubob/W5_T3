@@ -10,6 +10,7 @@ class UPrimitiveComponent;
 class AActor;
 class AGizmo;
 class UEditor;
+struct FPipelineInfo;
 /**
  * @brief Rendering Pipeline 전반을 처리하는 클래스
  *
@@ -75,6 +76,9 @@ public:
 	void UpdateConstant(const FViewProjConstants& InViewProjConstants) const;
 	void UpdateConstant(const FVector4& Color) const;
 
+	void SetViewMode(EViewModeIndex InViewMode) { CurrentViewMode = InViewMode; }
+	EViewModeIndex GetViewMode(EViewModeIndex InViewMode) const { return CurrentViewMode; }
+
 	ID3D11Device* GetDevice() const { return DeviceResources->GetDevice(); }
 	ID3D11DeviceContext* GetDeviceContext() const { return DeviceResources->GetDeviceContext(); }
 	IDXGISwapChain* GetSwapChain() const { return DeviceResources->GetSwapChain();}
@@ -84,6 +88,7 @@ public:
 private:
 	UPipeline* Pipeline = nullptr;
 	UDeviceResources* DeviceResources = nullptr;
+	EViewModeIndex CurrentViewMode = EViewModeIndex::Lit;
 	TArray<UPrimitiveComponent*> PrimitiveComponents;
 
 private:
@@ -131,6 +136,7 @@ private:
 
 	TMap<FRasterKey, ID3D11RasterizerState*, FRasterKeyHasher> RasterCache;
 
+	FPipelineInfo CreatePipelineInfo(const FRenderState& InRenderState);
 	ID3D11RasterizerState* GetRasterizerState(const FRenderState& InRenderState);
 
 	bool bIsResizing = false;
