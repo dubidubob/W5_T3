@@ -230,18 +230,8 @@ void URenderer::RenderLevel()
 	for (auto& PrimitiveComponent : ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents())
 	{
 		if (!PrimitiveComponent) { continue; }
-		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		ID3D11RasterizerState* LoadedRasterizerState = GetRasterizerState(PrimitiveComponent->GetRenderState());
-		FPipelineInfo PipelineInfo = {
-			DefaultInputLayout,
-			DefaultVertexShader,
-			LoadedRasterizerState,
-			DefaultDepthStencilState,
-			DefaultPixelShader,
-			nullptr,
-		};
-		///////////////////////////////////////////////////////////////////////////////////////////////////////
-		Pipeline->UpdatePipeline(PipelineInfo);
+
+		Pipeline->UpdatePipeline(CreatePipelineInfo(PrimitiveComponent->GetRenderState()));
 
 		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
 		UpdateConstant(
@@ -251,7 +241,7 @@ void URenderer::RenderLevel()
 
 		Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
 		UpdateConstant(PrimitiveComponent->GetColor());
-
+		
 		Pipeline->SetVertexBuffer(PrimitiveComponent->GetVertexBuffer(), Stride);
 		Pipeline->Draw(static_cast<uint32>(PrimitiveComponent->GetVerticesData()->size()), 0);
 	}
@@ -546,6 +536,33 @@ void URenderer::UpdateConstant(const FVector4& Color) const
 		}
 		GetDeviceContext()->Unmap(ConstantBufferColor, 0);
 	}
+}
+
+// TODO - 추후 ViewMode가 증가하거나, 바꿔야하는 설정이 많을 경우 별개의 Handler에서 진행하도록 변경
+/**
+ * @brief ViewMode를 고려한 PipelineInfo 생성
+ * @param InRenderState 렌더할 대상의 RenderState
+ * @return RenderState와 ViewMode를 고려한 FPipelineInfo
+ */
+FPipelineInfo URenderer::CreatePipelineInfo(const FRenderState& InRenderState)
+{
+	FRenderState ModifiedRenderState = InRenderState;
+
+	switch (CurrentViewMode)
+	{
+	case EViewModeIndex::Wireframe:
+		ModifiedRenderState.FillMode = EFillMode::WireFrame;
+		break;
+	case EViewModeIndex::Lit:
+	case EViewModeIndex::Unlit:
+	default:
+		break;
+	}
+
+	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
+	return FPipelineInfo{DefaultInputLayout, DefaultVertexShader,
+		RasterizerState, DefaultDepthStencilState, DefaultPixelShader, nullptr
+	};
 }
 
 ID3D11RasterizerState* URenderer::GetRasterizerState(const FRenderState& InRenderState)

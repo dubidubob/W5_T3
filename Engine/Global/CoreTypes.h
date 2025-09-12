@@ -87,6 +87,18 @@ enum class EFillMode : uint8_t
 };
 
 /**
+ * @brief View Mode State
+ */
+enum class EViewModeIndex : uint32
+{
+	Lit,
+	Unlit,
+	Wireframe,
+
+	End
+};
+
+/**
  * @brief Render State Settings for Actor's Component 
  */
 struct FRenderState

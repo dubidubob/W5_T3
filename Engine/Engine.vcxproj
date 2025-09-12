@@ -147,6 +147,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Public\Render\UI\Widget\ViewSettingsWidget.h" />
     <ClInclude Include="Public\\Core\\Class.h" />
     <ClInclude Include="Public\\Core\\Object.h" />
     <ClInclude Include="Public\\Editor\\Axis.h" />
@@ -218,6 +219,7 @@
     <ClInclude Include="Public\\Utility\\Metadata.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Private\Render\UI\Widget\ViewSettingsWidget.cpp" />
     <ClCompile Include="Private\\Core\\Class.cpp" />
     <ClCompile Include="Private\\Core\\Object.cpp" />
     <ClCompile Include="Private\\Editor\\Axis.cpp" />
