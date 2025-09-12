@@ -12,7 +12,7 @@ class UCamera : public UObject
 public:
 	UCamera() :
 		ViewProjConstants(FViewProjConstants()),
-		RelativeLocation(FVector(-5.f, 10.f, -5.f)), RelativeRotation(FVector(45, 45, 0)),
+		RelativeLocation(FVector(0.0f, 0.0f, -10.f)), RelativeRotation(FVector(0, 0, 0)),
 		FovY(90.f), Aspect(float(Render::INIT_SCREEN_WIDTH) / Render::INIT_SCREEN_HEIGHT),
 		NearZ(0.1f), FarZ(100.f), CameraType(ECameraType::ECT_Perspective)
 	{
@@ -38,7 +38,7 @@ public:
 	 * @brief Getter
 	 */
 	const FViewProjConstants& GetFViewProjConstants() const { return ViewProjConstants; }
-	const FViewProjConstants GetFViewProjConstantsInverse() const;
+	FViewProjConstants GetFViewProjConstantsInverse() const;
 
 	FRay ConvertToWorldRay(float NdcX, float NdcY) const;
 

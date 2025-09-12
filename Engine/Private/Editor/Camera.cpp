@@ -8,8 +8,11 @@ void UCamera::Update()
 {
 	const UInputManager& Input = UInputManager::GetInstance();
 
-	FVector4 Forward4 = FVector4(0, 0, 1, 1) * FMatrix::RotationMatrix(FVector::GetDegreeToRadian(RelativeRotation));
-	Forward = FVector(Forward4.X, Forward4.Y, Forward4.Z);
+	/*
+	 * QE 상하는 카메라가 보는 방향과 관계 없이 월드 기준으로 상하로 움직인다.
+	 */
+	Forward = FVector4(0, 0, 1, 1) * FMatrix::RotationMatrixCamera(FVector::GetDegreeToRadian(RelativeRotation));
+	Forward.Normalize();
 	Up = FVector(0, 1, 0);
 	Right = Forward.Cross(Up);
 
@@ -84,7 +87,8 @@ void UCamera::UpdateMatrixByPers()
 	 * @brief View 행렬 연산
 	 */
 	FMatrix T = FMatrix::TranslationMatrixInverse(RelativeLocation);
-	FMatrix R = FMatrix::RotationMatrixInverse(FVector::GetDegreeToRadian(RelativeRotation));
+	// FMatrix R = FMatrix::RotationMatrixInverse(FVector::GetDegreeToRadian(RelativeRotation));
+	FMatrix R = FMatrix::RotationMatrixInverseCamera(FVector::GetDegreeToRadian(RelativeRotation));
 	ViewProjConstants.View = T * R;
 
 	/**
@@ -116,7 +120,8 @@ void UCamera::UpdateMatrixByOrth()
 	 * @brief View 행렬 연산
 	 */
 	FMatrix T = FMatrix::TranslationMatrixInverse(RelativeLocation);
-	FMatrix R = FMatrix::RotationMatrixInverse(FVector::GetDegreeToRadian(RelativeRotation));
+	// FMatrix R = FMatrix::RotationMatrixInverse(FVector::GetDegreeToRadian(RelativeRotation));
+	FMatrix R = FMatrix::RotationMatrixInverseCamera(FVector::GetDegreeToRadian(RelativeRotation));
 	ViewProjConstants.View = T * R;
 
 	/**
@@ -140,13 +145,13 @@ void UCamera::UpdateMatrixByOrth()
 	ViewProjConstants.Projection = P;
 }
 
-const FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
+FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
 {
 	/*
 	* @brief View^(-1) = R * T
 	*/
 	FViewProjConstants Result = {};
-	FMatrix R = FMatrix::RotationMatrix(FVector::GetDegreeToRadian(RelativeRotation));
+	FMatrix R = FMatrix::RotationMatrixCamera(FVector::GetDegreeToRadian(RelativeRotation));
 	FMatrix T = FMatrix::TranslationMatrix(RelativeLocation);
 	Result.View = R * T;
 
@@ -199,8 +204,8 @@ FRay UCamera::ConvertToWorldRay(float NdcX, float NdcY) const
 	 */
 	FRay Ray = {};
 
-	const FViewProjConstants& ViewProjMatrix = GetFViewProjConstantsInverse();
-
+	FViewProjConstants ViewProjMatrix = GetFViewProjConstantsInverse();
+	// ViewProjMatrix.View = ViewProjMatrix.View;
 
 	/* *
 	 * @brief NDC 좌표 정보를 행렬로 변환합니다.

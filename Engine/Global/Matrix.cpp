@@ -4,7 +4,7 @@
 * @brief float 타입의 배열을 사용한 FMatrix의 기본 생성자
 */
 FMatrix::FMatrix()
-	: Data{ {0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0} }
+	: Data{{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}
 {
 }
 
@@ -17,10 +17,12 @@ FMatrix::FMatrix(
 	float M10, float M11, float M12, float M13,
 	float M20, float M21, float M22, float M23,
 	float M30, float M31, float M32, float M33)
-	: Data{ {M00,M01,M02,M03},
-			{M10,M11,M12,M13},
-			{M20,M21,M22,M23},
-			{M30,M31,M32,M33} }
+	: Data{
+		{M00, M01, M02, M03},
+		{M10, M11, M12, M13},
+		{M20, M21, M22, M23},
+		{M30, M31, M32, M33}
+	}
 {
 }
 
@@ -60,7 +62,7 @@ FMatrix FMatrix::operator*(const FMatrix& InOtherMatrix)
 
 void FMatrix::operator*=(const FMatrix& InOtherMatrix)
 {
-	*this =  (*this)*InOtherMatrix;
+	*this = (*this) * InOtherMatrix;
 }
 
 /**
@@ -101,12 +103,13 @@ FMatrix FMatrix::ScaleMatrix(const FVector& InOtherVector)
 
 	return Result;
 }
+
 FMatrix FMatrix::ScaleMatrixInverse(const FVector& InOtherVector)
 {
 	FMatrix Result = FMatrix::Identity();
-	Result.Data[0][0] = 1/InOtherVector.X;
-	Result.Data[1][1] = 1/InOtherVector.Y;
-	Result.Data[2][2] = 1/InOtherVector.Z;
+	Result.Data[0][0] = 1 / InOtherVector.X;
+	Result.Data[1][1] = 1 / InOtherVector.Y;
+	Result.Data[2][2] = 1 / InOtherVector.Z;
 	Result.Data[3][3] = 1;
 
 	return Result;
@@ -123,6 +126,21 @@ FMatrix FMatrix::RotationMatrix(const FVector& InOtherVector)
 FMatrix FMatrix::RotationMatrixInverse(const FVector& InOtherVector)
 {
 	return RotationZ(-InOtherVector.Z) * RotationY(-InOtherVector.Y) * RotationX(-InOtherVector.X);
+}
+
+/**
+* @brief Camera용 Rotation의 정보를 행렬로 변환하여 제공하는 함수
+*		 카메라의 경우 YXZ 순서로 회전해야 일반적인 카메라 회전과 동일
+*/
+
+FMatrix FMatrix::RotationMatrixCamera(const FVector& InOtherVector)
+{
+	return RotationZ(InOtherVector.Z) * RotationX(InOtherVector.X) * RotationY(InOtherVector.Y);
+}
+
+FMatrix FMatrix::RotationMatrixInverseCamera(const FVector& InOtherVector)
+{
+	return RotationY(-InOtherVector.Y) * RotationX(-InOtherVector.X) * RotationZ(-InOtherVector.Z);
 }
 
 /**
@@ -194,5 +212,3 @@ FMatrix FMatrix::GetModelMatrixInverse(const FVector& Location, const FVector& R
 
 	return FMatrix::Identity() * T * R * S;
 }
-
-
