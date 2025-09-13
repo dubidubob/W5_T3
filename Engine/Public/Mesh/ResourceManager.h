@@ -33,4 +33,6 @@ private:
 
 	TMap<FString, ID3D11ShaderResourceView*> ShaderResourceViews;
 	TMap<ESamplerType, ID3D11SamplerState*> SamplerStates;
+
+	FCharacterInfo CharTable[95];
 };

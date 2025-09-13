@@ -21,6 +21,8 @@ public:
 
 	void SetVertexBuffer(ID3D11Buffer* VertexBuffer, uint32 Stride);
 
+	void SetInstanceBuffer(ID3D11Buffer* InstanceBuffer, uint32 Stride);
+
 	void SetConstantBuffer(uint32 Slot, bool bIsVS, ID3D11Buffer* ConstantBuffer);
 
 	void SetTexture(uint32 Slot, bool bIsVS, ID3D11ShaderResourceView* Srv);
@@ -29,6 +31,7 @@ public:
 
 	void Draw(uint32 VertexCount, uint32 StartLocation);
 
+	void DrawInstanced(uint32 VertexCountPerInstance, uint32 InstanceCount, uint32 VertexStartLocation, uint32 InstanceStartLocation);
 private:
 	ID3D11DeviceContext* DeviceContext;
 };

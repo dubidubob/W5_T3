@@ -29,6 +29,13 @@ struct FTextVertex
 	float BaseUvY;
 };
 
+struct FTextInstance
+{
+	FVector4 Color;
+	FVector Offset;
+	uint32 CharId;
+};
+
 struct FCharacterInfo
 {
 	float U;

@@ -105,14 +105,14 @@ ID3D11ShaderResourceView* UResourceManager::LoadTexture(const FString& Path)
 
 	ID3D11SamplerState* SamplerState = nullptr;
 	D3D11_SAMPLER_DESC SamplerDesc = {};
-	SamplerDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+	SamplerDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_POINT;
 	SamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 	SamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 	SamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 
 	SamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	SamplerDesc.MinLOD = 0;
-	SamplerDesc.MaxLOD = 2.0;
+	SamplerDesc.MaxLOD = 0;
 
 	Device->CreateSamplerState(&SamplerDesc, &SamplerState);
 
@@ -152,8 +152,6 @@ FCharacterInfo* UResourceManager::LoadCharTable()
 	const int BitMapWidth = 512;
 	const int BitMapHeight = 512;
 
-	FCharacterInfo ResultTable[NumCharSet];
-
 
 	const char CharSet[NumCharSet + 1] = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
@@ -166,14 +164,15 @@ FCharacterInfo* UResourceManager::LoadCharTable()
 		int Col = Index % CellsPerRow;
 
 		FCharacterInfo Info;
-		Info.U = Col * CellWidth / BitMapWidth;
-		Info.V = Row * CellHeight / BitMapHeight;
-		Info.Width = CellWidth / BitMapWidth;
-		Info.Height = CellHeight / BitMapHeight;
+		Info.U = Col * CellWidth / (float)BitMapWidth;
+		Info.V = Row * CellHeight / (float)BitMapHeight;
+		Info.Width = CellWidth / (float)BitMapWidth;
+		Info.Height = CellHeight / (float)BitMapHeight;
 
-		
+
+		CharTable[Index] = Info;
 		//CharInfoMap[Index] = Info;
 	}
 
-	return ResultTable;
+	return CharTable;
 }
