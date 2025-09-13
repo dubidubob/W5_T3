@@ -3,7 +3,6 @@
 #include "Mesh/VertexDatas.h"
 #include "Render/Renderer/Renderer.h"
 
-IMPLEMENT_CLASS(UResourceManager, UObject)
 IMPLEMENT_SINGLETON(UResourceManager)
 
 UResourceManager::UResourceManager() = default;

@@ -40,11 +40,7 @@ private:
  */
 class UConsoleWidget : public UWidget
 {
-	DECLARE_CLASS(UConsoleWidget, UWidget)
 public:
-	UConsoleWidget();
-	~UConsoleWidget();
-
 	// Widget Interface
 	void Initialize() override;
 	void Update() override;
@@ -64,6 +60,15 @@ public:
 
 	// History Navigation
 	int HandleHistoryCallback(ImGuiInputTextCallbackData* InData);
+
+	// Special Member Function
+	UConsoleWidget();
+	UConsoleWidget& GetInstance();
+	~UConsoleWidget() override;
+	UConsoleWidget(const UConsoleWidget&) = delete;
+	UConsoleWidget& operator=(const UConsoleWidget&) = delete;
+	UConsoleWidget(UConsoleWidget&&) = delete;
+	UConsoleWidget& operator=(UConsoleWidget&&) = delete;
 
 private:
 	// Helper Functions

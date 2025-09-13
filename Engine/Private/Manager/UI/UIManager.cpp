@@ -5,12 +5,11 @@
 #include "Render/UI/ImGui/ImGuiHelper.h"
 #include "Render/UI/Widget/Widget.h"
 
-IMPLEMENT_CLASS(UUIManager, UObject)
 IMPLEMENT_SINGLETON(UUIManager)
 
 UUIManager::UUIManager()
 {
-	ImGuiHelper = NewObject<UImGuiHelper>();
+	ImGuiHelper = new UImGuiHelper();
 	Initialize();
 }
 
@@ -252,7 +251,7 @@ UWidget* UUIManager::FindWidget(const FString& InWidgetName) const
 	{
 		for (auto* Widget : Window->GetWidgets())
 		{
-			if (Widget->GetBaseName() == InWidgetName)
+			if (Widget->GetName() == InWidgetName)
 			{
 				return Widget;
 			}

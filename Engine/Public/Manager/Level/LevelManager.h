@@ -4,10 +4,10 @@
 class ULevel;
 struct FLevelMetadata;
 
-class ULevelManager : public UObject
+class ULevelManager :
+	public UObject
 {
-	DECLARE_CLASS(ULevelManager, UObject)
-	DECLARE_SINGLETON(ULevelManager)
+DECLARE_SINGLETON(ULevelManager)
 
 public:
 	void Update() const;

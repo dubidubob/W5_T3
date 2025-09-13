@@ -5,7 +5,6 @@
 
 class ACubeActor : public AActor
 {
-	DECLARE_CLASS(ACubeActor, AActor)
 public:
 	ACubeActor();
 

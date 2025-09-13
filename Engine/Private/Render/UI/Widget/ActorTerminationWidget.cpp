@@ -1,12 +1,14 @@
 #include "pch.h"
 #include "Render/UI/Widget/ActorTerminationWidget.h"
+
 #include "Level/Level.h"
 #include "Manager/Input/InputManager.h"
 #include "Manager/Level/LevelManager.h"
 
-IMPLEMENT_CLASS(UActorTerminationWidget, UWidget)
 
-UActorTerminationWidget::UActorTerminationWidget() : SelectedActor(nullptr)
+UActorTerminationWidget::UActorTerminationWidget()
+	: UWidget("Actor Termination Widget")
+	  , SelectedActor(nullptr)
 {
 }
 

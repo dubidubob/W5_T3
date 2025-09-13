@@ -5,7 +5,6 @@
 
 class ASphereActor : public AActor
 {
-	DECLARE_CLASS(ASphereActor, AActor)
 public:
 	ASphereActor();
 private:

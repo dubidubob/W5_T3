@@ -5,7 +5,6 @@
 #include "Render/UI/Widget/FPSWidget.h"
 #include "Render/UI/Widget/PrimitiveSpawnWidget.h"
 #include "Render/UI/Widget/SceneIOWidget.h"
-#include "Render/UI/Widget/ViewSettingsWidget.h"
 
 /**
  * @brief Control Panel Constructor
@@ -27,11 +26,10 @@ UControlPanelWindow::UControlPanelWindow()
 	Config.UpdateWindowFlags();
 	SetConfig(Config);
 
-	AddWidget(NewObject<UFPSWidget>());
-	AddWidget(NewObject<UPrimitiveSpawnWidget>());
-	AddWidget(NewObject<USceneIOWidget>());
-	AddWidget(NewObject<UCameraControlWidget>());
-	AddWidget(NewObject<UViewSettingsWidget>());
+	AddWidget(new UFPSWidget);
+	AddWidget(new UPrimitiveSpawnWidget);
+	AddWidget(new USceneIOWidget);
+	AddWidget(new UCameraControlWidget);
 }
 
 /**

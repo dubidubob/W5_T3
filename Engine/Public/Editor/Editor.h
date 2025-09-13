@@ -8,11 +8,11 @@
 
 class UEditor : public UObject
 {
-	DECLARE_CLASS(UEditor, UObject)
-
 public:
+
 	UEditor();
 	~UEditor();
+
 	
 	void Update();
 	void RenderEditor();

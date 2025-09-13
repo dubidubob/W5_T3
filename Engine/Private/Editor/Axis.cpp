@@ -2,8 +2,6 @@
 #include "Editor/Axis.h"
 #include "Render/Renderer/Renderer.h"
 
-IMPLEMENT_CLASS(UAxis, UObject)
-
 UAxis::UAxis()
 {
 	URenderer& Renderer = URenderer::GetInstance();

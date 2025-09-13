@@ -10,7 +10,6 @@ class UPrimitiveComponent;
 class AActor;
 class AGizmo;
 class UEditor;
-struct FPipelineInfo;
 /**
  * @brief Rendering Pipeline 전반을 처리하는 클래스
  *
@@ -36,10 +35,10 @@ struct FPipelineInfo;
  * @param vertexBufferSphere
  * @param numVerticesSphere
  */
-class URenderer : public UObject
+class URenderer :
+	public UObject
 {
-	DECLARE_CLASS(URenderer, UObject)
-	DECLARE_SINGLETON(URenderer)
+DECLARE_SINGLETON(URenderer)
 
 public:
 	void Init(HWND InWindowHandle);
@@ -76,15 +75,6 @@ public:
 	void UpdateConstant(const FViewProjConstants& InViewProjConstants) const;
 	void UpdateConstant(const FVector4& Color) const;
 
-	void SetViewMode(EViewModeIndex InViewMode) { CurrentViewMode = InViewMode; }
-	EViewModeIndex GetViewMode(EViewModeIndex InViewMode) const { return CurrentViewMode; }
-
-	// Show Flags management
-	void SetShowFlags(EEngineShowFlags InShowFlags) { CurrentShowFlags = InShowFlags; }
-	EEngineShowFlags GetShowFlags() const { return CurrentShowFlags; }
-	void ToggleShowFlag(EEngineShowFlags InFlag) { CurrentShowFlags = CurrentShowFlags ^ InFlag; }
-	bool IsShowFlagEnabled(EEngineShowFlags InFlag) const { return HasFlag(CurrentShowFlags, InFlag); }
-
 	ID3D11Device* GetDevice() const { return DeviceResources->GetDevice(); }
 	ID3D11DeviceContext* GetDeviceContext() const { return DeviceResources->GetDeviceContext(); }
 	IDXGISwapChain* GetSwapChain() const { return DeviceResources->GetSwapChain();}
@@ -94,8 +84,6 @@ public:
 private:
 	UPipeline* Pipeline = nullptr;
 	UDeviceResources* DeviceResources = nullptr;
-	EViewModeIndex CurrentViewMode = EViewModeIndex::Lit;
-	EEngineShowFlags CurrentShowFlags = EEngineShowFlags::SF_Default;
 	TArray<UPrimitiveComponent*> PrimitiveComponents;
 
 private:
@@ -143,7 +131,6 @@ private:
 
 	TMap<FRasterKey, ID3D11RasterizerState*, FRasterKeyHasher> RasterCache;
 
-	FPipelineInfo CreatePipelineInfo(const FRenderState& InRenderState);
 	ID3D11RasterizerState* GetRasterizerState(const FRenderState& InRenderState);
 
 	bool bIsResizing = false;
