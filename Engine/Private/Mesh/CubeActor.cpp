@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Mesh/CubeActor.h"
 
+IMPLEMENT_CLASS(ACubeActor, AActor)
+
 ACubeActor::ACubeActor()
 {
 	CubeComponent = CreateDefaultSubobject<UCubeComponent>("CubeComponent");

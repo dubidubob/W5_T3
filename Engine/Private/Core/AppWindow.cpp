@@ -23,7 +23,6 @@ bool FAppWindow::Init(HINSTANCE InInstance, int InCmdShow)
 	// 아이콘 로드
 	HICON hIcon = LoadIconW(InInstance, MAKEINTRESOURCEW(IDI_ICON1));
 	HICON hIconSm = LoadIconW(InInstance, MAKEINTRESOURCEW(IDI_ICON1));
-
 	WNDCLASSW wndclass = {};
 	wndclass.style = 0;
 	wndclass.lpfnWndProc = WndProc;

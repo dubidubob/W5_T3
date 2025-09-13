@@ -3,8 +3,9 @@
 
 #include "Manager/Level/LevelManager.h"
 
+IMPLEMENT_CLASS(USceneIOWidget, UWidget)
+
 USceneIOWidget::USceneIOWidget()
-	:UWidget("Scene IO Widget")
 {
 }
 

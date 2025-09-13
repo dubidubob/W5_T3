@@ -3,9 +3,9 @@
 
 class FAppWindow;
 
-class UInputManager :
-	public UObject
+class UInputManager : public UObject
 {
+	DECLARE_CLASS(UInputManager, UObject)
 	DECLARE_SINGLETON(UInputManager)
 
 public:

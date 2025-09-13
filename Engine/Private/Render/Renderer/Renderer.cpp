@@ -9,6 +9,7 @@
 #include "Render/Renderer/Pipeline.h"
 #include "Editor/Editor.h"
 
+IMPLEMENT_CLASS(URenderer, UObject)
 IMPLEMENT_SINGLETON(URenderer)
 
 URenderer::URenderer() = default;

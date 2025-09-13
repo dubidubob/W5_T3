@@ -9,8 +9,9 @@ static const char* CameraMode[] = {
 	"WireFrame",
 };
 
+IMPLEMENT_CLASS(UViewSettingsWidget, UWidget)
+
 UViewSettingsWidget::UViewSettingsWidget()
-	: UWidget("View Settings Widget")
 {
 }
 
