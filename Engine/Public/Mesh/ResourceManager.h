@@ -1,10 +1,5 @@
 #pragma once
 #include "Core/Object.h"
-
-enum class ESamplerType
-{
-	Text,
-};
 class UResourceManager : public UObject
 {
 	DECLARE_CLASS(UResourceManager, UObject)
@@ -35,4 +30,6 @@ private:
 
 	TMap<FString, ID3D11ShaderResourceView*> ShaderResourceViews;
 	TMap<ESamplerType, ID3D11SamplerState*> SamplerStates;
+
+	FCharacterInfo CharTable[95];
 };

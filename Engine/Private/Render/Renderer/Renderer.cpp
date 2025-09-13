@@ -8,6 +8,7 @@
 #include "Mesh/Actor.h"
 #include "Render/Renderer/Pipeline.h"
 #include "Editor/Editor.h"
+#include "Mesh/TextComponent.h"
 
 IMPLEMENT_CLASS(URenderer, UObject)
 IMPLEMENT_SINGLETON(URenderer)
@@ -24,9 +25,12 @@ void URenderer::Init(HWND InWindowHandle)
 	// 래스터라이저 상태 생성
 	CreateRasterizerState();
 	CreateDepthStencilState();
+	CreateBlendState();
 	CreateDefaultShader();
 	CreateTextShader();
 	CreateTestVertexBuffer();
+	CreateInstanceBuffer();
+
 	CreateConstantBuffer();
 }
 
@@ -37,6 +41,8 @@ void URenderer::Release()
 	ReleaseResource();
 	ReleaseTextShader();
 	ReleaseTestVertexBuffer();
+	ReleaseInstanceBuffer();
+	ReleaseBlendState();
 
 	SafeDelete(Pipeline);
 	SafeDelete(DeviceResources);
@@ -80,6 +86,28 @@ void URenderer::CreateDepthStencilState()
 		&descDisabled,
 		&DisabledDepthStencilState
 	);
+}
+
+void URenderer::CreateBlendState()
+{
+	D3D11_BLEND_DESC BlendDesc = {};
+
+	D3D11_RENDER_TARGET_BLEND_DESC& RtBlendDesc = BlendDesc.RenderTarget[0];
+
+	RtBlendDesc.BlendEnable = TRUE;
+
+	RtBlendDesc.SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	RtBlendDesc.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	RtBlendDesc.BlendOp = D3D11_BLEND_OP_ADD;
+
+	RtBlendDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
+	RtBlendDesc.DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+	RtBlendDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+
+	RtBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	GetDevice()->CreateBlendState(&BlendDesc, &TextBlendState);
+
 }
 
 /**
@@ -186,12 +214,17 @@ void URenderer::CreateTextShader()
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA,1},
+		{"OFFSET", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA,1},
+		{"TEXCOORD", 1, DXGI_FORMAT_R32_UINT, 1, 28, D3D11_INPUT_PER_INSTANCE_DATA,1},
 	};
 
 	GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
 		VertexShaderCSO->GetBufferSize(), &TextInputLayout);
 
 	StrideTextVertex = sizeof(FTextVertex);
+	StrideTextInstance = sizeof(FTextInstance);
 
 	VertexShaderCSO->Release();
 	PixelShaderCSO->Release();
@@ -241,13 +274,20 @@ void URenderer::ReleaseTextShader()
 	}
 }
 
+void URenderer::ReleaseBlendState()
+{
+	TextBlendState->Release();
+}
+
 void URenderer::Update(UEditor* Editor)
 {
 	RenderBegin();
 
 	RenderLevel();
 	Editor->RenderEditor();
-	//RenderTest();
+	float BlendFactor[] = { 0,0,0,0 };
+	GetDeviceContext()->OMSetBlendState(TextBlendState, BlendFactor, 0xffffffff);
+	RenderTest();
 
 	//RenderLines();
 
@@ -336,9 +376,19 @@ void URenderer::RenderTest()
 	ID3D11SamplerState* SamplerState = ResourceManager.GetSamplerState(ESamplerType::Text);
 	Pipeline->SetTexture(0, false, Srv);
 	Pipeline->SetSamplerState(0, false, SamplerState);
-	Pipeline->SetVertexBuffer(TestVertexBuffer, StrideTextVertex);
 
-	Pipeline->Draw(static_cast<uint32>(TestData.size()), 0);
+	for (UTextComponent* Component : ULevelManager::GetInstance().GetCurrentLevel()->GetTextComponents())
+	{
+		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
+		UpdateConstant(Component);
+		Pipeline->SetVertexBuffer(TestVertexBuffer, StrideTextVertex);
+		Pipeline->SetInstanceBuffer(TestInstanceBuffer, StrideTextInstance);
+
+		TArray<FTextInstance>* InstanceData = Component->GetInstanceData();
+		UpdateInstance(InstanceData);
+
+		Pipeline->DrawInstanced(TestData.size(), InstanceData->size(), 0, 0);
+	}
 }
 
 /**
@@ -449,6 +499,21 @@ ID3D11Buffer* URenderer::CreateIndexBuffer(const void* InIndices, uint32 InByteW
 	return buffer;
 }
 
+void URenderer::CreateInstanceBuffer()
+{
+	uint32 InByteWidth = sizeof(FTextInstance)* 100;
+	D3D11_BUFFER_DESC InstanceBufferDesc = {};
+	InstanceBufferDesc.ByteWidth = InByteWidth;
+	InstanceBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	InstanceBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	InstanceBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+	D3D11_SUBRESOURCE_DATA InstanceBufferSRD = { TestInstance.data() };
+
+
+	GetDevice()->CreateBuffer(&InstanceBufferDesc, &InstanceBufferSRD, &TestInstanceBuffer);
+}
+
 void URenderer::CreateTestVertexBuffer()
 {
 	uint32 InByteWidth = static_cast<int>(TestData.size()) * sizeof(FTextVertex);
@@ -467,6 +532,10 @@ void URenderer::CreateTestVertexBuffer()
 void URenderer::ReleaseTestVertexBuffer()
 {
 	TestVertexBuffer->Release();
+}
+void URenderer::ReleaseInstanceBuffer()
+{
+	TestInstanceBuffer->Release();
 }
 
 void URenderer::OnResize(uint32 InWidth, uint32 InHeight)
@@ -629,7 +698,7 @@ void URenderer::UpdateConstant(const UPrimitiveComponent* Primitive)
 		// update constant buffer every frame
 		FMatrix* constants = (FMatrix*)constantbufferMSR.pData;
 		{
-			*constants = FMatrix::GetModelMatrix(Primitive->GetRelativeLocation(), FVector::GetDegreeToRadian(Primitive->GetRelativeRotation()), Primitive->GetRelativeScale3D());
+			*constants = Primitive->GetWorldTransformMatrix();
 		}
 		GetDeviceContext()->Unmap(ConstantBufferModels, 0);
 	}
@@ -693,6 +762,21 @@ void URenderer::UpdateConstant(const FVector4& Color) const
 		}
 		GetDeviceContext()->Unmap(ConstantBufferColor, 0);
 	}
+}
+
+void URenderer::UpdateInstance(const TArray<FTextInstance>* Instance)
+{
+	if (TestInstanceBuffer)
+	{
+		D3D11_MAPPED_SUBRESOURCE InstanceBufferMSR = {};
+
+		GetDeviceContext()->Map(TestInstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &InstanceBufferMSR);
+		// update constant buffer every frame
+		memcpy(InstanceBufferMSR.pData, Instance->data(), sizeof(FTextInstance) * Instance->size());
+	
+		GetDeviceContext()->Unmap(TestInstanceBuffer, 0);
+	}
+
 }
 
 // TODO - 추후 ViewMode가 증가하거나, 바꿔야하는 설정이 많을 경우 별개의 Handler에서 진행하도록 변경

@@ -47,6 +47,7 @@ public:
 
 	void CreateRasterizerState();
 	void CreateDepthStencilState();
+	void CreateBlendState();
 	void ReleaseRasterizerState();
 
 	void ReleaseResource();
@@ -55,6 +56,7 @@ public:
 	void CreateTextShader();
 	void ReleaseDefaultShader();
 	void ReleaseTextShader();
+	void ReleaseBlendState();
 	void Update(UEditor* Editor);
 	//void Update();
 	void RenderBegin();
@@ -70,11 +72,13 @@ public:
 	//Testing Func
 	ID3D11Buffer* CreateVertexBuffer(FVertex* InVertices, uint32 InByteWidth) const;
 	ID3D11Buffer* CreateIndexBuffer(const void* InIndices, uint32 InByteWidth) const;
+	void CreateInstanceBuffer();
 	static void ReleaseVertexBuffer(ID3D11Buffer* InVertexBuffer);
 
 	///////////////////////////////////////
 	void CreateTestVertexBuffer();
 	void ReleaseTestVertexBuffer();
+	void ReleaseInstanceBuffer();
 	///////////////////////////////////////
 	void ReleaseTexture(ID3D11ShaderResourceView* Texture);
 
@@ -86,6 +90,7 @@ public:
 	void UpdateConstant(const FVector& InPosition, const FVector& InRotation, const FVector& InScale) const;
 	void UpdateConstant(const FViewProjConstants& InViewProjConstants) const;
 	void UpdateConstant(const FVector4& Color) const;
+	void UpdateInstance(const TArray<FTextInstance>* Instance);
 
 	void SetViewMode(EViewModeIndex InViewMode) { CurrentViewMode = InViewMode; }
 	EViewModeIndex GetViewMode(EViewModeIndex InViewMode) const { return CurrentViewMode; }
@@ -112,12 +117,14 @@ private:
 private:
 	ID3D11DepthStencilState* DefaultDepthStencilState = nullptr;
 	ID3D11DepthStencilState* DisabledDepthStencilState = nullptr;
+	ID3D11BlendState* TextBlendState = nullptr;
 	ID3D11Buffer* ConstantBufferModels = nullptr;
 	ID3D11Buffer* ConstantBufferViewProj = nullptr;
 	ID3D11Buffer* ConstantBufferColor = nullptr;
 	ID3D11Buffer* ConstantBufferCharTable = nullptr;
 	//////////////////////////////////////
 
+	ID3D11Buffer* TestInstanceBuffer = nullptr;
 	ID3D11Buffer* TestVertexBuffer = nullptr;
 
 	TArray<FTextVertex> TestData =
@@ -126,10 +133,16 @@ private:
 		{ {-0.5f,  0.5f, 0.0f}, 0.0f,   0.0f }, // 좌상단
 		{ { 0.5f, -0.5f, 0.0f}, 1.0f,   1.0f }, // 우하단
 		{ {-0.5f, -0.5f, 0.0f}, 0.0f,   1.0f }, // 좌하단
-
+				
 		{ { 0.5f, -0.5f, 0.0f}, 1.0f,   1.0f }, // 우하단
 		{ {-0.5f,  0.5f, 0.0f}, 0.0f,   0.0f }, // 좌상단
 		{ { 0.5f,  0.5f, 0.0f}, 1.0f,   0.0f }, // 우상단
+	};
+
+	TArray<FTextInstance> TestInstance =
+	{
+		{{1,1,1,1}, {0,0.5,0}, 37},
+		{{1,1,1,1}, {32/512.0,0.5,0}, 37},
 	};
 	/////////////////////////////////////
 	FLOAT ClearColor[4] = {0.025f, 0.025f, 0.025f, 1.0f};

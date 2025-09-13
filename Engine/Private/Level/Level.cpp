@@ -2,6 +2,7 @@
 #include "Level/Level.h"
 
 #include "Mesh/Actor.h"
+#include "Mesh/TextComponent.h"
 
 IMPLEMENT_CLASS(ULevel, UObject)
 
@@ -42,6 +43,7 @@ void ULevel::Update()
 	uint32 AllocatedCount = GetAllocatedCount();
 
 	LevelPrimitiveComponents.clear();
+	TextComponents.clear();
 	//Deprecated : EditorPrimitive는 에디터에서 처리
 	//EditorPrimitiveComponents.clear();
 
@@ -80,13 +82,19 @@ void ULevel::AddLevelPrimitiveComponent(AActor* Actor)
 
 	for (auto& Component : Actor->GetOwnedComponents())
 	{
-		if (Component->GetComponentType() >= EComponentType::Primitive)
+		if (Component->GetComponentType() == EComponentType::Primitive)
 		{
 			UPrimitiveComponent* PrimitiveComponent = static_cast<UPrimitiveComponent*>(Component);
 			if (PrimitiveComponent->IsVisible())
 			{
 				LevelPrimitiveComponents.push_back(PrimitiveComponent);
 			}
+		}
+		else if (Component->GetComponentType() == EComponentType::Text)
+		{
+			UTextComponent* TextComponent = static_cast<UTextComponent*>(Component);
+			if(TextComponent->IsVisible())
+				TextComponents.push_back(TextComponent);
 		}
 	}
 }

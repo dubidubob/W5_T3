@@ -38,6 +38,12 @@ void UPipeline::SetVertexBuffer(ID3D11Buffer* VertexBuffer, uint32 Stride)
 	DeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &Offset);
 }
 
+void UPipeline::SetInstanceBuffer(ID3D11Buffer* InstanceBuffer, uint32 Stride)
+{
+	uint32 Offset = 0;
+	DeviceContext->IASetVertexBuffers(1, 1, &InstanceBuffer, &Stride, &Offset);
+}
+
 /// @brief 상수 버퍼를 설정
 void UPipeline::SetConstantBuffer(uint32 Slot, bool bIsVS, ID3D11Buffer* ConstantBuffer)
 {
@@ -78,4 +84,9 @@ void UPipeline::SetSamplerState(uint32 Slot, bool bIsVS, ID3D11SamplerState* Sam
 void UPipeline::Draw(uint32 VertexCount, uint32 StartLocation)
 {
 	DeviceContext->Draw(VertexCount, StartLocation);
+}
+
+void UPipeline::DrawInstanced(uint32 VertexCountPerInstance, uint32 InstanceCount, uint32 VertexStartLocation, uint32 InstanceStartLocation)
+{
+	DeviceContext->DrawInstanced(VertexCountPerInstance, InstanceCount, VertexStartLocation, InstanceStartLocation);
 }

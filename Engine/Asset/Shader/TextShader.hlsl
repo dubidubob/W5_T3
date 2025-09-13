@@ -29,12 +29,17 @@ struct VS_INPUT
 {
 	float3 Position : POSITION;
 	float2 UV : TEXCOORD0;
-	
+
+	//InstanceData
+	float4 Color : COLOR;
+	float3 Offset : OFFSET;
+	uint CharID : TEXCOORD1;
 };
 
 struct PS_INPUT
 {
 	float4 WorldPos : SV_Position;
+	float4 Color : COLOR;
 	float2 UV : TEXCOORD0;
 };
 
@@ -42,10 +47,17 @@ PS_INPUT mainVS(VS_INPUT Input)
 {
 	PS_INPUT Output;
 
-	float4 Position = float4(Input.Position, 1.0f);
-	Output.WorldPos = Position;
+	
+	float3 Pos = float3(Input.Position.x / 2, Input.Position.y, Input.Position.z);
+	Pos = Pos + Input.Offset;
+	float4 OutputPos = mul(float4(Pos, 1.0f), ModelMatrix);
+	OutputPos = mul(OutputPos, ViewMatrix);
+	OutputPos = mul(OutputPos, ProjectionMatrix);
+	Output.WorldPos = OutputPos;
+	
 
-	Output.UV = Input.UV;
+	Output.UV = UvTable[Input.CharID - 32].UvSize * Input.UV + UvTable[Input.CharID - 32].UvOffset;
+	Output.Color = Input.Color;
 	return Output;
 }
 
