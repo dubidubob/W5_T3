@@ -52,11 +52,14 @@ public:
 	void ReleaseResource();
 
 	void CreateDefaultShader();
+	void CreateTextShader();
 	void ReleaseDefaultShader();
+	void ReleaseTextShader();
 	void Update(UEditor* Editor);
 	//void Update();
 	void RenderBegin();
 	void RenderLevel();
+	void RenderTest();
 	void RenderEnd() const;
 	void RenderPrimitive(FEditorPrimitive& InPrimitive, struct FRenderState& InRenderState);
 
@@ -68,6 +71,14 @@ public:
 	ID3D11Buffer* CreateVertexBuffer(FVertex* InVertices, uint32 InByteWidth) const;
 	ID3D11Buffer* CreateIndexBuffer(const void* InIndices, uint32 InByteWidth) const;
 	static void ReleaseVertexBuffer(ID3D11Buffer* InVertexBuffer);
+
+	///////////////////////////////////////
+	void CreateTestVertexBuffer();
+	void ReleaseTestVertexBuffer();
+	///////////////////////////////////////
+	void ReleaseTexture(ID3D11ShaderResourceView* Texture);
+
+	void ReleaseSamplerState(ID3D11SamplerState* Sampler);
 
 	void CreateConstantBuffer();
 	void ReleaseConstantBuffer();
@@ -97,13 +108,36 @@ private:
 	ID3D11Buffer* ConstantBufferModels = nullptr;
 	ID3D11Buffer* ConstantBufferViewProj = nullptr;
 	ID3D11Buffer* ConstantBufferColor = nullptr;
+	ID3D11Buffer* ConstantBufferCharTable = nullptr;
+	//////////////////////////////////////
 
+	ID3D11Buffer* TestVertexBuffer = nullptr;
+
+	TArray<FTextVertex> TestData =
+	{
+		// { Position },       U,      V
+		{ {-0.5f,  0.5f, 0.0f}, 0.0f,   0.0f }, // 좌상단
+		{ { 0.5f, -0.5f, 0.0f}, 1.0f,   1.0f }, // 우하단
+		{ {-0.5f, -0.5f, 0.0f}, 0.0f,   1.0f }, // 좌하단
+
+		{ { 0.5f, -0.5f, 0.0f}, 1.0f,   1.0f }, // 우하단
+		{ {-0.5f,  0.5f, 0.0f}, 0.0f,   0.0f }, // 좌상단
+		{ { 0.5f,  0.5f, 0.0f}, 1.0f,   0.0f }, // 우상단
+	};
+	/////////////////////////////////////
 	FLOAT ClearColor[4] = {0.025f, 0.025f, 0.025f, 1.0f};
 
 	ID3D11VertexShader* DefaultVertexShader = nullptr;
 	ID3D11PixelShader* DefaultPixelShader = nullptr;
 	ID3D11InputLayout* DefaultInputLayout = nullptr;
+
+	ID3D11VertexShader* TextVertexShader = nullptr;
+	ID3D11PixelShader* TextPixelShader = nullptr;
+	ID3D11InputLayout* TextInputLayout = nullptr;
+
 	uint32 Stride = 0;
+	uint32 StrideTextVertex = 0;
+	uint32 StrideTextInstance = 0;
 
 private:
 	struct FRasterKey

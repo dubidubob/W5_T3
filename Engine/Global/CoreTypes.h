@@ -22,6 +22,23 @@ struct FVertex
 	FVector4 Color;
 };
 
+struct FTextVertex
+{
+	FVector Position;
+	float BaseUvX;
+	float BaseUvY;
+};
+
+struct FCharacterInfo
+{
+	float U;
+	float V;
+	float Width;
+	float Height;
+};
+
+//TMap<char, FCharacterInfo> CharInfoMap;
+
 struct FRay
 {
 	FVector4 Origin;
@@ -62,6 +79,7 @@ enum class EPrimitiveType : uint8_t
 	CubeArrow,
 	Ring,
 	Line,
+	Quad,
 
 	End = 0xFF
 };

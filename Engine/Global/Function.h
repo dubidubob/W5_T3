@@ -23,6 +23,20 @@ static FString WideStringToString(const wstring& InString)
 	return OutString;
 }
 
+static wstring StringToWideString(const FString& str)
+{
+	if (str.empty()) {
+		return std::wstring();
+	}
+	
+	int32 ByteNumber = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), NULL, 0);
+
+	std::wstring OutString(ByteNumber, 0);
+
+	MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), &OutString[0], ByteNumber);
+
+	return OutString;
+}
 /**
  * @brief CP949 (ANSI) 타입의 문자열을 UTF-8 타입으로 변환하는 함수
  * CP949 To UTF-8 직변환 함수가 제공되지 않아 UTF-16을 브릿지로 사용한다

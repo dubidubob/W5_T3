@@ -24,6 +24,8 @@ void URenderer::Init(HWND InWindowHandle)
 	CreateRasterizerState();
 	CreateDepthStencilState();
 	CreateDefaultShader();
+	CreateTextShader();
+	CreateTestVertexBuffer();
 	CreateConstantBuffer();
 }
 
@@ -32,6 +34,8 @@ void URenderer::Release()
 	ReleaseConstantBuffer();
 	ReleaseDefaultShader();
 	ReleaseResource();
+	ReleaseTextShader();
+	ReleaseTestVertexBuffer();
 
 	SafeDelete(Pipeline);
 	SafeDelete(DeviceResources);
@@ -160,6 +164,37 @@ void URenderer::CreateDefaultShader()
 	PixelShaderCSO->Release();
 }
 
+void URenderer::CreateTextShader()
+{
+	ID3DBlob* VertexShaderCSO;
+	ID3DBlob* PixelShaderCSO;
+
+	D3DCompileFromFile(L"Asset/Shader/TextShader.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0,
+		&VertexShaderCSO, nullptr);
+
+	GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), nullptr, &TextVertexShader);
+
+	D3DCompileFromFile(L"Asset/Shader/TextShader.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0,
+		&PixelShaderCSO, nullptr);
+
+	GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
+		PixelShaderCSO->GetBufferSize(), nullptr, &TextPixelShader);
+
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	};
+
+	GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), &TextInputLayout);
+
+	StrideTextVertex = sizeof(FTextVertex);
+
+	VertexShaderCSO->Release();
+	PixelShaderCSO->Release();
+}
 /**
  * @brief Shader Release
  */
@@ -184,12 +219,34 @@ void URenderer::ReleaseDefaultShader()
 	}
 }
 
+void URenderer::ReleaseTextShader()
+{
+	if (TextInputLayout)
+	{
+		TextInputLayout->Release();
+		TextInputLayout = nullptr;
+	}
+
+	if (TextPixelShader)
+	{
+		TextPixelShader->Release();
+		TextPixelShader = nullptr;
+	}
+
+	if (TextVertexShader)
+	{	
+		TextVertexShader->Release();
+		TextVertexShader = nullptr;
+	}
+}
+
 void URenderer::Update(UEditor* Editor)
 {
 	RenderBegin();
 
 	RenderLevel();
 	Editor->RenderEditor();
+	//RenderTest();
 
 	//RenderLines();
 
@@ -245,6 +302,36 @@ void URenderer::RenderLevel()
 		Pipeline->SetVertexBuffer(PrimitiveComponent->GetVertexBuffer(), Stride);
 		Pipeline->Draw(static_cast<uint32>(PrimitiveComponent->GetVerticesData()->size()), 0);
 	}
+}
+
+void URenderer::RenderTest()
+{
+	ID3D11DepthStencilState* DepthStencilState = DefaultDepthStencilState;
+
+	FRenderState State = FRenderState{ ECullMode::None, EFillMode::Solid };
+	ID3D11RasterizerState* RasterizerState =
+		GetRasterizerState(State);
+
+	FPipelineInfo PipelineInfo = {
+			TextInputLayout,
+			TextVertexShader,
+			RasterizerState,
+			DepthStencilState,
+			TextPixelShader,
+			nullptr,
+			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+	};
+
+	Pipeline->UpdatePipeline(PipelineInfo);
+
+	UResourceManager& ResourceManager = UResourceManager::GetInstance();
+	ID3D11ShaderResourceView* Srv = ResourceManager.GetTexture("Asset/Font/Roboto-Medium.dds");
+	ID3D11SamplerState* SamplerState = ResourceManager.GetSamplerState(ESamplerType::Text);
+	Pipeline->SetTexture(0, false, Srv);
+	Pipeline->SetSamplerState(0, false, SamplerState);
+	Pipeline->SetVertexBuffer(TestVertexBuffer, StrideTextVertex);
+
+	Pipeline->Draw(static_cast<uint32>(TestData.size()), 0);
 }
 
 /**
@@ -355,6 +442,26 @@ ID3D11Buffer* URenderer::CreateIndexBuffer(const void* InIndices, uint32 InByteW
 	return buffer;
 }
 
+void URenderer::CreateTestVertexBuffer()
+{
+	uint32 InByteWidth = static_cast<int>(TestData.size()) * sizeof(FTextVertex);
+	D3D11_BUFFER_DESC VertexBufferDesc = {};
+	VertexBufferDesc.ByteWidth = InByteWidth;
+	VertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE; // will never be updated
+	VertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+	D3D11_SUBRESOURCE_DATA VertexBufferSRD = { TestData.data()};
+
+	
+	GetDevice()->CreateBuffer(&VertexBufferDesc, &VertexBufferSRD, &TestVertexBuffer);
+
+}
+
+void URenderer::ReleaseTestVertexBuffer()
+{
+	TestVertexBuffer->Release();
+}
+
 void URenderer::OnResize(uint32 InWidth, uint32 InHeight)
 {
 	if (!DeviceResources || !GetDevice() || !GetDeviceContext() || !GetSwapChain()) return;
@@ -390,10 +497,27 @@ void URenderer::ReleaseVertexBuffer(ID3D11Buffer* InVertexBuffer)
 }
 
 /**
+ * @brief ShaderResourceView 소멸 함수
+ */
+void URenderer::ReleaseTexture(ID3D11ShaderResourceView* Texture)
+{
+	Texture->Release();
+}
+
+/**
+ * @brief SamplerState 소멸 함수
+ */
+void URenderer::ReleaseSamplerState(ID3D11SamplerState* Sampler)
+{
+	Sampler->Release();
+}
+
+/**
  * @brief 상수 버퍼 생성 함수
  */
 void URenderer::CreateConstantBuffer()
 {
+	UResourceManager& ResourceManager = UResourceManager::GetInstance();
 	/**
 	 * @brief 모델에 사용될 상수 버퍼 생성
 	 */
@@ -435,6 +559,26 @@ void URenderer::CreateConstantBuffer()
 
 		GetDevice()->CreateBuffer(&ConstantBufferDesc, nullptr, &ConstantBufferViewProj);
 	}
+
+	/**
+	 * @brief 폰트에 사용될 조회 테이블 상수 버퍼 생성
+	 */
+	{
+		FCharacterInfo* CharTable;
+
+		CharTable = ResourceManager.LoadCharTable();
+		D3D11_BUFFER_DESC ConstantBufferDesc = {};
+		ConstantBufferDesc.ByteWidth = (sizeof(FCharacterInfo)) * 95; //95개 CharacterSet의 UV좌표
+		ConstantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		ConstantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		ConstantBufferDesc.CPUAccessFlags = 0;
+
+		D3D11_SUBRESOURCE_DATA CharTableData = {};
+		CharTableData.pSysMem = CharTable;
+		GetDevice()->CreateBuffer(&ConstantBufferDesc, &CharTableData, &ConstantBufferCharTable);
+
+		Pipeline->SetConstantBuffer(4, true, ConstantBufferCharTable);
+	}
 }
 
 /**
@@ -458,6 +602,12 @@ void URenderer::ReleaseConstantBuffer()
 	{
 		ConstantBufferViewProj->Release();
 		ConstantBufferViewProj = nullptr;
+	}
+
+	if (ConstantBufferCharTable)
+	{
+		ConstantBufferCharTable->Release();
+		ConstantBufferCharTable = nullptr;
 	}
 }
 
