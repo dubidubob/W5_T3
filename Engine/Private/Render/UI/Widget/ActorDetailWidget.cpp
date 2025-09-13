@@ -6,7 +6,6 @@
 #include "Mesh/Actor.h"
 
 UActorDetailWidget::UActorDetailWidget()
-	: UWidget("Actor Detail Widget")
 {
 }
 
