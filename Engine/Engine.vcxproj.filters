@@ -63,6 +63,21 @@
     <ClCompile Include="Private\\Render\UI\Widget\\Widget.cpp" />
     <ClCompile Include="Private\\Render\UI\Window\\ExperimentalFeatureWindow.cpp" />
     <ClCompile Include="Private\\Render\UI\Window\\OutlinerWindow.cpp" />
+    <ClCompile Include="Global\Name.cpp" />
+    <ClCompile Include="Global\NameTable.cpp" />
+    <ClCompile Include="Private\Render\UI\Widget\ViewSettingsWidget.cpp" />
+    <ClCompile Include="Private\\Core\\Class.cpp" />
+    <ClCompile Include="Private\\Render\UI\Widget\\ActorTerminationWidget.cpp" />
+    <ClCompile Include="Private\\Render\UI\Widget\\CameraControlWIdget.cpp" />
+    <ClCompile Include="Private\\Render\UI\Widget\\ConsoleWidget.cpp" />
+    <ClCompile Include="Private\\Render\UI\Widget\\FPSWidget.cpp" />
+    <ClCompile Include="Private\\Render\UI\Widget\\InputInformationWidget.cpp" />
+    <ClCompile Include="Private\\Render\UI\Widget\\PrimitiveSpawnWidget.cpp" />
+    <ClCompile Include="Private\\Render\UI\Widget\\SceneIOWidget.cpp" />
+    <ClCompile Include="Private\\Render\UI\Widget\\TargetActorTransformWidget.cpp" />
+    <ClCompile Include="Private\\Render\UI\Widget\\Widget.cpp" />
+    <ClCompile Include="Private\\Render\UI\Window\\ExperimentalFeatureWindow.cpp" />
+    <ClCompile Include="Private\\Render\UI\Window\\OutlinerWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\\Core\\Object.h" />
@@ -122,6 +137,21 @@
     <ClInclude Include="Public\\Mesh\\SquareActor.h" />
     <ClInclude Include="Global\Vector.h" />
     <ClInclude Include="Global\CoreTypes.h" />
+    <ClInclude Include="Public\Render\UI\Widget\ViewSettingsWidget.h" />
+    <ClInclude Include="Public\\Core\\Class.h" />
+    <ClInclude Include="Public\\Render\UI\Widget\\ActorTerminationWidget.h" />
+    <ClInclude Include="Public\\Render\UI\Widget\\CameraControlWidget.h" />
+    <ClInclude Include="Public\\Render\UI\Widget\\ConsoleWidget.h" />
+    <ClInclude Include="Public\\Render\UI\Widget\\FPSWidget.h" />
+    <ClInclude Include="Public\\Render\UI\Widget\\InputInformationWidget.h" />
+    <ClInclude Include="Public\\Render\UI\Widget\\PrimitiveSpawnWidget.h" />
+    <ClInclude Include="Public\\Render\UI\Widget\\SceneIOWidget.h" />
+    <ClInclude Include="Public\\Render\UI\Widget\\TargetActorTransformWidget.h" />
+    <ClInclude Include="Public\\Render\UI\Widget\\Widget.h" />
+    <ClInclude Include="Public\\Render\UI\Window\\ExperimentalFeatureWindow.h" />
+    <ClInclude Include="Public\\Render\UI\Window\\OutlinerWindow.h" />
+    <ClInclude Include="Global\Name.h" />
+    <ClInclude Include="Global\NameTable.h" />
     <ClInclude Include="Public\DirectXTK\DDSTextureLoader.h" />
     <ClInclude Include="Public\DirectXTK\DirectXHelpers.h" />
     <ClInclude Include="Public\Render\UI\Widget\ViewSettingsWidget.h" />

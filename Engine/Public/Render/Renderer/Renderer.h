@@ -90,6 +90,12 @@ public:
 	void SetViewMode(EViewModeIndex InViewMode) { CurrentViewMode = InViewMode; }
 	EViewModeIndex GetViewMode(EViewModeIndex InViewMode) const { return CurrentViewMode; }
 
+	// Show Flags management
+	void SetShowFlags(EEngineShowFlags InShowFlags) { CurrentShowFlags = InShowFlags; }
+	EEngineShowFlags GetShowFlags() const { return CurrentShowFlags; }
+	void ToggleShowFlag(EEngineShowFlags InFlag) { CurrentShowFlags = CurrentShowFlags ^ InFlag; }
+	bool IsShowFlagEnabled(EEngineShowFlags InFlag) const { return HasFlag(CurrentShowFlags, InFlag); }
+
 	ID3D11Device* GetDevice() const { return DeviceResources->GetDevice(); }
 	ID3D11DeviceContext* GetDeviceContext() const { return DeviceResources->GetDeviceContext(); }
 	IDXGISwapChain* GetSwapChain() const { return DeviceResources->GetSwapChain();}
@@ -100,6 +106,7 @@ private:
 	UPipeline* Pipeline = nullptr;
 	UDeviceResources* DeviceResources = nullptr;
 	EViewModeIndex CurrentViewMode = EViewModeIndex::Lit;
+	EEngineShowFlags CurrentShowFlags = EEngineShowFlags::SF_Default;
 	TArray<UPrimitiveComponent*> PrimitiveComponents;
 
 private:

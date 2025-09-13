@@ -33,6 +33,8 @@
 #include "Global/CoreTypes.h"
 #include "Global/Macro.h"
 #include "Global/Function.h"
+#include "Global/Name.h"
+#include "Global/NameTable.h"
 
 using std::clamp;
 using std::unordered_map;

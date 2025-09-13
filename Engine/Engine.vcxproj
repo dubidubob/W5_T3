@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -223,6 +223,8 @@
     <ClInclude Include="Public\\Utility\\Metadata.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Global\Name.cpp" />
+    <ClCompile Include="Global\NameTable.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ViewSettingsWidget.cpp" />
     <ClCompile Include="Private\\Core\\Class.cpp" />
     <ClCompile Include="Private\\Core\\Object.cpp" />
