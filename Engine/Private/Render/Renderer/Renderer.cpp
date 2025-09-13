@@ -230,6 +230,12 @@ void URenderer::RenderLevel()
 	for (auto& PrimitiveComponent : ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents())
 	{
 		if (!PrimitiveComponent) { continue; }
+		
+		// Check show flags for primitive components
+		if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false)
+		{
+			break;
+		}
 
 		Pipeline->UpdatePipeline(CreatePipelineInfo(PrimitiveComponent->GetRenderState()));
 
