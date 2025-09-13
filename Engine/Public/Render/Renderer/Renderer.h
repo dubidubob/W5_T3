@@ -90,6 +90,7 @@ public:
 	void UpdateConstant(const FVector& InPosition, const FVector& InRotation, const FVector& InScale) const;
 	void UpdateConstant(const FViewProjConstants& InViewProjConstants) const;
 	void UpdateConstant(const FVector4& Color) const;
+	void UpdateInstance(const TArray<FTextInstance>* Instance);
 
 	void SetViewMode(EViewModeIndex InViewMode) { CurrentViewMode = InViewMode; }
 	EViewModeIndex GetViewMode(EViewModeIndex InViewMode) const { return CurrentViewMode; }
@@ -129,19 +130,19 @@ private:
 	TArray<FTextVertex> TestData =
 	{
 		// { Position },       U,      V
-		{ {-0.5f/10,  0.5f/10, 0.0f}, 0.0f,   0.0f }, // 좌상단
-		{ { 0.5f/10, -0.5f/10, 0.0f}, 1.0f,   1.0f }, // 우하단
-		{ {-0.5f/10, -0.5f/10, 0.0f}, 0.0f,   1.0f }, // 좌하단
+		{ {-0.5f,  0.5f, 0.0f}, 0.0f,   0.0f }, // 좌상단
+		{ { 0.5f, -0.5f, 0.0f}, 1.0f,   1.0f }, // 우하단
+		{ {-0.5f, -0.5f, 0.0f}, 0.0f,   1.0f }, // 좌하단
 				
-		{ { 0.5f/10, -0.5f/10, 0.0f}, 1.0f,   1.0f }, // 우하단
-		{ {-0.5f/10,  0.5f/10, 0.0f}, 0.0f,   0.0f }, // 좌상단
-		{ { 0.5f/10,  0.5f/10, 0.0f}, 1.0f,   0.0f }, // 우상단
+		{ { 0.5f, -0.5f, 0.0f}, 1.0f,   1.0f }, // 우하단
+		{ {-0.5f,  0.5f, 0.0f}, 0.0f,   0.0f }, // 좌상단
+		{ { 0.5f,  0.5f, 0.0f}, 1.0f,   0.0f }, // 우상단
 	};
 
 	TArray<FTextInstance> TestInstance =
 	{
 		{{1,1,1,1}, {0,0.5,0}, 37},
-		{{1,1,1,1}, {0,-0.5,0}, 37},
+		{{1,1,1,1}, {32/512.0,0.5,0}, 37},
 	};
 	/////////////////////////////////////
 	FLOAT ClearColor[4] = {0.025f, 0.025f, 0.025f, 1.0f};

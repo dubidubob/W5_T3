@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClInclude Include="Global\Name.h" />
     <ClInclude Include="Global\NameTable.h" />
+    <ClInclude Include="Public\Mesh\TextComponent.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorDetailWidget.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorListWidget.h" />
     <ClInclude Include="Public\DirectXTK\DDSTextureLoader.h" />
@@ -230,6 +231,7 @@
   <ItemGroup>
     <ClCompile Include="Global\Name.cpp" />
     <ClCompile Include="Global\NameTable.cpp" />
+    <ClCompile Include="Private\Mesh\TextComponent.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ActorDetailWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ActorListWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ViewSettingsWidget.cpp" />

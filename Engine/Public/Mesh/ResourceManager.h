@@ -1,10 +1,5 @@
 #pragma once
 #include "Core/Object.h"
-
-enum class ESamplerType
-{
-	Text,
-};
 class UResourceManager : public UObject
 {
 	DECLARE_CLASS(UResourceManager, UObject)

@@ -8,6 +8,7 @@
 #include "Mesh/Actor.h"
 #include "Render/Renderer/Pipeline.h"
 #include "Editor/Editor.h"
+#include "Mesh/TextComponent.h"
 
 IMPLEMENT_CLASS(URenderer, UObject)
 IMPLEMENT_SINGLETON(URenderer)
@@ -375,10 +376,19 @@ void URenderer::RenderTest()
 	ID3D11SamplerState* SamplerState = ResourceManager.GetSamplerState(ESamplerType::Text);
 	Pipeline->SetTexture(0, false, Srv);
 	Pipeline->SetSamplerState(0, false, SamplerState);
-	Pipeline->SetVertexBuffer(TestVertexBuffer, StrideTextVertex);
-	Pipeline->SetInstanceBuffer(TestInstanceBuffer, StrideTextInstance);
 
-	Pipeline->DrawInstanced(TestData.size(),TestInstance.size(),0, 0);
+	for (UTextComponent* Component : ULevelManager::GetInstance().GetCurrentLevel()->GetTextComponents())
+	{
+		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
+		UpdateConstant(Component);
+		Pipeline->SetVertexBuffer(TestVertexBuffer, StrideTextVertex);
+		Pipeline->SetInstanceBuffer(TestInstanceBuffer, StrideTextInstance);
+
+		TArray<FTextInstance>* InstanceData = Component->GetInstanceData();
+		UpdateInstance(InstanceData);
+
+		Pipeline->DrawInstanced(TestData.size(), InstanceData->size(), 0, 0);
+	}
 }
 
 /**
@@ -688,7 +698,7 @@ void URenderer::UpdateConstant(const UPrimitiveComponent* Primitive)
 		// update constant buffer every frame
 		FMatrix* constants = (FMatrix*)constantbufferMSR.pData;
 		{
-			*constants = FMatrix::GetModelMatrix(Primitive->GetRelativeLocation(), FVector::GetDegreeToRadian(Primitive->GetRelativeRotation()), Primitive->GetRelativeScale3D());
+			*constants = Primitive->GetWorldTransformMatrix();
 		}
 		GetDeviceContext()->Unmap(ConstantBufferModels, 0);
 	}
@@ -752,6 +762,21 @@ void URenderer::UpdateConstant(const FVector4& Color) const
 		}
 		GetDeviceContext()->Unmap(ConstantBufferColor, 0);
 	}
+}
+
+void URenderer::UpdateInstance(const TArray<FTextInstance>* Instance)
+{
+	if (TestInstanceBuffer)
+	{
+		D3D11_MAPPED_SUBRESOURCE InstanceBufferMSR = {};
+
+		GetDeviceContext()->Map(TestInstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &InstanceBufferMSR);
+		// update constant buffer every frame
+		memcpy(InstanceBufferMSR.pData, Instance->data(), sizeof(FTextInstance) * Instance->size());
+	
+		GetDeviceContext()->Unmap(TestInstanceBuffer, 0);
+	}
+
 }
 
 // TODO - 추후 ViewMode가 증가하거나, 바꿔야하는 설정이 많을 경우 별개의 Handler에서 진행하도록 변경

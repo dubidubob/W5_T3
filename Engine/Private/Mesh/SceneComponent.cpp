@@ -22,7 +22,7 @@ void USceneComponent::SetParentAttachment(USceneComponent* NewParent)
 	}
 
 	//부모의 조상중에 내 자식이 있으면 순환참조 -> 스택오버플로우 일어남.
-	for (USceneComponent* Ancester = NewParent; NewParent; Ancester = NewParent->ParentAttachment)
+	for (USceneComponent* Ancester = NewParent; Ancester; Ancester = NewParent->ParentAttachment)
 	{
 		if (NewParent == this) //조상중에 내 자식이 있다면 조상중에 내가 있을 것임.
 			return;
@@ -36,6 +36,8 @@ void USceneComponent::SetParentAttachment(USceneComponent* NewParent)
 	}
 
 	ParentAttachment = NewParent;
+
+	ParentAttachment->Children.push_back(this);
 
 	MarkAsDirty();
 
@@ -117,7 +119,7 @@ const FMatrix& USceneComponent::GetWorldTransformMatrix() const
 		WorldTransformMatrix = FMatrix::GetModelMatrix(RelativeLocation, FVector::GetDegreeToRadian(RelativeRotation), RelativeScale3D);
 
 
-		for (USceneComponent* Ancester = ParentAttachment; Ancester && Ancester->ParentAttachment; Ancester = Ancester->ParentAttachment)
+		for (USceneComponent* Ancester = ParentAttachment; Ancester; Ancester = Ancester->ParentAttachment)
 		{
 			WorldTransformMatrix *= FMatrix::GetModelMatrix(Ancester->RelativeLocation, FVector::GetDegreeToRadian(Ancester->RelativeRotation), Ancester->RelativeScale3D);
 		}

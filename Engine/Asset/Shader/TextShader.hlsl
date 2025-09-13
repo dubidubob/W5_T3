@@ -48,8 +48,13 @@ PS_INPUT mainVS(VS_INPUT Input)
 	PS_INPUT Output;
 
 	
-	float3 ResultPos = float3(Input.Position.x/2, Input.Position.y, Input.Position.z);
-	Output.WorldPos = float4(Input.Offset + ResultPos, 1);
+	float3 Pos = float3(Input.Position.x / 2, Input.Position.y, Input.Position.z);
+	Pos = Pos + Input.Offset;
+	float4 OutputPos = mul(float4(Pos, 1.0f), ModelMatrix);
+	OutputPos = mul(OutputPos, ViewMatrix);
+	OutputPos = mul(OutputPos, ProjectionMatrix);
+	Output.WorldPos = OutputPos;
+	
 
 	Output.UV = UvTable[Input.CharID - 32].UvSize * Input.UV + UvTable[Input.CharID - 32].UvOffset;
 	Output.Color = Input.Color;

@@ -37,7 +37,6 @@ void UEditor::Update()
 
 	ProcessMouseInput(ULevelManager::GetInstance().GetCurrentLevel());
 
-
 	Renderer.UpdateConstant(Camera.GetFViewProjConstants());
 }
 void UEditor::RenderEditor()

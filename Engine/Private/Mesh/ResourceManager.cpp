@@ -106,7 +106,7 @@ ID3D11ShaderResourceView* UResourceManager::LoadTexture(const FString& Path)
 
 	ID3D11SamplerState* SamplerState = nullptr;
 	D3D11_SAMPLER_DESC SamplerDesc = {};
-	SamplerDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_POINT;
+	SamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 	SamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 	SamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 	SamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;

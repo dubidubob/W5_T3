@@ -66,6 +66,8 @@ enum class EComponentType : uint8_t
 		//SceneComponent Dervied Type
 
 	Primitive,
+
+	Text,
 		//PrimitiveComponent Derived Type
 
 	End = 0xFF
@@ -121,6 +123,11 @@ enum class EViewModeIndex : uint32
 	Wireframe,
 
 	End
+};
+
+enum class ESamplerType
+{
+	Text,
 };
 
 /**
