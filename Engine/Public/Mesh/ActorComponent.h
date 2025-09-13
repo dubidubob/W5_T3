@@ -5,6 +5,8 @@ class AActor;
 
 class UActorComponent : public UObject
 {
+	DECLARE_CLASS(UActorComponent, UObject)
+
 public:
 	UActorComponent();
 	~UActorComponent();

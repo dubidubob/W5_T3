@@ -9,14 +9,13 @@
 #include "ImGui/imgui.h"
 #include "Level/Level.h"
 
+IMPLEMENT_CLASS(UObjectPicker, UObject)
 
-UObjectPicker::UObjectPicker(UCamera& InCamera)
-	:Camera( InCamera)
-{}
+UObjectPicker::UObjectPicker() = default;
 
-void UObjectPicker::SetCamera(UCamera& Camera)
+void UObjectPicker::SetCamera(UCamera* InCamera)
 {
-	this->Camera = Camera;
+	Camera = InCamera;
 }
 
 FRay UObjectPicker::GetModelRay(const FRay& Ray, UPrimitiveComponent* Primitive)
@@ -201,9 +200,9 @@ bool UObjectPicker::IsRayPrimitiveCollided(const FRay& ModelRay, UPrimitiveCompo
 bool UObjectPicker::IsRayTriangleCollided(const FRay& Ray, const FVector& Vertex1, const FVector& Vertex2, const FVector& Vertex3,
                            const FMatrix& ModelMatrix, float* Distance)
 {
-	FVector CameraForward = Camera.GetForward(); //카메라 정보 필요
-	float NearZ = Camera.GetNearZ();
-	float FarZ = Camera.GetFarZ();
+	FVector CameraForward = Camera->GetForward(); //카메라 정보 필요
+	float NearZ = Camera->GetNearZ();
+	float FarZ = Camera->GetFarZ();
 	FMatrix ModelTransform; //Primitive로부터 얻어내야함.(카메라가 처리하는게 나을듯)
 
 

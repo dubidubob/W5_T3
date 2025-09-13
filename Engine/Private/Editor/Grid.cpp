@@ -3,6 +3,7 @@
 #include "Render/Renderer/Renderer.h"
 #include "Editor/EditorPrimitive.h"
 
+IMPLEMENT_CLASS(UGrid, UObject)
 
 UGrid::UGrid()
 {

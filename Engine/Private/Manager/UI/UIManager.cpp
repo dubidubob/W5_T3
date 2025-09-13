@@ -5,11 +5,12 @@
 #include "Render/UI/ImGui/ImGuiHelper.h"
 #include "Render/UI/Widget/Widget.h"
 
+IMPLEMENT_CLASS(UUIManager, UObject)
 IMPLEMENT_SINGLETON(UUIManager)
 
 UUIManager::UUIManager()
 {
-	ImGuiHelper = new UImGuiHelper();
+	ImGuiHelper = NewObject<UImGuiHelper>();
 	Initialize();
 }
 

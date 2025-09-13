@@ -40,3 +40,12 @@ private:
 };
 
 extern TArray<UObject*> GUObjectArray;
+
+template <typename T>
+T* NewObject()
+{
+	T* NewObject = new T();
+	NewObject->SetName(FNameTable::GetInstance().GetUniqueName(NewObject->GetClass()->GetName()));
+
+	return NewObject;
+}

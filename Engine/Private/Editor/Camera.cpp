@@ -5,6 +5,8 @@
 #include "Manager/Path/PathManager.h"
 #include "Render/Renderer/Renderer.h"
 
+IMPLEMENT_CLASS(UCamera, UObject)
+
 void UCamera::Update()
 {
 	const UInputManager& Input = UInputManager::GetInstance();

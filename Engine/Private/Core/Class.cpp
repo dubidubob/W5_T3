@@ -18,7 +18,7 @@ TArray<UClass*> UClass::AllClasses;
 UClass::UClass(const FString& InName, UClass* InSuperClass, size_t InClassSize, ClassConstructorType InConstructor)
 	: ClassName(InName), SuperClass(InSuperClass), ClassSize(InClassSize), Constructor(InConstructor)
 {
-	UE_LOG("UClass: 클래스 등록: %s", ClassName.c_str());
+	//UE_LOG("UClass: 클래스 등록: %s", ClassName.c_str());
 }
 
 /**
@@ -68,68 +68,68 @@ UObject* UClass::CreateDefaultObject() const
 	return nullptr;
 }
 
-/**
- * @brief 클래스 이름으로 UClass 찾기
- * @param InClassName 찾을 클래스 이름
- * @return 찾은 UClass 포인터 (없으면 nullptr)
- */
-UClass* UClass::FindClass(const FString& InClassName)
-{
-	for (UClass* Class : AllClasses)
-	{
-		if (Class && Class->GetName() == InClassName)
-		{
-			return Class;
-		}
-	}
-
-	return nullptr;
-}
-
-/**
- * @brief 모든 UClass 등록
- * @param InClass 등록할 UClass
- */
-void UClass::SignUpClass(UClass* InClass)
-{
-	if (InClass)
-	{
-		AllClasses.push_back(InClass);
-		UE_LOG("UClass: Class registered: %s (Total: %llu)", InClass->GetName().c_str(), AllClasses.size());
-	}
-}
-
-/**
- * @brief 등록된 모든 클래스 출력
- * For Debugging
- */
-void UClass::PrintAllClasses()
-{
-	UE_LOG("=== Registered Classes (%llu) ===", AllClasses.size());
-
-	for (size_t i = 0; i < AllClasses.size(); ++i)
-	{
-		UClass* Class = AllClasses[i];
-
-		stringstream ss;
-		ss << Class->GetName();
-
-		if (Class)
-		{
-			ss << "[" << i << "] " << Class->GetName()
-				<< " (Size: " << Class->GetClassSize() << " bytes)";
-
-			if (Class->GetSuperClass())
-			{
-				ss << " -> " << Class->GetSuperClass()->GetName();
-			}
-			else
-			{
-				ss << " (Base Class)";
-			}
-			UE_LOG("%s", ss.str().c_str());
-		}
-	}
-
-	UE_LOG("================================");
-}
+///** UClass 메모리 누수문제로 잠시 기능 제거
+// * @brief 클래스 이름으로 UClass 찾기
+// * @param InClassName 찾을 클래스 이름
+// * @return 찾은 UClass 포인터 (없으면 nullptr)
+// */
+//UClass* UClass::FindClass(const FString& InClassName)
+//{
+//	for (UClass* Class : AllClasses)
+//	{
+//		if (Class && Class->GetName() == InClassName)
+//		{
+//			return Class;
+//		}
+//	}
+//
+//	return nullptr;
+//}
+//
+///**
+// * @brief 모든 UClass 등록
+// * @param InClass 등록할 UClass
+// */
+//void UClass::SignUpClass(UClass* InClass)
+//{
+//	if (InClass)
+//	{
+//		AllClasses.push_back(InClass);
+//		//UE_LOG("UClass: Class registered: %s (Total: %llu)", InClass->GetName().c_str(), AllClasses.size());
+//	}
+//}
+//
+///**
+// * @brief 등록된 모든 클래스 출력
+// * For Debugging
+// */
+//void UClass::PrintAllClasses()
+//{
+//	UE_LOG("=== Registered Classes (%llu) ===", AllClasses.size());
+//
+//	for (size_t i = 0; i < AllClasses.size(); ++i)
+//	{
+//		UClass* Class = AllClasses[i];
+//
+//		stringstream ss;
+//		ss << Class->GetName();
+//
+//		if (Class)
+//		{
+//			ss << "[" << i << "] " << Class->GetName()
+//				<< " (Size: " << Class->GetClassSize() << " bytes)";
+//
+//			if (Class->GetSuperClass())
+//			{
+//				ss << " -> " << Class->GetSuperClass()->GetName();
+//			}
+//			else
+//			{
+//				ss << " (Base Class)";
+//			}
+//			UE_LOG("%s", ss.str().c_str());
+//		}
+//	}
+//
+//	UE_LOG("================================");
+//}
