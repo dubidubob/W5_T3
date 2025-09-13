@@ -6,7 +6,7 @@
 #include <vector>
 #include <stdexcept>
 
-IMPLEMENT_SINGLETON(UConsoleWidget)
+IMPLEMENT_CLASS(UConsoleWidget, UWidget)
 
 UConsoleWidget::UConsoleWidget() = default;
 

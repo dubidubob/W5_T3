@@ -3,9 +3,10 @@
 
 class UCamera;
 
-class UCameraControlWidget
-	: public UWidget
+class UCameraControlWidget : public UWidget
 {
+	DECLARE_CLASS(UCameraControlWidget, UWidget)
+
 public:
 	void Initialize() override;
 	void Update() override;

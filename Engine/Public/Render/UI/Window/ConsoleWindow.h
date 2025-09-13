@@ -10,24 +10,18 @@ class UConsoleWidget;
  */
 class UConsoleWindow : public UUIWindow
 {
+	DECLARE_CLASS(UConsoleWindow, UUIWindow)
+	DECLARE_SINGLETON(UConsoleWindow)
+
 public:
 	void AddLog(const char* fmt, ...) const;
 	void AddLog(ELogType InType, const char* fmt, ...) const;
 	void AddSystemLog(const char* InText, bool bInIsError = false) const;
 
-	static UConsoleWindow& GetInstance();
 	void Initialize() override;
 
 	// Console Direct Access
 	UConsoleWidget* GetConsoleWidget() const { return ConsoleWidget; }
-
-	// Special Member Function
-	explicit UConsoleWindow(const FUIWindowConfig& InConfig = FUIWindowConfig());
-	~UConsoleWindow() override;
-	UConsoleWindow(const UConsoleWindow&) = delete;
-	UConsoleWindow& operator=(const UConsoleWindow&) = delete;
-	UConsoleWindow(UConsoleWindow&&) = delete;
-	UConsoleWindow& operator=(UConsoleWindow&&) = delete;
 
 	bool IsSingleton() override { return true; }
 

@@ -27,11 +27,11 @@ UControlPanelWindow::UControlPanelWindow()
 	Config.UpdateWindowFlags();
 	SetConfig(Config);
 
-	AddWidget(new UFPSWidget);
-	AddWidget(new UPrimitiveSpawnWidget);
-	AddWidget(new USceneIOWidget);
-	AddWidget(new UCameraControlWidget);
-	AddWidget(new UViewSettingsWidget);
+	AddWidget(NewObject<UFPSWidget>());
+	AddWidget(NewObject<UPrimitiveSpawnWidget>());
+	AddWidget(NewObject<USceneIOWidget>());
+	AddWidget(NewObject<UCameraControlWidget>());
+	AddWidget(NewObject<UViewSettingsWidget>());
 }
 
 /**

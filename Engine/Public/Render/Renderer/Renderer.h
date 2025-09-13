@@ -36,10 +36,10 @@ struct FPipelineInfo;
  * @param vertexBufferSphere
  * @param numVerticesSphere
  */
-class URenderer :
-	public UObject
+class URenderer : public UObject
 {
-DECLARE_SINGLETON(URenderer)
+	DECLARE_CLASS(URenderer, UObject)
+	DECLARE_SINGLETON(URenderer)
 
 public:
 	void Init(HWND InWindowHandle);
