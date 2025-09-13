@@ -99,6 +99,62 @@ enum class EViewModeIndex : uint32
 };
 
 /**
+ * @brief Engine Show Flags for controlling visibility of various elements
+ */
+enum class EEngineShowFlags : uint64
+{
+	SF_None = 0,
+	SF_Primitives = 1 << 0,      // Show primitive objects
+	SF_BillboardText = 1 << 1,   // Show billboard text
+	SF_Grid = 1 << 2,            // Show grid
+	SF_Bounds = 1 << 3,          // Show bounding boxes
+	
+	// Default flags (everything visible)
+	SF_Default = SF_Primitives | SF_BillboardText | SF_Grid
+};
+
+// Bitwise operators for EEngineShowFlags
+inline EEngineShowFlags operator|(EEngineShowFlags a, EEngineShowFlags b)
+{
+	return static_cast<EEngineShowFlags>(static_cast<uint64>(a) | static_cast<uint64>(b));
+}
+
+inline EEngineShowFlags operator&(EEngineShowFlags a, EEngineShowFlags b)
+{
+	return static_cast<EEngineShowFlags>(static_cast<uint64>(a) & static_cast<uint64>(b));
+}
+
+inline EEngineShowFlags operator^(EEngineShowFlags a, EEngineShowFlags b)
+{
+	return static_cast<EEngineShowFlags>(static_cast<uint64>(a) ^ static_cast<uint64>(b));
+}
+
+inline EEngineShowFlags operator~(EEngineShowFlags a)
+{
+	return static_cast<EEngineShowFlags>(~static_cast<uint64>(a));
+}
+
+inline EEngineShowFlags& operator|=(EEngineShowFlags& a, EEngineShowFlags b)
+{
+	return a = a | b;
+}
+
+inline EEngineShowFlags& operator&=(EEngineShowFlags& a, EEngineShowFlags b)
+{
+	return a = a & b;
+}
+
+inline EEngineShowFlags& operator^=(EEngineShowFlags& a, EEngineShowFlags b)
+{
+	return a = a ^ b;
+}
+
+inline bool HasFlag(EEngineShowFlags flags, EEngineShowFlags flag)
+{
+	return (flags & flag) == flag;
+}
+
+/**
  * @brief Render State Settings for Actor's Component 
  */
 struct FRenderState

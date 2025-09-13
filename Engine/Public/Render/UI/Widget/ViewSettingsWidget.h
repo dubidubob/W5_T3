@@ -15,5 +15,6 @@ public:
 
 private:
 	int32 ViewModeIndex = 0;
+	bool bShowPrimitiveFlags = false;
 };
 

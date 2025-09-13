@@ -27,6 +27,11 @@ void UGrid::RenderGrid()
 {
 	URenderer& Renderer = URenderer::GetInstance();
 
+	if (Renderer.IsShowFlagEnabled(EEngineShowFlags::SF_Grid) == false)
+	{
+		return;
+	}
+
 	Renderer.RenderPrimitive(Primitive, Primitive.RenderState);
 
 }
