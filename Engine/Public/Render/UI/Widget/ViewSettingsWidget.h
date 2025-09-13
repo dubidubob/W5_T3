@@ -1,9 +1,9 @@
 #pragma once
 #include "Widget.h"
 
-class UViewSettingsWidget :
-    public UWidget
+class UViewSettingsWidget : public UWidget
 {
+	DECLARE_CLASS(UViewSettingsWidget, UWidget)
 public:
 	UViewSettingsWidget();
 	~UViewSettingsWidget() override;

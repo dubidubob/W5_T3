@@ -9,9 +9,9 @@ class AGrid;
 class AActor;
 class UPrimitiveComponent;
 
-class ULevel :
-	public UObject
+class ULevel : public UObject
 {
+	DECLARE_CLASS(ULevel, UObject)
 public:
 	ULevel();
 	ULevel(const FString& InName);
@@ -74,7 +74,7 @@ private:
 template <typename T, typename ... Args>
 T* ULevel::SpawnActor(const FString& InName)
 {
-	T* NewActor = new T();
+	T* NewActor = NewObject<T>();
 
 	///////////////////////////////////////////
 	NewActor->AddMemoryUsage(sizeof(T));

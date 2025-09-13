@@ -1,7 +1,8 @@
 #include "pch.h"
-
 #include "Editor/Camera.h"
-# include "Render/UI/Widget/CameraControlWidget.h"
+#include "Render/UI/Widget/CameraControlWidget.h"
+
+IMPLEMENT_CLASS(UCameraControlWidget, UWidget)
 
 // Camera Mode
 static const char* CameraMode[] = {
@@ -10,7 +11,6 @@ static const char* CameraMode[] = {
 };
 
 UCameraControlWidget::UCameraControlWidget()
-	: UWidget("Camera Control Widget")
 {
 }
 

@@ -2,6 +2,7 @@
 #include "Mesh/SceneComponent.h"
 #include "Mesh/ResourceManager.h"
 
+IMPLEMENT_CLASS(USceneComponent, UActorComponent)
 
 USceneComponent::USceneComponent()
 {
@@ -56,6 +57,7 @@ void USceneComponent::MarkAsDirty()
 	}
 }
 
+IMPLEMENT_CLASS(UPrimitiveComponent, USceneComponent)
 UPrimitiveComponent::UPrimitiveComponent()
 {
 	ComponentType = EComponentType::Primitive;
@@ -177,7 +179,7 @@ D3D11_PRIMITIVE_TOPOLOGY UPrimitiveComponent::GetTopology() const
 *
 */
 
-
+IMPLEMENT_CLASS(USphereComponent, UPrimitiveComponent)
 USphereComponent::USphereComponent()
 {
     UResourceManager& ResourceManager = UResourceManager::GetInstance();
@@ -189,6 +191,7 @@ USphereComponent::USphereComponent()
 	RenderState.FillMode = EFillMode::Solid;
 }
 
+IMPLEMENT_CLASS(UCubeComponent, UPrimitiveComponent)
 UCubeComponent::UCubeComponent()
 {
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
@@ -200,6 +203,7 @@ UCubeComponent::UCubeComponent()
 	RenderState.FillMode = EFillMode::Solid;
 }
 
+IMPLEMENT_CLASS(ULineComponent, UPrimitiveComponent)
 ULineComponent::ULineComponent()
 {
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
@@ -212,6 +216,7 @@ ULineComponent::ULineComponent()
 	RenderState.FillMode = EFillMode::WireFrame;
 }
 
+IMPLEMENT_CLASS(UTriangleComponent, UPrimitiveComponent)
 UTriangleComponent::UTriangleComponent()
 {
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
@@ -223,6 +228,7 @@ UTriangleComponent::UTriangleComponent()
 	RenderState.FillMode = EFillMode::Solid;
 }
 
+IMPLEMENT_CLASS(USquareComponent, UPrimitiveComponent)
 USquareComponent::USquareComponent()
 {
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();

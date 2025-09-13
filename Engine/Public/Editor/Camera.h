@@ -9,6 +9,8 @@ enum class ECameraType
 
 class UCamera : public UObject
 {
+	DECLARE_CLASS(UCamera, UObject)
+
 public:
     UCamera() :
         ViewProjConstants(FViewProjConstants()),

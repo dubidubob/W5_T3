@@ -8,6 +8,7 @@
  */
 class UWidget : public UObject
 {
+	DECLARE_CLASS(UWidget, UObject)
 public:
 
 	// Essential Role
@@ -21,6 +22,5 @@ public:
 
 	// Special Member Function
 	UWidget() = default;
-	UWidget(const FString& InName);
 	~UWidget() override = default;
 };
