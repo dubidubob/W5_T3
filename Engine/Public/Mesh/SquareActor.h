@@ -1,10 +1,10 @@
 #pragma once
-
 #include "Mesh/Actor.h"
 
 class ASquareActor : public AActor
 {
-	using Super = AActor;
+	DECLARE_CLASS(ASquareActor, AActor)
+
 public:
 	ASquareActor();
 	virtual ~ASquareActor() override {}

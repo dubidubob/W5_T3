@@ -3,6 +3,7 @@
 #include "Render/Renderer/Renderer.h"
 #include "Editor/EditorPrimitive.h"
 
+IMPLEMENT_CLASS(UGrid, UObject)
 
 UGrid::UGrid()
 {
@@ -26,6 +27,11 @@ UGrid::~UGrid()
 void UGrid::RenderGrid()
 {
 	URenderer& Renderer = URenderer::GetInstance();
+
+	if (Renderer.IsShowFlagEnabled(EEngineShowFlags::SF_Grid) == false)
+	{
+		return;
+	}
 
 	Renderer.RenderPrimitive(Primitive, Primitive.RenderState);
 

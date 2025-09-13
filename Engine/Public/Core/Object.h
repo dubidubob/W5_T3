@@ -14,10 +14,11 @@ public:
 	virtual ~UObject() = default;
 
 	// Getter & Setter
-	const FString& GetName() const { return Name; }
+	FString GetName() const { return Name.ToString(); }
+	FString GetBaseName() const { return Name.ToBaseNameString(); }
 	const UObject* GetOuter() const { return Outer; }
 
-	void SetName(const FString& InName) { Name = InName; }
+	void SetName(const FName& InName) { Name = InName; }
 	void SetOuter(UObject* InObject);
 
 	void AddMemoryUsage(uint64 InBytes, uint32 InCount = 1);
@@ -31,7 +32,7 @@ public:
 private:
 	uint32 UUID = -1;
 	uint32 InternalIndex = -1;
-	FString Name;
+	FName Name;
 	UObject* Outer;
 
 	uint64 AllocatedBytes = 0;
@@ -39,3 +40,12 @@ private:
 };
 
 extern TArray<UObject*> GUObjectArray;
+
+template <typename T>
+T* NewObject()
+{
+	T* NewObject = new T();
+	NewObject->SetName(FNameTable::GetInstance().GetUniqueName(NewObject->GetClass()->GetName()));
+
+	return NewObject;
+}

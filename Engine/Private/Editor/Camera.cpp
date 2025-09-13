@@ -2,7 +2,10 @@
 #include "Editor/Camera.h"
 #include "Manager/Input/InputManager.h"
 #include "Manager/Time/TimeManager.h"
+#include "Manager/Path/PathManager.h"
 #include "Render/Renderer/Renderer.h"
+
+IMPLEMENT_CLASS(UCamera, UObject)
 
 void UCamera::Update()
 {
@@ -259,4 +262,42 @@ FVector UCamera::CalculatePlaneNormal(const FVector4& Axis)
 FVector UCamera::CalculatePlaneNormal(const FVector& Axis)
 {
 	return Forward.Cross(FVector(Axis.X, Axis.Y, Axis.Z));
+}
+
+void UCamera::SaveCameraSettings() const
+{
+	const path ConfigFilePath = UPathManager::GetInstance().GetConfigPath() / "editor.ini";
+	
+	WritePrivateProfileStringA(
+		"Camera",
+		"MoveSpeed",
+		std::to_string(CurrentMoveSpeed).c_str(),
+		ConfigFilePath.string().c_str()
+	);
+}
+
+void UCamera::LoadCameraSettings()
+{
+	const path ConfigFilePath = UPathManager::GetInstance().GetConfigPath() / "editor.ini";
+	
+	// Check if config file exists
+	if (!std::filesystem::exists(ConfigFilePath))
+	{
+		// Create default config if it doesn't exist
+		SaveCameraSettings();
+		return;
+	}
+	
+	char Buffer[32];
+	GetPrivateProfileStringA(
+		"Camera",
+		"MoveSpeed",
+		std::to_string(DEFAULT_CAMERA_SPEED).c_str(),
+		Buffer,
+		sizeof(Buffer),
+		ConfigFilePath.string().c_str()
+	);
+	
+	float LoadedSpeed = std::stof(Buffer);
+	SetMoveSpeed(LoadedSpeed);
 }

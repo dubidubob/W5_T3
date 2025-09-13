@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Mesh/TriangleActor.h"
 
+IMPLEMENT_CLASS(ATriangleActor, AActor)
+
 ATriangleActor::ATriangleActor()
 {
 	TriangleComponent = CreateDefaultSubobject<UTriangleComponent>("TriangleComponent");
