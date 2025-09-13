@@ -149,9 +149,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Global\Name.h" />
+    <ClInclude Include="Global\NameTable.h" />
+    <ClInclude Include="Public\Render\UI\Widget\ActorDetailWidget.h" />
+    <ClInclude Include="Public\Render\UI\Widget\ActorListWidget.h" />
     <ClInclude Include="Public\DirectXTK\DDSTextureLoader.h" />
     <ClInclude Include="Public\DirectXTK\DirectXHelpers.h" />
     <ClInclude Include="Public\Render\UI\Widget\ViewSettingsWidget.h" />
+    <ClInclude Include="Public\Render\UI\Window\DetailWindow.h" />
     <ClInclude Include="Public\\Core\\Class.h" />
     <ClInclude Include="Public\\Core\\Object.h" />
     <ClInclude Include="Public\\Editor\\Axis.h" />
@@ -225,7 +230,10 @@
   <ItemGroup>
     <ClCompile Include="Global\Name.cpp" />
     <ClCompile Include="Global\NameTable.cpp" />
+    <ClCompile Include="Private\Render\UI\Widget\ActorDetailWidget.cpp" />
+    <ClCompile Include="Private\Render\UI\Widget\ActorListWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ViewSettingsWidget.cpp" />
+    <ClCompile Include="Private\Render\UI\Window\DetailWindow.cpp" />
     <ClCompile Include="Private\\Core\\Class.cpp" />
     <ClCompile Include="Private\\Core\\Object.cpp" />
     <ClCompile Include="Private\\Editor\\Axis.cpp" />
