@@ -3,7 +3,10 @@
 
 IMPLEMENT_SINGLETON(FNameTable);
 
-FNameTable::FNameTable() = default;
+FNameTable::FNameTable()
+{
+	FindOrAddName("");
+}
 FNameTable::~FNameTable() = default;
 
 /**
@@ -44,7 +47,19 @@ TPair<int32, int32> FNameTable::FindOrAddName(const FString& Str)
 	return { ComparisonIndex, DisplayIndex };
 }
 
-const FString& FNameTable::GetDisplayString(int32 Idx) const
+FName FNameTable::GetUniqueName(const FString& BaseStr)
+{
+	TPair<int32, int32> Indices = FindOrAddName(BaseStr);
+	int32 DisplayIndex = Indices.first;
+	int32 ComparisonIndex = Indices.second;
+
+	int32 Number = NextNumberMap[BaseStr];
+	NextNumberMap[BaseStr]++;
+
+	return FName(DisplayIndex, ComparisonIndex, Number);
+}
+
+FString FNameTable::GetDisplayString(int32 Idx) const
 {
 	if (Idx >= 0 && Idx < DisplayStringPool.size())
 	{

@@ -6,14 +6,17 @@ class FNameTable
 
 public:
 	TPair<int32, int32> FindOrAddName(const FString& Str);
-	const FString& GetDisplayString(int32 Idx) const;
+	FName GetUniqueName(const FString& BaseStr);
+
+	FString GetDisplayString(int32 Idx) const;
 
 private:
+	FString ToLower(const FString& Str) const;
+
 	TArray<FString> ComparisonStringPool;
 	TArray<FString> DisplayStringPool;
 
 	TMap<FString, int32> ComparisonMap;
 	TMap<FString, int32> DisplayMap;
-
-	FString ToLower(const FString& Str) const;
+	TMap<FString, int32> NextNumberMap;
 };
