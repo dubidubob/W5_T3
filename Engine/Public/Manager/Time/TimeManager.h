@@ -3,10 +3,10 @@
 
 using std::chrono::high_resolution_clock;
 
-class UTimeManager : public UObject
+class UTimeManager :
+	public UObject
 {
-	DECLARE_CLASS(UTimeManager, UObject)
-	DECLARE_SINGLETON(UTimeManager)
+DECLARE_SINGLETON(UTimeManager)
 
 public:
 	void Update();

@@ -27,12 +27,20 @@ public:
 	UClass* GetSuperClass() const { return SuperClass; }
 	size_t GetClassSize() const { return ClassSize; }
 
+
 	bool IsChildOf(const UClass* OtherClass) const;
+
+
 	UObject* CreateDefaultObject() const;
 
-	//static UClass* FindClass(const FString& InClassName);
-	//static void SignUpClass(UClass* InClass);
-	//static void PrintAllClasses();
+
+	static UClass* FindClass(const FString& InClassName);
+
+
+	static void SignUpClass(UClass* InClass);
+
+
+	static void PrintAllClasses();
 
 private:
 	FString ClassName; // 클래스 이름
@@ -66,20 +74,26 @@ public: \
     typedef SuperClassName Super; \
     static UClass* StaticClass(); \
     virtual UClass* GetClass() const; \
-    static UObject* CreateDefaultObject##ClassName();
+    static UObject* CreateDefaultObject##ClassName(); \
+private: \
+    static UClass* ClassPrivate;
 
 // 클래스 구현부에 사용하는 매크로
 #define IMPLEMENT_CLASS(ClassName, SuperClassName) \
+    UClass* ClassName::ClassPrivate = nullptr; \
     UClass* ClassName::StaticClass() \
     { \
-        /* 정적 지역 변수를 사용하여 UClass 객체를 자동 관리 */ \
-        static UClass Instance( \
-            FString(#ClassName), \
-            SuperClassName::StaticClass(), \
-            sizeof(ClassName), \
-            &ClassName::CreateDefaultObject##ClassName \
-        ); \
-        return &Instance; \
+        if (!ClassPrivate) \
+        { \
+            ClassPrivate = new UClass( \
+                FString(#ClassName), \
+                SuperClassName::StaticClass(), \
+                sizeof(ClassName), \
+                &ClassName::CreateDefaultObject##ClassName \
+            ); \
+            UClass::SignUpClass(ClassPrivate); \
+        } \
+        return ClassPrivate; \
     } \
     UClass* ClassName::GetClass() const \
     { \
@@ -90,35 +104,22 @@ public: \
         return new ClassName(); \
     }
 
-
-// 추상 클래스에 사용하는 매크로 (기본 객체를 생성하지 않음)
-#define IMPLEMENT_ABSTRACT_CLASS(ClassName, SuperClassName) \
-    UClass* ClassName::StaticClass() \
-    { \
-        static UClass Instance( \
-            FString(#ClassName), \
-            SuperClassName::StaticClass(), \
-            sizeof(ClassName), \
-            nullptr \
-        ); \
-        return &Instance; \
-    } \
-    UClass* ClassName::GetClass() const \
-    { \
-        return ClassName::StaticClass(); \
-    }
-
 // UObject의 기본 매크로 (다른 클래스들의 베이스)
 #define IMPLEMENT_CLASS_BASE(ClassName) \
+    UClass* ClassName::ClassPrivate = nullptr; \
     UClass* ClassName::StaticClass() \
     { \
-        static UClass Instance( \
-            FString(#ClassName), \
-            nullptr, \
-            sizeof(ClassName), \
-            &ClassName::CreateDefaultObject##ClassName \
-        ); \
-        return &Instance; \
+        if (!ClassPrivate) \
+        { \
+            ClassPrivate = new UClass( \
+                FString(#ClassName), \
+                nullptr, \
+                sizeof(ClassName), \
+                &ClassName::CreateDefaultObject##ClassName \
+            ); \
+            UClass::SignUpClass(ClassPrivate); \
+        } \
+        return ClassPrivate; \
     } \
     UClass* ClassName::GetClass() const \
     { \

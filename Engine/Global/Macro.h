@@ -30,26 +30,3 @@ return Instance; \
             UConsoleWindow::GetInstance().AddLog("" fmt, ##__VA_ARGS__); \
         } catch(...) {} \
     } while(0)
-//
-//// UObject용 싱글톤 Macro
-//#define DECLARE_UOBJECT_SINGLETON(ClassName) \
-//public: \
-//    static ClassName& GetInstance(); \
-//	ClassName(); \
-//	virtual ~ClassName(); \
-//private: \
-//    ClassName(const ClassName&) = delete; \
-//    ClassName& operator=(const ClassName&) = delete; \
-//    ClassName(ClassName&&) = delete; \
-//    ClassName& operator=(ClassName&&) = delete;
-//
-//#define IMPLEMENT_UOBJECT_SINGLETON(ClassName) \
-//ClassName& ClassName::GetInstance() \
-//{ \
-//    static ClassName* Instance = nullptr; \
-//    if (!Instance) \
-//    { \
-//        Instance = NewObject<ClassName>(); \
-//    } \
-//    return *Instance; \
-//}

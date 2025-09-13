@@ -3,7 +3,6 @@
 #include "Render/UI/Widget/ConsoleWidget.h"
 
 IMPLEMENT_SINGLETON(UConsoleWindow)
-IMPLEMENT_CLASS(UConsoleWindow, UUIWindow)
 
 UConsoleWindow::~UConsoleWindow()
 {
@@ -14,10 +13,11 @@ UConsoleWindow::~UConsoleWindow()
 	}
 }
 
-UConsoleWindow::UConsoleWindow()
+UConsoleWindow::UConsoleWindow(const FUIWindowConfig& InConfig)
+	: UUIWindow(InConfig)
 {
 	// 콘솔 윈도우 기본 설정
-	FUIWindowConfig Config;
+	FUIWindowConfig Config = InConfig;
 	Config.WindowTitle = "GTL Console";
 	Config.DefaultSize = ImVec2(1000, 250);
 	Config.DefaultPosition = ImVec2(570, 600);

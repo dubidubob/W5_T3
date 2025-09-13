@@ -3,8 +3,6 @@
 
 #include "Mesh/Actor.h"
 
-IMPLEMENT_CLASS(ULevel, UObject)
-
 ULevel::ULevel() = default;
 
 ULevel::ULevel(const FString& InName)

@@ -14,16 +14,15 @@
 #include "Level/Level.h"
 #include "Render/UI/Widget/CameraControlWidget.h"
 
-IMPLEMENT_CLASS(UEditor, UObject)
-
 UEditor::UEditor()
+	: ObjectPicker(Camera)
 {
-	ObjectPicker.SetCamera(&Camera);
+	ObjectPicker.SetCamera(Camera);
 
 	// Set Camera to Control Panel
 	auto& UIManager = UUIManager::GetInstance();
 	auto* CameraControlWidget =
-		reinterpret_cast<UCameraControlWidget*>(UIManager.FindWidget("UCameraControlWidget"));
+		reinterpret_cast<UCameraControlWidget*>(UIManager.FindWidget("Camera Control Widget"));
 	CameraControlWidget->SetCamera(&Camera);
 
 };

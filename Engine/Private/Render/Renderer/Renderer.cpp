@@ -9,7 +9,6 @@
 #include "Render/Renderer/Pipeline.h"
 #include "Editor/Editor.h"
 
-IMPLEMENT_CLASS(URenderer, UObject)
 IMPLEMENT_SINGLETON(URenderer)
 
 URenderer::URenderer() = default;
@@ -231,14 +230,18 @@ void URenderer::RenderLevel()
 	for (auto& PrimitiveComponent : ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents())
 	{
 		if (!PrimitiveComponent) { continue; }
-		
-		// Check show flags for primitive components
-		if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false)
-		{
-			break;
-		}
-
-		Pipeline->UpdatePipeline(CreatePipelineInfo(PrimitiveComponent->GetRenderState()));
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		ID3D11RasterizerState* LoadedRasterizerState = GetRasterizerState(PrimitiveComponent->GetRenderState());
+		FPipelineInfo PipelineInfo = {
+			DefaultInputLayout,
+			DefaultVertexShader,
+			LoadedRasterizerState,
+			DefaultDepthStencilState,
+			DefaultPixelShader,
+			nullptr,
+		};
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		Pipeline->UpdatePipeline(PipelineInfo);
 
 		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
 		UpdateConstant(
@@ -248,7 +251,7 @@ void URenderer::RenderLevel()
 
 		Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
 		UpdateConstant(PrimitiveComponent->GetColor());
-		
+
 		Pipeline->SetVertexBuffer(PrimitiveComponent->GetVertexBuffer(), Stride);
 		Pipeline->Draw(static_cast<uint32>(PrimitiveComponent->GetVerticesData()->size()), 0);
 	}
@@ -545,47 +548,19 @@ void URenderer::UpdateConstant(const FVector4& Color) const
 	}
 }
 
-// TODO - 추후 ViewMode가 증가하거나, 바꿔야하는 설정이 많을 경우 별개의 Handler에서 진행하도록 변경
-/**
- * @brief ViewMode를 고려한 PipelineInfo 생성
- * @param InRenderState 렌더할 대상의 RenderState
- * @return RenderState와 ViewMode를 고려한 FPipelineInfo
- */
-FPipelineInfo URenderer::CreatePipelineInfo(const FRenderState& InRenderState)
-{
-	FRenderState ModifiedRenderState = InRenderState;
-
-	switch (CurrentViewMode)
-	{
-	case EViewModeIndex::Wireframe:
-		ModifiedRenderState.FillMode = EFillMode::WireFrame;
-		ModifiedRenderState.CullMode = ECullMode::None;
-		break;
-	case EViewModeIndex::Lit:
-	case EViewModeIndex::Unlit:
-	default:
-		break;
-	}
-
-	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
-	return FPipelineInfo{DefaultInputLayout, DefaultVertexShader,
-		RasterizerState, DefaultDepthStencilState, DefaultPixelShader, nullptr
-	};
-}
-
 ID3D11RasterizerState* URenderer::GetRasterizerState(const FRenderState& InRenderState)
 {
 	D3D11_FILL_MODE FillMode = ToD3D11(InRenderState.FillMode);
-	D3D11_CULL_MODE CullMode = ToD3D11(InRenderState.CullMode);
+	D3D11_CULL_MODE CillMode = ToD3D11(InRenderState.CullMode);
 
-	const FRasterKey Key{ FillMode, CullMode };
+	const FRasterKey Key{ FillMode, CillMode };
 	if (auto It = RasterCache.find(Key); It != RasterCache.end())
 		return It->second;
 
 	ID3D11RasterizerState* RasterizerState = nullptr;
 	D3D11_RASTERIZER_DESC RasterizerDesc = {};
 	RasterizerDesc.FillMode = FillMode;
-	RasterizerDesc.CullMode = CullMode;
+	RasterizerDesc.CullMode = CillMode;
 	RasterizerDesc.DepthClipEnable = TRUE; // ✅ 근/원거리 평면 클리핑 활성화 (핵심)
 
 	HRESULT Hr = GetDevice()->CreateRasterizerState(&RasterizerDesc, &RasterizerState);

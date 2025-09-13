@@ -1,8 +1,7 @@
 #include "pch.h"
-#include "Editor/Camera.h"
-#include "Render/UI/Widget/CameraControlWidget.h"
 
-IMPLEMENT_CLASS(UCameraControlWidget, UWidget)
+#include "Editor/Camera.h"
+# include "Render/UI/Widget/CameraControlWidget.h"
 
 // Camera Mode
 static const char* CameraMode[] = {
@@ -11,6 +10,7 @@ static const char* CameraMode[] = {
 };
 
 UCameraControlWidget::UCameraControlWidget()
+	: UWidget("Camera Control Widget")
 {
 }
 
@@ -49,10 +49,7 @@ void UCameraControlWidget::RenderWidget()
 
 	// 카메라 이동속도 표시 및 조절
 	float CurrentSpeed = Camera->GetMoveSpeed();
-	if (ImGui::SliderFloat("이동속도", &CurrentSpeed, 0.5f, 50.0f, "%.1f"))
-	{
-		Camera->SetMoveSpeed(CurrentSpeed);
-	}
+	ImGui::Text("이동속도: %.1f", CurrentSpeed);
 	ImGui::Spacing();
 
 	if (ImGui::Combo("Mode", &CameraModeIndex, CameraMode, IM_ARRAYSIZE(CameraMode)))
@@ -117,8 +114,6 @@ void UCameraControlWidget::RenderWidget()
 		UiFarZ = 1000.0f;
 		PushToCamera();
 	}
-
-	ImGui::Separator();
 }
 
 

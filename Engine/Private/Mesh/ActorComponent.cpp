@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "Mesh/ActorComponent.h"
 
-IMPLEMENT_CLASS(UActorComponent, UObject)
-
 UActorComponent::UActorComponent()
 {
 	ComponentType = EComponentType::Actor;
