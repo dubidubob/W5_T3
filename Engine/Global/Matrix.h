@@ -52,9 +52,13 @@ struct FMatrix
 	* @brief Rotation의 정보를 행렬로 변환하여 제공하는 함수
 	*/
 	static FMatrix RotationMatrix(const FVector& InOtherVector);
-
 	static FMatrix RotationMatrixInverse(const FVector& InOtherVector);
 
+	/**
+	 * @brief Camera용 Rotation의 정보를 행렬로 변환하여 제공하는 함수
+	 */
+	static FMatrix RotationMatrixCamera(const FVector& InOtherVector);
+	static FMatrix RotationMatrixInverseCamera(const FVector& InOtherVector);
 	/**
 	* @brief X의 회전 정보를 행렬로 변환
 	*/
@@ -73,4 +77,11 @@ struct FMatrix
 	static FMatrix GetModelMatrix(const FVector& Location, const FVector& Rotation, const FVector& Scale);
 
 	static FMatrix GetModelMatrixInverse(const FVector& Location, const FVector& Rotation, const FVector& Scale);
+
+	/**
+	 * @brief LHY+ -> UE(LHZ+, X-forward) 기준변환 행렬과 그 역행렬
+	 * (x,y,z) -> (z,x,y) 순열 전환. 직교행렬이므로 역행렬은 전치행렬과 동일.
+	 */
+	static FMatrix BasisLHYToUE();
+	static FMatrix BasisUEToLHY();
 };

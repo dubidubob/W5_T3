@@ -18,6 +18,7 @@ UGrid::UGrid()
 	Primitive.Rotation = FVector(0, 0, 0);
 	Primitive.Scale = FVector(1, 1, 1);
 }
+
 UGrid::~UGrid()
 {
 	URenderer::ReleaseVertexBuffer(Primitive.Vertexbuffer);
@@ -33,8 +34,8 @@ void UGrid::RenderGrid()
 	}
 
 	Renderer.RenderPrimitive(Primitive, Primitive.RenderState);
-
 }
+
 void UGrid::SetGridProperty(float InCellSize, int32 InNumLines)
 {
 	this->CellSize = InCellSize;
@@ -45,30 +46,30 @@ void UGrid::SetLineVertices()
 {
 	float LineLength = CellSize * static_cast<float>(NumLines) / 2.f;
 
-	for (int32 LineCount = -NumLines/2; LineCount < NumLines/2; ++LineCount) // z축 라인
+	for (int32 LineCount = -NumLines / 2; LineCount < NumLines / 2; ++LineCount) // z축 라인
 	{
 		if (LineCount == 0)
 		{
-			LineVertices.push_back({ {static_cast<float>(LineCount) * CellSize,0.f , -LineLength}, Primitive.Color });
-			LineVertices.push_back({ {static_cast<float>(LineCount) * CellSize,0.f , 0.f}, Primitive.Color });
+			LineVertices.push_back({{static_cast<float>(LineCount) * CellSize, -LineLength, 0.f}, Primitive.Color});
+			LineVertices.push_back({{static_cast<float>(LineCount) * CellSize, 0.f, 0.f}, Primitive.Color});
 		}
 		else
 		{
-			LineVertices.push_back({ {static_cast<float>(LineCount) * CellSize,0.f , -LineLength}, Primitive.Color });
-			LineVertices.push_back({ {static_cast<float>(LineCount) * CellSize,0.f , LineLength}, Primitive.Color });
+			LineVertices.push_back({{static_cast<float>(LineCount) * CellSize, -LineLength, 0.f}, Primitive.Color});
+			LineVertices.push_back({{static_cast<float>(LineCount) * CellSize, LineLength, 0.f}, Primitive.Color});
 		}
 	}
 	for (int32 LineCount = -NumLines / 2; LineCount < NumLines / 2; ++LineCount) // x축 라인
 	{
 		if (LineCount == 0)
 		{
-			LineVertices.push_back({ {-LineLength, 0.f, static_cast<float>(LineCount) * CellSize}, Primitive.Color });
-			LineVertices.push_back({ {0.f, 0.f, static_cast<float>(LineCount) * CellSize}, Primitive.Color });
+			LineVertices.push_back({{-LineLength, static_cast<float>(LineCount) * CellSize, 0.f}, Primitive.Color});
+			LineVertices.push_back({{0.f, static_cast<float>(LineCount) * CellSize, 0.f}, Primitive.Color});
 		}
 		else
 		{
-			LineVertices.push_back({ {-LineLength, 0.f, static_cast<float>(LineCount) * CellSize}, Primitive.Color });
-			LineVertices.push_back({ {LineLength, 0.f, static_cast<float>(LineCount) * CellSize}, Primitive.Color });
+			LineVertices.push_back({{-LineLength, static_cast<float>(LineCount) * CellSize, 0.f}, Primitive.Color});
+			LineVertices.push_back({{LineLength, static_cast<float>(LineCount) * CellSize, 0.f}, Primitive.Color});
 		}
 	}
 }
