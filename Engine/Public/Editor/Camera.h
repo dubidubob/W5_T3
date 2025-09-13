@@ -16,6 +16,7 @@ public:
 		FovY(90.f), Aspect(float(Render::INIT_SCREEN_WIDTH) / Render::INIT_SCREEN_HEIGHT),
 		NearZ(0.1f), FarZ(100.f), CameraType(ECameraType::ECT_Perspective)
 	{
+		LoadCameraSettings();
 	}
 	~UCamera() override {}
 
@@ -55,14 +56,20 @@ public:
 	const float GetFarZ() const { return FarZ; }
 	const ECameraType GetCameraType() const { return CameraType; }
 
-	// Camera Movement Speed Control
 	float GetMoveSpeed() const { return CurrentMoveSpeed; }
 	void SetMoveSpeed(float InSpeed)
 	{
 		CurrentMoveSpeed = max(InSpeed, MIN_CAMERA_SPEED);
 		CurrentMoveSpeed = min(InSpeed, MAX_CAMERA_SPEED);
+		SaveCameraSettings();
 	}
 	void AdjustMoveSpeed(float InDelta) { SetMoveSpeed(CurrentMoveSpeed + InDelta); }
+
+	/* *
+	 * @brief Camera Settings Save/Load
+	 */
+	void SaveCameraSettings() const;
+	void LoadCameraSettings();
 
 	/* *
 	 * @brief 행렬 형태로 저장된 좌표와 변환 행렬과의 연산한 결과를 반환합니다.
