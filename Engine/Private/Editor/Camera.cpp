@@ -11,10 +11,13 @@ void UCamera::Update()
 	/*
 	 * QE 상하는 카메라가 보는 방향과 관계 없이 월드 기준으로 상하로 움직인다.
 	 */
-	Forward = FVector4(0, 0, 1, 1) * FMatrix::RotationMatrixCamera(FVector::GetDegreeToRadian(RelativeRotation));
-	Forward.Normalize();
-	Up = FVector(0, 1, 0);
-	Right = Forward.Cross(Up);
+    // UE 기준(X-forward, Z-up)으로 Forward 기준축을 X로 변경
+    Forward = FVector4(1, 0, 0, 1) * FMatrix::RotationMatrixCamera(FVector::GetDegreeToRadian(RelativeRotation));
+    Forward.Normalize();
+    // UE 기준 Up 축: Z
+    Up = FVector(0, 0, 1);
+	// Right = Up.Cross(Forward);
+    Right = Forward.Cross(Up);
 
 	/**
 	 * @brief 마우스 우클릭을 하고 있는 동안 카메라 제어가 가능합니다.
@@ -87,9 +90,9 @@ void UCamera::UpdateMatrixByPers()
 	 * @brief View 행렬 연산
 	 */
 	FMatrix T = FMatrix::TranslationMatrixInverse(RelativeLocation);
-	// FMatrix R = FMatrix::RotationMatrixInverse(FVector::GetDegreeToRadian(RelativeRotation));
 	FMatrix R = FMatrix::RotationMatrixInverseCamera(FVector::GetDegreeToRadian(RelativeRotation));
-	ViewProjConstants.View = T * R;
+    // 좌표계 기준 변환(B)을 View에 접합(마지막에 적용): pos = pos * World * (View * B) * Proj
+    ViewProjConstants.View = (T * R) * FMatrix::BasisLHYToUE();
 
 	/**
 	 * @brief Projection 행렬 연산
@@ -120,9 +123,9 @@ void UCamera::UpdateMatrixByOrth()
 	 * @brief View 행렬 연산
 	 */
 	FMatrix T = FMatrix::TranslationMatrixInverse(RelativeLocation);
-	// FMatrix R = FMatrix::RotationMatrixInverse(FVector::GetDegreeToRadian(RelativeRotation));
 	FMatrix R = FMatrix::RotationMatrixInverseCamera(FVector::GetDegreeToRadian(RelativeRotation));
-	ViewProjConstants.View = T * R;
+    // 좌표계 기준 변환(B)을 View에 접합(마지막에 적용)
+    ViewProjConstants.View = (T * R) * FMatrix::BasisLHYToUE();
 
 	/**
 	 * @brief Projection 행렬 연산
@@ -153,7 +156,8 @@ FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
 	FViewProjConstants Result = {};
 	FMatrix R = FMatrix::RotationMatrixCamera(FVector::GetDegreeToRadian(RelativeRotation));
 	FMatrix T = FMatrix::TranslationMatrix(RelativeLocation);
-	Result.View = R * T;
+    // (View * B)^-1 = B^-1 * View^-1
+    Result.View = FMatrix::BasisUEToLHY() * (R * T);
 
 	if (CameraType == ECameraType::ECT_Orthographic)
 	{
@@ -253,6 +257,9 @@ FRay UCamera::ConvertToWorldRay(float NdcX, float NdcY) const
 		Ray.Origin = WorldNear;
 		Ray.Direction = DirectionVector;
 	}
+
+    // 기준변환을 View에 흡수했으므로 별도 축 순열 변환 불필요
+    Ray.Direction.Normalize();
 
 	return Ray;
 }

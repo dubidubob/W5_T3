@@ -135,12 +135,15 @@ FMatrix FMatrix::RotationMatrixInverse(const FVector& InOtherVector)
 
 FMatrix FMatrix::RotationMatrixCamera(const FVector& InOtherVector)
 {
-	return RotationZ(InOtherVector.Z) * RotationX(InOtherVector.X) * RotationY(InOtherVector.Y);
+	// UE 기준: Pitch(X) around Y-axis, Yaw(Y) around Z-axis, Roll(Z) around X-axis
+	// 적용 순서(행벡터): Yaw -> Pitch -> Roll
+	return RotationX(InOtherVector.Z) * RotationY(InOtherVector.X) * RotationZ(InOtherVector.Y);
 }
 
 FMatrix FMatrix::RotationMatrixInverseCamera(const FVector& InOtherVector)
 {
-	return RotationY(-InOtherVector.Y) * RotationX(-InOtherVector.X) * RotationZ(-InOtherVector.Z);
+	// (Yaw*Pitch*Roll)^-1 = Roll^-1 * Pitch^-1 * Yaw^-1
+	return RotationZ(-InOtherVector.Y) * RotationY(-InOtherVector.X) * RotationX(-InOtherVector.Z);
 }
 
 /**
@@ -211,4 +214,36 @@ FMatrix FMatrix::GetModelMatrixInverse(const FVector& Location, const FVector& R
 	FMatrix S = ScaleMatrixInverse(Scale);
 
 	return FMatrix::Identity() * T * R * S;
+}
+
+/**
+ * @brief 좌표계 기준변환: LHY+ -> UE(LHZ+, X-forward)
+ * (x,y,z) -> (z,x,y) 로 순열 전환하는 행렬
+ */
+FMatrix FMatrix::BasisLHYToUE()
+{
+    // row-major, row-vector mul(p, M) 기준
+    // [[0,0,1,0],
+    //  [1,0,0,0],
+    //  [0,1,0,0],
+    //  [0,0,0,1]]
+    return FMatrix(
+        0, 0, 1, 0,
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 1);
+}
+
+/**
+ * @brief 좌표계 기준변환의 역행렬: UE(LHZ+, X-forward) -> LHY+
+ * 직교 순열행렬의 역행렬은 전치행렬과 동일
+ */
+FMatrix FMatrix::BasisUEToLHY()
+{
+    // transpose of BasisLHYToUE
+    return FMatrix(
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        1, 0, 0, 0,
+        0, 0, 0, 1);
 }

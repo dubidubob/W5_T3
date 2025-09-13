@@ -10,13 +10,14 @@ enum class ECameraType
 class UCamera : public UObject
 {
 public:
-	UCamera() :
-		ViewProjConstants(FViewProjConstants()),
-		RelativeLocation(FVector(0.0f, 0.0f, -10.f)), RelativeRotation(FVector(0, 0, 0)),
-		FovY(90.f), Aspect(float(Render::INIT_SCREEN_WIDTH) / Render::INIT_SCREEN_HEIGHT),
-		NearZ(0.1f), FarZ(100.f), CameraType(ECameraType::ECT_Perspective)
-	{
-	}
+    UCamera() :
+        ViewProjConstants(FViewProjConstants()),
+        // UE 기준(X-forward) 원점 바라보도록 -X로 초기 위치 설정
+        RelativeLocation(FVector(-10.0f, 0.0f, 0.0f)), RelativeRotation(FVector(0, 0, 0)),
+        FovY(90.f), Aspect(float(Render::INIT_SCREEN_WIDTH) / Render::INIT_SCREEN_HEIGHT),
+        NearZ(0.1f), FarZ(100.f), CameraType(ECameraType::ECT_Perspective)
+    {
+    }
 	~UCamera() override {}
 
 	void Update();
@@ -89,7 +90,8 @@ private:
 	FViewProjConstants ViewProjConstants = {};
 	FVector RelativeLocation = {};
 	FVector RelativeRotation = {};
-	FVector Forward = { 0,0,1 };
+    // UE 기준: X-forward
+    FVector Forward = { 1,0,0 };
 	FVector Up = {};
 	FVector Right = {};
 	float FovY = {};
