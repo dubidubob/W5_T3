@@ -9,3 +9,4 @@ extern TArray<FVertex> VerticesArrow;
 extern TArray<FVertex> VerticesCubeArrow;
 extern TArray<FVertex> VerticesRing;
 extern TArray<FVertex> VerticesTorus;
+extern TArray<FTextVertex> VerticesText;

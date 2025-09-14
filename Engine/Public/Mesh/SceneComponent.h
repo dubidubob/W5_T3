@@ -51,7 +51,8 @@ public:
 	UPrimitiveComponent();
 
 	const TArray<FVertex>* GetVerticesData() const;
-	ID3D11Buffer* GetVertexBuffer() const;
+	ID3D11Buffer* GetVertexBuffer() const { return Vertexbuffer; }
+	uint32 GetNumVertices() const { return NumVertices; }
 	const FRenderState& GetRenderState() const { return RenderState; }
 
 	void SetTopology(D3D11_PRIMITIVE_TOPOLOGY InTopology);

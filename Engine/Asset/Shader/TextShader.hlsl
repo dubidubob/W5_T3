@@ -43,15 +43,32 @@ struct PS_INPUT
 	float2 UV : TEXCOORD0;
 };
 
+
+
+float3 GetCameraPos();
+
 PS_INPUT mainVS(VS_INPUT Input)
 {
 	PS_INPUT Output;
 
+	float FontScale = 1/3.0f;
+	//가로 32픽셀 세로 64픽셀이므로 X를 /2로 스케일(zxy->xyz)
+	float3 BasePos = float3(Input.Position.x, Input.Position.y/2, Input.Position.z)*FontScale;
 	
-	float3 Pos = float3(Input.Position.x / 2, Input.Position.y, Input.Position.z);
-	Pos = Pos + Input.Offset;
-	float4 OutputPos = mul(float4(Pos, 1.0f), ModelMatrix);
+	float3 ModelPos = ModelMatrix[3].xyz;
+	float3 CameraPos = GetCameraPos();
+	
+	float3 Forward = normalize(ModelPos - CameraPos);
+	float3 Right = normalize(cross(float3(0, 0, 1), Forward));
+	float3 Up = normalize(cross(Forward, Right));
+
+	float3 FontOffset = Input.Offset.y * Right + Input.Offset.z * Up;
+
+	BasePos = BasePos.y * Right + BasePos.z * Up;
+	float4 OutputPos = float4(ModelPos, 1) + float4(FontOffset, 0) + float4(BasePos, 0);
+
 	OutputPos = mul(OutputPos, ViewMatrix);
+	
 	OutputPos = mul(OutputPos, ProjectionMatrix);
 	Output.WorldPos = OutputPos;
 	
@@ -66,4 +83,14 @@ float4 mainPS(PS_INPUT Input) : SV_Target
 	float4 TextureColor = FontAtlas.Sample(Sampler, Input.UV);
 
 	return TextureColor;
+}
+
+float3 GetCameraPos()
+{
+	float3 Result;
+
+	float3x3 RotationMatrix = float3x3(ViewMatrix[0].xyz, ViewMatrix[1].xyz, ViewMatrix[2].xyz);
+	float3 CameraPos = -mul(ViewMatrix[3].xyz, transpose(RotationMatrix));
+	
+	return CameraPos;
 }

@@ -37,7 +37,7 @@ void USceneComponent::SetParentAttachment(USceneComponent* NewParent)
 
 	ParentAttachment = NewParent;
 
-	ParentAttachment->Children.push_back(this);
+	NewParent->Children.push_back(this);
 
 	MarkAsDirty();
 
@@ -153,11 +153,6 @@ const TArray<FVertex>* UPrimitiveComponent::GetVerticesData() const
 {
     UResourceManager& ResourceManager = UResourceManager::GetInstance();
     return ResourceManager.GetVertexData(Type);
-}
-
-ID3D11Buffer* UPrimitiveComponent::GetVertexBuffer() const
-{
-	return Vertexbuffer;
 }
 
 void UPrimitiveComponent::SetTopology(D3D11_PRIMITIVE_TOPOLOGY InTopology)

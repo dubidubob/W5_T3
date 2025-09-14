@@ -10,10 +10,10 @@ UTextComponent::UTextComponent()
 	RenderState.CullMode = ECullMode::None;
 	RenderState.FillMode = EFillMode::Solid;
 	ComponentType = EComponentType::Text;
-	Vertexbuffer = ResourceManager.GetVertexbuffer(EPrimitiveType::Quad);
-	NumVertices =ResourceManager.GetNumVertices(EPrimitiveType::Quad);
+	Vertexbuffer = ResourceManager.GetTextVertexBuffer();
+	NumVertices = ResourceManager.GetTextNumVertices();
 
-	FString Text = "UUID : "+ 1;
+	FString Text = "UID:14fe42526";
 	SetInstanceData(Text);
 }
 
@@ -27,10 +27,12 @@ void UTextComponent::SetInstanceData(const FString& Characters)
 	InstanceData.clear();
 	const int CellWidth = 32;
 	const int BitMapWidth = 512;
-	for (int Index = 0; Index < Characters.size(); Index++)
+	const float Spacing = 1/4.0f;	//자간거리. 너무 작으면 글자가 겹침.
+	int NumCharacters = Characters.size();
+	for (int Index = 0; Index < NumCharacters; Index++)
 	{
-		float OffsetX = Index* 0.5f;
-		InstanceData.push_back({ FVector4(1,1,1,1), FVector(OffsetX,0,2.0f), (uint32)Characters[Index] });
+		float OffsetY = (Index - NumCharacters/2) * Spacing;	
+		InstanceData.push_back({ FVector4(1,1,1,1), FVector(0.0f,OffsetY,2.0f), (uint32)Characters[Index] });
 	}
 }
 

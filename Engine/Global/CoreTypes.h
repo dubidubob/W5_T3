@@ -88,7 +88,6 @@ enum class EPrimitiveType : uint8_t
 	CubeArrow,
 	Ring,
 	Line,
-	Quad,
 
 	End = 0xFF
 };

@@ -14,7 +14,7 @@ UGrid::UGrid()
 	Primitive.Color = FVector4(1, 1, 1, 0.2f);
 	Primitive.Topology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
 	Primitive.Vertexbuffer = Renderer.CreateVertexBuffer(
-		LineVertices.data(), Primitive.NumVertices * sizeof(FVertex));
+		LineVertices);
 	Primitive.Location = FVector(0, 0, 0);
 	Primitive.Rotation = FVector(0, 0, 0);
 	Primitive.Scale = FVector(1, 1, 1);
