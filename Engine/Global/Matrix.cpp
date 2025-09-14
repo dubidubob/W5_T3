@@ -27,22 +27,22 @@ FMatrix::FMatrix(
 }
 
 /**
-* @brief 항등행렬
-*/
-FMatrix FMatrix::Identity()
+ * @brief 행렬의 전치행렬을 반환하는 함수
+ */
+FMatrix FMatrix::Transpose(const FMatrix& InOtherMatrix)
 {
 	return FMatrix(
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1);
+		InOtherMatrix.Data[0][0], InOtherMatrix.Data[1][0], InOtherMatrix.Data[2][0], InOtherMatrix.Data[3][0],
+		InOtherMatrix.Data[0][1], InOtherMatrix.Data[1][1], InOtherMatrix.Data[2][1], InOtherMatrix.Data[3][1],
+		InOtherMatrix.Data[0][2], InOtherMatrix.Data[1][2], InOtherMatrix.Data[2][2], InOtherMatrix.Data[3][2],
+		InOtherMatrix.Data[0][3], InOtherMatrix.Data[1][3], InOtherMatrix.Data[2][3], InOtherMatrix.Data[3][3]);
 }
 
 
 /**
 * @brief 두 행렬곱을 진행한 행렬을 반환하는 연산자 함수
 */
-FMatrix FMatrix::operator*(const FMatrix& InOtherMatrix)
+FMatrix FMatrix::operator*(const FMatrix& InOtherMatrix) const
 {
 	FMatrix Result;
 
@@ -70,7 +70,7 @@ void FMatrix::operator*=(const FMatrix& InOtherMatrix)
 */
 FMatrix FMatrix::TranslationMatrix(const FVector& InOtherVector)
 {
-	FMatrix Result = FMatrix::Identity();
+	FMatrix Result = FMatrix::Identity;
 	Result.Data[3][0] = InOtherVector.X;
 	Result.Data[3][1] = InOtherVector.Y;
 	Result.Data[3][2] = InOtherVector.Z;
@@ -81,7 +81,7 @@ FMatrix FMatrix::TranslationMatrix(const FVector& InOtherVector)
 
 FMatrix FMatrix::TranslationMatrixInverse(const FVector& InOtherVector)
 {
-	FMatrix Result = FMatrix::Identity();
+	FMatrix Result = FMatrix::Identity;
 	Result.Data[3][0] = -InOtherVector.X;
 	Result.Data[3][1] = -InOtherVector.Y;
 	Result.Data[3][2] = -InOtherVector.Z;
@@ -95,7 +95,7 @@ FMatrix FMatrix::TranslationMatrixInverse(const FVector& InOtherVector)
 */
 FMatrix FMatrix::ScaleMatrix(const FVector& InOtherVector)
 {
-	FMatrix Result = FMatrix::Identity();
+	FMatrix Result = FMatrix::Identity;
 	Result.Data[0][0] = InOtherVector.X;
 	Result.Data[1][1] = InOtherVector.Y;
 	Result.Data[2][2] = InOtherVector.Z;
@@ -106,7 +106,7 @@ FMatrix FMatrix::ScaleMatrix(const FVector& InOtherVector)
 
 FMatrix FMatrix::ScaleMatrixInverse(const FVector& InOtherVector)
 {
-	FMatrix Result = FMatrix::Identity();
+	FMatrix Result = FMatrix::Identity;
 	Result.Data[0][0] = 1 / InOtherVector.X;
 	Result.Data[1][1] = 1 / InOtherVector.Y;
 	Result.Data[2][2] = 1 / InOtherVector.Z;
@@ -151,7 +151,7 @@ FMatrix FMatrix::RotationMatrixInverseCamera(const FVector& InOtherVector)
 */
 FMatrix FMatrix::RotationX(float Radian)
 {
-	FMatrix Result = FMatrix::Identity();
+	FMatrix Result = FMatrix::Identity;
 	const float C = std::cosf(Radian);
 	const float S = std::sinf(Radian);
 
@@ -168,7 +168,7 @@ FMatrix FMatrix::RotationX(float Radian)
 */
 FMatrix FMatrix::RotationY(float Radian)
 {
-	FMatrix Result = FMatrix::Identity();
+	FMatrix Result = FMatrix::Identity;
 	const float C = std::cosf(Radian);
 	const float S = std::sinf(Radian);
 
@@ -185,7 +185,7 @@ FMatrix FMatrix::RotationY(float Radian)
 */
 FMatrix FMatrix::RotationZ(float Radian)
 {
-	FMatrix Result = FMatrix::Identity();
+	FMatrix Result = FMatrix::Identity;
 	const float C = std::cosf(Radian);
 	const float S = std::sinf(Radian);
 
@@ -204,7 +204,7 @@ FMatrix FMatrix::GetModelMatrix(const FVector& Location, const FVector& Rotation
 	FMatrix R = RotationMatrix(Rotation);
 	FMatrix S = ScaleMatrix(Scale);
 
-	return FMatrix::Identity() * S * R * T;
+	return FMatrix::Identity * S * R * T;
 }
 
 FMatrix FMatrix::GetModelMatrixInverse(const FVector& Location, const FVector& Rotation, const FVector& Scale)
@@ -213,7 +213,7 @@ FMatrix FMatrix::GetModelMatrixInverse(const FVector& Location, const FVector& R
 	FMatrix R = RotationMatrixInverse(Rotation);
 	FMatrix S = ScaleMatrixInverse(Scale);
 
-	return FMatrix::Identity() * T * R * S;
+	return FMatrix::Identity * T * R * S;
 }
 
 /**
@@ -222,16 +222,17 @@ FMatrix FMatrix::GetModelMatrixInverse(const FVector& Location, const FVector& R
  */
 FMatrix FMatrix::BasisLHYToUE()
 {
-    // row-major, row-vector mul(p, M) 기준
-    // [[0,0,1,0],
-    //  [1,0,0,0],
-    //  [0,1,0,0],
-    //  [0,0,0,1]]
-    return FMatrix(
-        0, 0, 1, 0,
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 0, 1);
+	// row-major, row-vector mul(p, M) 기준
+	// [[0,0,1,0],
+	//  [1,0,0,0],
+	//  [0,1,0,0],
+	//  [0,0,0,1]]
+	return {
+		0, 0, 1, 0,
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 0, 1
+	};
 }
 
 /**
@@ -240,10 +241,20 @@ FMatrix FMatrix::BasisLHYToUE()
  */
 FMatrix FMatrix::BasisUEToLHY()
 {
-    // transpose of BasisLHYToUE
-    return FMatrix(
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        1, 0, 0, 0,
-        0, 0, 0, 1);
+	// transpose of BasisLHYToUE
+	return {
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		1, 0, 0, 0,
+		0, 0, 0, 1
+	};
 }
+
+const FMatrix FMatrix::Identity = FMatrix(
+	1, 0, 0, 0,
+	0, 1, 0, 0,
+	0, 0, 1, 0,
+	0, 0, 0, 1
+);
+
+const FMatrix FMatrix::Zero = FMatrix();
