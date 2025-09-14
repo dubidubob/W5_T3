@@ -31,7 +31,16 @@ bool FName::operator==(const FName& Other) const
 int32 FName::Compare(const FName& Other) const
 {
 	if (*this == Other) { return 0; }
-	return this->Compare(Other);
+
+	// ComparisonIndex로 먼저 비교
+	if (ComparisonIndex < Other.ComparisonIndex) { return -1; }
+	if (ComparisonIndex > Other.ComparisonIndex) { return 1; }
+
+	// ComparisonIndex가 같으면 Number로 비교
+	if (Number < Other.Number) { return -1; }
+	if (Number > Other.Number) { return 1; }
+
+	return 0;
 }
 
 FString FName::ToString() const
