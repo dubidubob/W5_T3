@@ -43,11 +43,18 @@ public:
 	static LRESULT WndProcHandler(HWND hwnd, uint32 msg, WPARAM wParam, LPARAM lParam);
 
 	void RepositionImGuiWindows();
+
+	// F1 키로 Experimental Feature Window 토글
+	void ToggleExperimentalFeatureWindow();
+
 private:
 	TArray<UUIWindow*> UIWindows;
 	UUIWindow* FocusedWindow = nullptr;
 	bool bIsInitialized = false;
 	float TotalTime = 0.0f;
+
+	// Experimental Feature Window 토글용
+	class UExperimentalFeatureWindow* ExperimentalWindow = nullptr;
 
 	// ImGui Helper
 	UImGuiHelper* ImGuiHelper = nullptr;

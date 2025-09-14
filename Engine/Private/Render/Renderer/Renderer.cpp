@@ -529,7 +529,7 @@ void URenderer::OnResize(uint32 InWidth, uint32 InHeight)
  */
 void URenderer::ReleaseVertexBuffer(ID3D11Buffer* InVertexBuffer)
 {
-	InVertexBuffer->Release();
+	if (InVertexBuffer) { InVertexBuffer->Release(); }
 }
 
 /**

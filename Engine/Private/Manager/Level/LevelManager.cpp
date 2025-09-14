@@ -295,19 +295,19 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 		PrimitiveMeta.Scale = Actor->GetActorScale3D();
 
 		// Actor 타입에 따라 EPrimitiveType 설정
-		if (dynamic_cast<ACubeActor*>(Actor))
+		if (Cast<ACubeActor>(Actor))
 		{
 			PrimitiveMeta.Type = EPrimitiveType::Cube;
 		}
-		else if (dynamic_cast<ASphereActor*>(Actor))
+		else if (Cast<ASphereActor>(Actor))
 		{
 			PrimitiveMeta.Type = EPrimitiveType::Sphere;
 		}
-		else if (dynamic_cast<ATriangleActor*>(Actor))
+		else if (Cast<ATriangleActor>(Actor))
 		{
 			PrimitiveMeta.Type = EPrimitiveType::Triangle;
 		}
-		else if (dynamic_cast<ASquareActor*>(Actor))
+		else if (Cast<ASquareActor>(Actor))
 		{
 			PrimitiveMeta.Type = EPrimitiveType::Square;
 		}

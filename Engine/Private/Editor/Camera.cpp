@@ -105,7 +105,7 @@ void UCamera::UpdateMatrixByPers()
 	const float RadianFovY = FVector::GetDegreeToRadian(FovY);
 	const float F = 1.0f / std::tanf(RadianFovY * 0.5f);
 
-	FMatrix P = FMatrix::Identity();
+	FMatrix P = FMatrix::Identity;
 	// | f/aspect   0        0         0 |
 	// |    0       f        0         0 |
 	// |    0       0   zf/(zf-zn)     1 |
@@ -140,7 +140,7 @@ void UCamera::UpdateMatrixByOrth()
 	const float Bottom = -OrthoHeight * 0.5f;
 	const float Top = OrthoHeight * 0.5f;
 
-	FMatrix P = FMatrix::Identity();
+	FMatrix P = FMatrix::Identity;
 	P.Data[0][0] = 2.0f / (Right - Left);
 	P.Data[1][1] = 2.0f / (Top - Bottom);
 	P.Data[2][2] = 1.0f / (FarZ - NearZ);
@@ -170,7 +170,7 @@ FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
 		const float Bottom = -OrthoHeight * 0.5f;
 		const float Top = OrthoHeight * 0.5f;
 
-		FMatrix P = FMatrix::Identity();
+		FMatrix P = FMatrix::Identity;
 		// A^{-1} (대각)
 		P.Data[0][0] = (Right - Left) * 0.5f;  // (r-l)/2
 		P.Data[1][1] = (Top - Bottom) * 0.5f; // (t-b)/2
@@ -186,7 +186,7 @@ FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
 	{
 		const float FovRadian = FVector::GetDegreeToRadian(FovY);
 		const float F = 1.0f / std::tanf(FovRadian * 0.5f);
-		FMatrix P = FMatrix::Identity();
+		FMatrix P = FMatrix::Identity;
 		// | aspect/F   0      0         0 |
 		// |    0      1/F     0         0 |
 		// |    0       0      0   -(zf-zn)/(zn*zf) |

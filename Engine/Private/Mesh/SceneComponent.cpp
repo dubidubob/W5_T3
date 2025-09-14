@@ -135,10 +135,10 @@ const FMatrix& USceneComponent::GetWorldTransformMatrixInverse() const
 
 	if (bIsTransformDirtyInverse)
 	{
-		WorldTransformMatrixInverse = FMatrix::Identity();
-		for (USceneComponent* Ancester = ParentAttachment; Ancester && Ancester->ParentAttachment; Ancester = Ancester->ParentAttachment)
+		WorldTransformMatrixInverse = FMatrix::Identity;
+		for (USceneComponent* Ancestor = ParentAttachment; Ancestor && Ancestor->ParentAttachment; Ancestor = Ancestor->ParentAttachment)
 		{
-			WorldTransformMatrixInverse = FMatrix::GetModelMatrixInverse(Ancester->RelativeLocation, FVector::GetDegreeToRadian(Ancester->RelativeRotation), Ancester->RelativeScale3D) * WorldTransformMatrixInverse;
+			WorldTransformMatrixInverse = FMatrix::GetModelMatrixInverse(Ancestor->RelativeLocation, FVector::GetDegreeToRadian(Ancestor->RelativeRotation), Ancestor->RelativeScale3D) * WorldTransformMatrixInverse;
 
 		}
 		WorldTransformMatrixInverse = WorldTransformMatrixInverse * FMatrix::GetModelMatrixInverse(RelativeLocation, FVector::GetDegreeToRadian(RelativeRotation), RelativeScale3D);

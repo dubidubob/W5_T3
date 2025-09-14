@@ -202,4 +202,11 @@ void FVector4::operator*=(const float Ratio)
 	W *= Ratio;
 }
 
+// FVector static const 멤버 변수 정의
+const FVector FVector::ZeroVector = FVector(0.0f, 0.0f, 0.0f);
+const FVector FVector::OneVector = FVector(1.0f, 1.0f, 1.0f);
+
+// FVector4 static const 멤버 변수 정의
+const FVector4 FVector4::ZeroVector = FVector4(0.0f, 0.0f, 0.0f, 0.0f);
+const FVector4 FVector4::OneVector = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
 

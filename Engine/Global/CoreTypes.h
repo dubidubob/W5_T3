@@ -7,8 +7,8 @@ struct FViewProjConstants
 {
 	FViewProjConstants()
 	{
-		View = FMatrix::Identity();
-		Projection = FMatrix::Identity();
+		View = FMatrix::Identity;
+		Projection = FMatrix::Identity;
 	}
 
 	FMatrix View;

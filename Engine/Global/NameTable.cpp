@@ -50,8 +50,8 @@ TPair<int32, int32> FNameTable::FindOrAddName(const FString& Str)
 FName FNameTable::GetUniqueName(const FString& BaseStr)
 {
 	TPair<int32, int32> Indices = FindOrAddName(BaseStr);
-	int32 DisplayIndex = Indices.first;
-	int32 ComparisonIndex = Indices.second;
+	int32 DisplayIndex = Indices.second;
+	int32 ComparisonIndex = Indices.first;
 
 	int32 Number = NextNumberMap[BaseStr];
 	NextNumberMap[BaseStr]++;

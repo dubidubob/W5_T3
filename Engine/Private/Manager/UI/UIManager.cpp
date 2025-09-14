@@ -1,7 +1,9 @@
 #include "pch.h"
 #include "Manager/UI/UIManager.h"
 #include "Manager/Time/TimeManager.h"
+#include "Manager/Input/InputManager.h"
 #include "Render/UI/Window/UIWindow.h"
+#include "Render/UI/Window/ExperimentalFeatureWindow.h"
 #include "Render/UI/ImGui/ImGuiHelper.h"
 #include "Render/UI/Widget/Widget.h"
 
@@ -104,6 +106,12 @@ void UUIManager::Update()
 	}
 
 	TotalTime += DT;
+
+	// F1 키 입력 체크 (Experimental Feature Window 토글)
+	if (UInputManager::GetInstance().IsKeyPressed(EKeyInput::F1))
+	{
+		ToggleExperimentalFeatureWindow();
+	}
 
 	// 모든 UI 윈도우 업데이트
 	for (auto* Window : UIWindows)
@@ -394,5 +402,28 @@ void UUIManager::RepositionImGuiWindows()
 	for (auto& window : UIWindows)
 	{
 		window->SetIsResized(true);
+	}
+}
+
+void UUIManager::ToggleExperimentalFeatureWindow()
+{
+	// Experimental Feature Window 찾기
+	if (!ExperimentalWindow)
+	{
+		ExperimentalWindow = static_cast<UExperimentalFeatureWindow*>(FindUIWindow("Experimental Feature"));
+	}
+
+	if (ExperimentalWindow)
+	{
+		if (ExperimentalWindow->IsVisible())
+		{
+			ExperimentalWindow->SetWindowState(EUIWindowState::Hidden);
+			UE_LOG("UIManager: Experimental Feature Window 숨김 (F1)");
+		}
+		else
+		{
+			ExperimentalWindow->SetWindowState(EUIWindowState::Visible);
+			UE_LOG("UIManager: Experimental Feature Window 표시 (F1)");
+		}
 	}
 }
