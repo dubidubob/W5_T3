@@ -153,7 +153,7 @@ TArray<UPrimitiveComponent*> UEditor::FindCandidatePrimitives(ULevel* InLevel)
 	{
 		for (auto& ActorComponent : Actor->GetOwnedComponents())
 		{
-			UPrimitiveComponent* Primitive = dynamic_cast<UPrimitiveComponent*>(ActorComponent);
+			UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(ActorComponent);
 			if (Primitive)
 			{
 				Candidate.push_back(Primitive);

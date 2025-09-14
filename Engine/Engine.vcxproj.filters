@@ -78,6 +78,10 @@
     <ClCompile Include="Private\\Render\UI\Widget\\Widget.cpp" />
     <ClCompile Include="Private\\Render\UI\Window\\ExperimentalFeatureWindow.cpp" />
     <ClCompile Include="Private\\Render\UI\Window\\OutlinerWindow.cpp" />
+    <ClCompile Include="Private\Mesh\TextComponent.cpp" />
+    <ClCompile Include="Private\Render\UI\Widget\ActorDetailWidget.cpp" />
+    <ClCompile Include="Private\Render\UI\Widget\ActorListWidget.cpp" />
+    <ClCompile Include="Private\Render\UI\Window\DetailWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\\Core\\Object.h" />
@@ -167,6 +171,10 @@
     <ClInclude Include="Public\\Render\UI\Widget\\Widget.h" />
     <ClInclude Include="Public\\Render\UI\Window\\ExperimentalFeatureWindow.h" />
     <ClInclude Include="Public\\Render\UI\Window\\OutlinerWindow.h" />
+    <ClInclude Include="Public\Mesh\TextComponent.h" />
+    <ClInclude Include="Public\Render\UI\Widget\ActorDetailWidget.h" />
+    <ClInclude Include="Public\Render\UI\Widget\ActorListWidget.h" />
+    <ClInclude Include="Public\Render\UI\Window\DetailWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />
