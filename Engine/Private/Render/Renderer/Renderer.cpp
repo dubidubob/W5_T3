@@ -28,7 +28,6 @@ void URenderer::Init(HWND InWindowHandle)
 	CreateBlendState();
 	CreateDefaultShader();
 	CreateTextShader();
-	CreateTestVertexBuffer();
 	CreateInstanceBuffer();
 
 	CreateConstantBuffer();
@@ -40,7 +39,6 @@ void URenderer::Release()
 	ReleaseDefaultShader();
 	ReleaseResource();
 	ReleaseTextShader();
-	ReleaseTestVertexBuffer();
 	ReleaseInstanceBuffer();
 	ReleaseBlendState();
 
@@ -285,8 +283,6 @@ void URenderer::Update(UEditor* Editor)
 
 	RenderLevel();
 	Editor->RenderEditor();
-	float BlendFactor[] = { 0,0,0,0 };
-	GetDeviceContext()->OMSetBlendState(TextBlendState, BlendFactor, 0xffffffff);
 	RenderTest();
 
 	//RenderLines();
@@ -353,6 +349,13 @@ void URenderer::RenderLevel()
 
 void URenderer::RenderTest()
 {
+	if (IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText) == false)
+	{
+		return;
+	}
+	float BlendFactor[] = { 0,0,0,0 };
+	GetDeviceContext()->OMSetBlendState(TextBlendState, BlendFactor, 0xffffffff);
+
 	ID3D11DepthStencilState* DepthStencilState = DefaultDepthStencilState;
 
 	FRenderState State = FRenderState{ ECullMode::None, EFillMode::Solid };
@@ -381,13 +384,13 @@ void URenderer::RenderTest()
 	{
 		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
 		UpdateConstant(Component);
-		Pipeline->SetVertexBuffer(TestVertexBuffer, StrideTextVertex);
-		Pipeline->SetInstanceBuffer(TestInstanceBuffer, StrideTextInstance);
+		Pipeline->SetVertexBuffer(Component->GetVertexBuffer(), StrideTextVertex);
+		Pipeline->SetInstanceBuffer(TextInstanceBuffer, StrideTextInstance);
 
 		TArray<FTextInstance>* InstanceData = Component->GetInstanceData();
 		UpdateInstance(InstanceData);
 
-		Pipeline->DrawInstanced(TestData.size(), InstanceData->size(), 0, 0);
+		Pipeline->DrawInstanced(Component->GetNumVertices(), InstanceData->size(), 0, 0);
 	}
 }
 
@@ -455,28 +458,6 @@ void URenderer::RenderPrimitive(FEditorPrimitive& Primitive, struct FRenderState
 	Pipeline->Draw(Primitive.NumVertices, 0);
 }
 
-/**
- * @brief 정점 Buffer 생성 함수
- * @param InVertices
- * @param InByteWidth
- * @return
- */
-ID3D11Buffer* URenderer::CreateVertexBuffer(FVertex* InVertices, uint32 InByteWidth) const
-{
-	// 2. Create a vertex buffer
-	D3D11_BUFFER_DESC VertexBufferDesc = {};
-	VertexBufferDesc.ByteWidth = InByteWidth;
-	VertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE; // will never be updated
-	VertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-
-	D3D11_SUBRESOURCE_DATA VertexBufferSRD = {InVertices};
-
-	ID3D11Buffer* vertexBuffer;
-
-	GetDevice()->CreateBuffer(&VertexBufferDesc, &VertexBufferSRD, &vertexBuffer);
-
-	return vertexBuffer;
-}
 
 /**
  * @brief Index Buffer 생성 함수
@@ -508,34 +489,13 @@ void URenderer::CreateInstanceBuffer()
 	InstanceBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	InstanceBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
-	D3D11_SUBRESOURCE_DATA InstanceBufferSRD = { TestInstance.data() };
 
-
-	GetDevice()->CreateBuffer(&InstanceBufferDesc, &InstanceBufferSRD, &TestInstanceBuffer);
+	GetDevice()->CreateBuffer(&InstanceBufferDesc, nullptr, &TextInstanceBuffer);
 }
 
-void URenderer::CreateTestVertexBuffer()
-{
-	uint32 InByteWidth = static_cast<int>(TestData.size()) * sizeof(FTextVertex);
-	D3D11_BUFFER_DESC VertexBufferDesc = {};
-	VertexBufferDesc.ByteWidth = InByteWidth;
-	VertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE; // will never be updated
-	VertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-
-	D3D11_SUBRESOURCE_DATA VertexBufferSRD = { TestData.data()};
-
-	
-	GetDevice()->CreateBuffer(&VertexBufferDesc, &VertexBufferSRD, &TestVertexBuffer);
-
-}
-
-void URenderer::ReleaseTestVertexBuffer()
-{
-	TestVertexBuffer->Release();
-}
 void URenderer::ReleaseInstanceBuffer()
 {
-	TestInstanceBuffer->Release();
+	TextInstanceBuffer->Release();
 }
 
 void URenderer::OnResize(uint32 InWidth, uint32 InHeight)
@@ -570,22 +530,6 @@ void URenderer::OnResize(uint32 InWidth, uint32 InHeight)
 void URenderer::ReleaseVertexBuffer(ID3D11Buffer* InVertexBuffer)
 {
 	InVertexBuffer->Release();
-}
-
-/**
- * @brief ShaderResourceView 소멸 함수
- */
-void URenderer::ReleaseTexture(ID3D11ShaderResourceView* Texture)
-{
-	Texture->Release();
-}
-
-/**
- * @brief SamplerState 소멸 함수
- */
-void URenderer::ReleaseSamplerState(ID3D11SamplerState* Sampler)
-{
-	Sampler->Release();
 }
 
 /**
@@ -766,15 +710,15 @@ void URenderer::UpdateConstant(const FVector4& Color) const
 
 void URenderer::UpdateInstance(const TArray<FTextInstance>* Instance)
 {
-	if (TestInstanceBuffer)
+	if (TextInstanceBuffer)
 	{
 		D3D11_MAPPED_SUBRESOURCE InstanceBufferMSR = {};
 
-		GetDeviceContext()->Map(TestInstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &InstanceBufferMSR);
+		GetDeviceContext()->Map(TextInstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &InstanceBufferMSR);
 		// update constant buffer every frame
 		memcpy(InstanceBufferMSR.pData, Instance->data(), sizeof(FTextInstance) * Instance->size());
 	
-		GetDeviceContext()->Unmap(TestInstanceBuffer, 0);
+		GetDeviceContext()->Unmap(TextInstanceBuffer, 0);
 	}
 
 }

@@ -13,6 +13,13 @@ public:
 	TArray<FVertex>* GetVertexData(EPrimitiveType Type);
 	ID3D11Buffer* GetVertexbuffer(EPrimitiveType Type);
 	uint32 GetNumVertices(EPrimitiveType Type);
+
+	//////////////////리팩토링 예정///////////
+	ID3D11Buffer* GetTextVertexBuffer() const { return TextVertexBuffer; }
+	uint32 GetTextNumVertices() const { return TextNumVertices; }
+	/////////////////////////////////////////
+
+	void CreateTextSampler();
 	ID3D11ShaderResourceView* LoadTexture(const FString& Path);
 	ID3D11ShaderResourceView* GetTexture(const FString& Path);
 
@@ -26,7 +33,9 @@ private:
 	TMap<EPrimitiveType, uint32> NumVertices;
 	TMap<EPrimitiveType, TArray<FVertex>*> VertexDatas;
 
-	TMap<EPrimitiveType, TArray<FTextVertex>*> TextVertexDatas;
+	TArray<FTextVertex>* TextVertexData;
+	ID3D11Buffer* TextVertexBuffer;
+	uint32 TextNumVertices;
 
 	TMap<FString, ID3D11ShaderResourceView*> ShaderResourceViews;
 	TMap<ESamplerType, ID3D11SamplerState*> SamplerStates;
