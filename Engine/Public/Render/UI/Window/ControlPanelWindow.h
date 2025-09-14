@@ -11,6 +11,7 @@ class AActor;
  */
 class UControlPanelWindow : public UUIWindow
 {
+	DECLARE_CLASS(UControlPanelWindow, UUIWindow)
 public:
 	UControlPanelWindow();
 	void Initialize() override;

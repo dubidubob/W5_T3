@@ -7,6 +7,8 @@
 #include "Render/UI/Widget/SceneIOWidget.h"
 #include "Render/UI/Widget/ViewSettingsWidget.h"
 
+IMPLEMENT_CLASS(UControlPanelWindow, UUIWindow)
+
 /**
  * @brief Control Panel Constructor
  * 적절한 사이즈의 윈도우 제공
