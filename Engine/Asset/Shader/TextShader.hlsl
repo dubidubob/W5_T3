@@ -1,4 +1,4 @@
-cbuffer PerFrame : register(b0)
+cbuffer Model : register(b0)
 {
 	row_major float4x4 ModelMatrix;
 }
@@ -7,6 +7,8 @@ cbuffer PerFrame : register(b1)
 {
 	row_major float4x4 ViewMatrix; // View Matrix Calculation of MVP Matrix
 	row_major float4x4 ProjectionMatrix; // Projection Matrix Calculation of MVP Matrix
+	uint ViewModeIndex; // View Mode (0: Lit, 1: Unlit, 2: WireFrame)
+	float3 Padding;
 };
 
 struct CharUv
@@ -80,8 +82,8 @@ PS_INPUT mainVS(VS_INPUT Input)
 
 float4 mainPS(PS_INPUT Input) : SV_Target
 {
+	if (ViewModeIndex == 2) { return float4(1, 1, 1, 1); }
 	float4 TextureColor = FontAtlas.Sample(Sampler, Input.UV);
-
 	return TextureColor;
 }
 
