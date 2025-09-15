@@ -5,8 +5,10 @@ cbuffer constants : register(b0)
 
 cbuffer PerFrame : register(b1)
 {
-	row_major float4x4 View;        // View Matrix Calculation of MVP Matrix
-	row_major float4x4 Projection;  // Projection Matrix Calculation of MVP Matrix
+	row_major float4x4 ViewMatrix; // View Matrix Calculation of MVP Matrix
+	row_major float4x4 ProjectionMatrix; // Projection Matrix Calculation of MVP Matrix
+	uint ViewModeIndex; // View Mode (0: Lit, 1: Unlit, 2: WireFrame)
+	float3 Padding;
 };
 
 cbuffer PerFrame : register(b2)
@@ -31,8 +33,8 @@ PS_INPUT mainVS(VS_INPUT input)
     PS_INPUT output;
 	float4 tmp = input.position;
     tmp = mul(tmp, world);
-    tmp = mul(tmp, View);
-    tmp = mul(tmp, Projection);
+	tmp = mul(tmp, ViewMatrix);
+	tmp = mul(tmp, ProjectionMatrix);
 
 	output.position = tmp;
     output.color = input.color;

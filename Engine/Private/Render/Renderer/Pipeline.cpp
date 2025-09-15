@@ -59,25 +59,19 @@ void UPipeline::SetConstantBuffer(uint32 Slot, bool bIsVS, ID3D11Buffer* Constan
 /// @brief 텍스처를 설정
 void UPipeline::SetTexture(uint32 Slot, bool bIsVS, ID3D11ShaderResourceView* Srv)
 {
-	if (Srv)
-	{
 		if (bIsVS)
 			DeviceContext->VSSetShaderResources(Slot, 1, &Srv);
 		else
 			DeviceContext->PSSetShaderResources(Slot, 1, &Srv);
-	}
 }
 
 /// @brief 샘플러 상태를 설정
 void UPipeline::SetSamplerState(uint32 Slot, bool bIsVS, ID3D11SamplerState* SamplerState)
 {
-	if (SamplerState)
-	{
 		if (bIsVS)
 			DeviceContext->VSSetSamplers(Slot, 1, &SamplerState);
 		else
 			DeviceContext->PSSetSamplers(Slot, 1, &SamplerState);
-	}
 }
 
 /// @brief 정점 개수를 기반으로 드로우 호출

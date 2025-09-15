@@ -331,14 +331,11 @@ void URenderer::RenderLevel()
 
 	for (auto& PrimitiveComponent : ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents())
 	{
-		if (!PrimitiveComponent) { continue; }
-
 		// Check show flags for primitive components
-		if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false)
-		{
-			break;
-		}
+		if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false) { break; }
 
+		if (!PrimitiveComponent) { continue; }
+		
 		Pipeline->UpdatePipeline(CreatePipelineInfo(PrimitiveComponent->GetRenderState()));
 
 		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
@@ -415,34 +412,15 @@ void URenderer::RenderBoundingBox(UPrimitiveComponent* PrimitiveComponent)
 
 void URenderer::RenderTest()
 {
-	if (IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText) == false)
-	{
-		return;
-	}
-	float BlendFactor[] = { 0,0,0,0 };
-	GetDeviceContext()->OMSetBlendState(TextBlendState, BlendFactor, 0xffffffff);
-
-	ID3D11DepthStencilState* DepthStencilState = DefaultDepthStencilState;
+	if (IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText) == false) { return; }
 
 	FRenderState State = FRenderState{ ECullMode::None, EFillMode::Solid };
-	ID3D11RasterizerState* RasterizerState =
-		GetRasterizerState(State);
-
-	FPipelineInfo PipelineInfo = {
-			TextInputLayout,
-			TextVertexShader,
-			RasterizerState,
-			DepthStencilState,
-			TextPixelShader,
-			nullptr,
-			D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST
-	};
-
-	Pipeline->UpdatePipeline(PipelineInfo);
+	Pipeline->UpdatePipeline(CreateTextPipelineInfo(State));
 
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
 	ID3D11ShaderResourceView* Srv = ResourceManager.GetTexture("Asset/Font/Roboto-Medium.dds");
 	ID3D11SamplerState* SamplerState = ResourceManager.GetSamplerState(ESamplerType::Text);
+
 	Pipeline->SetTexture(0, false, Srv);
 	Pipeline->SetSamplerState(0, false, SamplerState);
 
@@ -643,7 +621,7 @@ void URenderer::CreateConstantBuffer()
 		ConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		ConstantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-		GetDevice()->CreateBuffer(&ConstantBufferDesc, nullptr, &ConstantBufferViewProj);
+		GetDevice()->CreateBuffer(&ConstantBufferDesc, nullptr, &ConstantBufferPerFrame);
 	}
 
 	/**
@@ -684,10 +662,10 @@ void URenderer::ReleaseConstantBuffer()
 		ConstantBufferColor = nullptr;
 	}
 
-	if (ConstantBufferViewProj)
+	if (ConstantBufferPerFrame)
 	{
-		ConstantBufferViewProj->Release();
-		ConstantBufferViewProj = nullptr;
+		ConstantBufferPerFrame->Release();
+		ConstantBufferPerFrame = nullptr;
 	}
 
 	if (ConstantBufferCharTable)
@@ -736,20 +714,22 @@ void URenderer::UpdateConstant(const FVector& InPosition, const FVector& InRotat
 
 void URenderer::UpdateConstant(const FViewProjConstants& InViewProjConstants) const
 {
-	Pipeline->SetConstantBuffer(1, true, ConstantBufferViewProj);
+	Pipeline->SetConstantBuffer(1, false, ConstantBufferPerFrame);
+	Pipeline->SetConstantBuffer(1, true, ConstantBufferPerFrame);
 
-	if (ConstantBufferViewProj)
+	if (ConstantBufferPerFrame)
 	{
 		D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR = {};
 
-		GetDeviceContext()->Map(ConstantBufferViewProj, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
+		GetDeviceContext()->Map(ConstantBufferPerFrame, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
 		// update constant buffer every frame
 		FViewProjConstants* ViewProjectionConstants = (FViewProjConstants*)ConstantBufferMSR.pData;
 		{
 			ViewProjectionConstants->View = InViewProjConstants.View;
 			ViewProjectionConstants->Projection = InViewProjConstants.Projection;
+			ViewProjectionConstants->ViewModeIndex = static_cast<uint32>(CurrentViewMode);
 		}
-		GetDeviceContext()->Unmap(ConstantBufferViewProj, 0);
+		GetDeviceContext()->Unmap(ConstantBufferPerFrame, 0);
 	}
 }
 
@@ -815,6 +795,28 @@ FPipelineInfo URenderer::CreatePipelineInfo(const FRenderState& InRenderState)
 	return FPipelineInfo{DefaultInputLayout, DefaultVertexShader,
 		RasterizerState, DefaultDepthStencilState, DefaultPixelShader, nullptr,
 		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+	};
+}
+
+FPipelineInfo URenderer::CreateTextPipelineInfo(const FRenderState& InRenderState)
+{
+	FRenderState ModifiedRenderState = InRenderState;
+
+	switch (CurrentViewMode)
+	{
+	case EViewModeIndex::Wireframe:
+		ModifiedRenderState.FillMode = EFillMode::WireFrame;
+		ModifiedRenderState.CullMode = ECullMode::None;
+		break;
+	case EViewModeIndex::Lit:
+	case EViewModeIndex::Unlit:
+	default:
+		break;
+	}
+
+	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
+	return FPipelineInfo{ TextInputLayout, TextVertexShader,
+		RasterizerState, DefaultDepthStencilState, TextPixelShader, TextBlendState
 	};
 }
 
