@@ -27,11 +27,10 @@ void UTextComponent::SetInstanceData(const FString& Characters)
 	InstanceData.clear();
 	const int CellWidth = 32;
 	const int BitMapWidth = 512;
-	const float Spacing = 1/4.0f;	//자간거리. 너무 작으면 글자가 겹침.
 	int NumCharacters = Characters.size();
 	for (int Index = 0; Index < NumCharacters; Index++)
 	{
-		float OffsetY = (Index - NumCharacters/2) * Spacing;	
+		float OffsetY = (Index - NumCharacters/2);	
 		InstanceData.push_back({ FVector4(1,1,1,1), FVector(0.0f,OffsetY,2.0f), (uint32)Characters[Index] });
 	}
 }

@@ -53,9 +53,10 @@ PS_INPUT mainVS(VS_INPUT Input)
 {
 	PS_INPUT Output;
 
-	float FontScale = 1/3.0f;
-	//가로 32픽셀 세로 64픽셀이므로 X를 /2로 스케일(zxy->xyz)
-	float3 BasePos = float3(Input.Position.x, Input.Position.y/2, Input.Position.z)*FontScale;
+	float FontScale = 1 / 3.0f;
+	//가로 32픽셀 세로 64픽셀이므로 Y를 2배 스케일(zxy->xyz)
+	float3 BasePos = float3(Input.Position.x, Input.Position.y, Input.Position.z * 2) * FontScale;
+	Input.Offset.y *= FontScale;
 	
 	float3 ModelPos = ModelMatrix[3].xyz;
 	float3 CameraForward = GetCameraForward();
