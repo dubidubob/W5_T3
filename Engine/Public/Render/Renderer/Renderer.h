@@ -135,7 +135,7 @@ private:
 	ID3D11DepthStencilState* DisabledDepthStencilState = nullptr;
 	ID3D11BlendState* TextBlendState = nullptr;
 	ID3D11Buffer* ConstantBufferModels = nullptr;
-	ID3D11Buffer* ConstantBufferViewProj = nullptr;
+	ID3D11Buffer* ConstantBufferPerFrame = nullptr;
 	ID3D11Buffer* ConstantBufferColor = nullptr;
 	ID3D11Buffer* ConstantBufferCharTable = nullptr;
 	//////////////////////////////////////
@@ -188,6 +188,7 @@ private:
 	TMap<FRasterKey, ID3D11RasterizerState*, FRasterKeyHasher> RasterCache;
 
 	FPipelineInfo CreatePipelineInfo(const FRenderState& InRenderState);
+	FPipelineInfo CreateTextPipelineInfo(const FRenderState& InRenderState);
 
 	bool bIsResizing = false;
 

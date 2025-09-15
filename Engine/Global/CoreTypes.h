@@ -9,10 +9,12 @@ struct FViewProjConstants
 	{
 		View = FMatrix::Identity;
 		Projection = FMatrix::Identity;
+		ViewModeIndex = 0;
 	}
 
 	FMatrix View;
 	FMatrix Projection;
+	uint32 ViewModeIndex;
 };
 
 
