@@ -54,7 +54,7 @@ void UEditor::RenderEditor()
 
 void UEditor::RenderEditorBatched()
 {
-	ULineBatchRenderer& LineBatch = ULineBatchRenderer::GetInstance();
+    ULineBatchRenderer& LineBatch = ULineBatchRenderer::GetInstance();
 
 	/** 모든 라인 렌더링을 하나의 배치로 통합 */
 	LineBatch.BeginBatch();
@@ -65,8 +65,23 @@ void UEditor::RenderEditorBatched()
 		/** Axis 라인들 추가 */
 		Axis.AddToLineBatch(LineBatch);
 
-		// /** AABB 라인들 추가 */
-		// AABB.AddToLineBatch(LineBatch);
+		/** AABB 라인들 추가 (Min/Max 입력 기반, 인스턴싱) */
+		URenderer& Renderer = URenderer::GetInstance();
+		if (Renderer.IsShowFlagEnabled(EEngineShowFlags::SF_Bounds))
+		{
+			ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
+			if (Level)
+			{
+				const TArray<UPrimitiveComponent*>& Primitives = Level->GetLevelPrimitiveComponents();
+				for (UPrimitiveComponent* Prim : Primitives)
+				{
+					if (!Prim) { continue; }
+					FAABB Bounds = Prim->GetWorldBounds();
+					if (!Bounds.IsValid()) { continue; }
+					LineBatch.AddAABB(Bounds.Min, Bounds.Max, FVector4(0,1,0,1));
+				}
+			}
+		}
 
 		/** Gizmo 라인들 추가 (오브젝트가 선택된 경우) */
 		AActor* SelectedActor = ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor();

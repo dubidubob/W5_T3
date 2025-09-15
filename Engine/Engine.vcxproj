@@ -155,7 +155,6 @@
     <ClInclude Include="Global\NameTable.h" />
     <ClInclude Include="Public\Math\AABB.h" />
     <ClInclude Include="Public\Mesh\TextComponent.h" />
-    <ClInclude Include="Public\Render\AABBWireframeComponent.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorDetailWidget.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorListWidget.h" />
     <ClInclude Include="Public\DirectXTK\DDSTextureLoader.h" />
@@ -237,7 +236,6 @@
     <ClCompile Include="Global\NameTable.cpp" />
     <ClCompile Include="Private\Math\AABB.cpp" />
     <ClCompile Include="Private\Mesh\TextComponent.cpp" />
-    <ClCompile Include="Private\Render\AABBWireframeComponent.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ActorDetailWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ActorListWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ViewSettingsWidget.cpp" />
@@ -315,12 +313,17 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Asset\Shader\LineInstanced.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Asset\Shader\SampleShader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Asset\Shader\TextShader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

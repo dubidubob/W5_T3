@@ -12,12 +12,12 @@
  */
 class ULineBatchRenderer : public UObject
 {
-	DECLARE_CLASS(ULineBatchRenderer, UObject)
-	DECLARE_SINGLETON(ULineBatchRenderer)
+    DECLARE_CLASS(ULineBatchRenderer, UObject)
+    DECLARE_SINGLETON(ULineBatchRenderer)
 
 public:
-	void Init();
-	void Release();
+    void Init();
+    void Release();
 
 	/** 배칭 관리 */
 	void BeginBatch();
@@ -25,41 +25,61 @@ public:
 	void ClearBatch();
 
 	/** 라인 추가 인터페이스 */
-	void AddLine(const FVector& Start, const FVector& End, const FVector4& Color);
-	void AddLines(const TArray<FVertex>& Vertices);
-	void AddLineStrip(const TArray<FVertex>& Vertices, bool bClosed = false);
+    void AddLine(const FVector& Start, const FVector& End, const FVector4& Color);
+    void AddLines(const TArray<FVertex>& Vertices);
+    void AddLineStrip(const TArray<FVertex>& Vertices, bool bClosed = false);
 
-	/** 유틸리티 */
-	uint32 GetCurrentVertexCount() const { return CurrentVertexCount; }
-	uint32 GetMaxVertices() const { return MaxVertices; }
-	bool CanAddVertices(uint32 Count) const { return CurrentVertexCount + Count <= MaxVertices; }
+    /** AABB 인스턴싱 입력(Min/Max만 입력, 정점 미입력) */
+    void AddAABB(const FVector& Min, const FVector& Max, const FVector4& Color);
+
+    /** 유틸리티 */
+    uint32 GetCurrentVertexCount() const { return CurrentVertexCount; }
+    uint32 GetMaxVertices() const { return MaxVertices; }
+    bool CanAddVertices(uint32 Count) const { return CurrentVertexCount + Count <= MaxVertices; }
 
 private:
 	/** DirectX 11 리소스 */
-	ID3D11Buffer* DynamicVertexBuffer = nullptr;
-	ID3D11Buffer* DynamicIndexBuffer = nullptr;
+    ID3D11Buffer* DynamicVertexBuffer = nullptr;
+    ID3D11Buffer* DynamicIndexBuffer = nullptr;
 
-	/** 배칭 데이터 */
-	TArray<FVertex> BatchedVertices;
-	TArray<uint32> BatchedIndices;
+    /** Instanced AABB용 리소스 */
+    ID3D11Buffer* UnitAABBVertexBuffer = nullptr; // slot 0, per-vertex POSITION(only)
+    ID3D11Buffer* AABBInstanceBuffer = nullptr;   // slot 1, per-instance COLOR
+    ID3D11Buffer* AABBWorldStructuredBuffer = nullptr; // StructuredBuffer(FMatrix)
+    ID3D11ShaderResourceView* AABBWorldSRV = nullptr;  // SRV for StructuredBuffer
 
-	/** 배치 설정 */
-	static constexpr uint32 MaxVertices = 10000;
-	static constexpr uint32 MaxIndices = MaxVertices * 2; // Line topology: 2 indices per line
+    /** 배칭 데이터 */
+    TArray<FVertex> BatchedVertices;
+    TArray<uint32> BatchedIndices;
 
-	/** 현재 상태 */
-	uint32 CurrentVertexCount = 0;
-	uint32 CurrentIndexCount = 0;
-	bool bBatchStarted = false;
+    /** AABB 인스턴스 데이터 */
+    TArray<FMatrix> AABBWorlds;   // StructuredBuffer에 업로드
+    TArray<FVector4> AABBColors;  // Instance VB에 업로드
+
+    /** 배치 설정 */
+    static constexpr uint32 MaxVertices = 10000;
+    static constexpr uint32 MaxIndices = MaxVertices * 2; // Line topology: 2 indices per line
+    static constexpr uint32 MaxAABBInstances = 4096;
+
+    /** 현재 상태 */
+    uint32 CurrentVertexCount = 0;
+    uint32 CurrentIndexCount = 0;
+    bool bBatchStarted = false;
 
 	/** 내부 메서드 */
-	void CreateBuffers();
-	void ReleaseBuffers();
-	void UpdateVertexBuffer();
-	void UpdateIndexBuffer();
-	void RenderBatch();
+    void CreateBuffers();
+    void ReleaseBuffers();
+    void UpdateVertexBuffer();
+    void UpdateIndexBuffer();
+    void RenderBatch();
 
-	/** 인덱스 생성 */
-	void GenerateLineIndices(uint32 StartVertex, uint32 VertexCount);
-	void GenerateLineStripIndices(uint32 StartVertex, uint32 VertexCount, bool bClosed);
+    /** Instanced AABB 내부 메서드 */
+    void CreateAABBResources();
+    void ReleaseAABBResources();
+    void UpdateAABBResources();
+    void RenderAABBInstances();
+
+    /** 인덱스 생성 */
+    void GenerateLineIndices(uint32 StartVertex, uint32 VertexCount);
+    void GenerateLineStripIndices(uint32 StartVertex, uint32 VertexCount, bool bClosed);
 };

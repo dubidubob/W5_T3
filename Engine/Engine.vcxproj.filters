@@ -3,6 +3,7 @@
   <ItemGroup>
     <FxCompile Include="Asset\Shader\SampleShader.hlsl" />
     <FxCompile Include="Asset\Shader\TextShader.hlsl" />
+    <FxCompile Include="Asset\Shader\LineInstanced.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Private\\Core\\Object.cpp" />
@@ -82,6 +83,9 @@
     <ClCompile Include="Private\Render\UI\Widget\ActorDetailWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ActorListWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Window\DetailWindow.cpp" />
+    <ClCompile Include="Private\Math\AABB.cpp" />
+    <ClCompile Include="Private\Render\AABBWireframeComponent.cpp" />
+    <ClCompile Include="Private\\Render\Renderer\\LineBatchRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\\Core\\Object.h" />
@@ -118,7 +122,6 @@
     <ClInclude Include="Public\\Manager\Path\\PathManager.h" />
     <ClInclude Include="Public\\Utility\\LevelSerializer.h" />
     <ClInclude Include="Public\\Utility\\Metadata.h" />
-    <ClInclude Include="Global\Struct.h" />
     <ClInclude Include="Public\\Manager\UI\\UIManager.h" />
     <ClInclude Include="Public\\Render\Renderer\\DeviceResources.h" />
     <ClInclude Include="Public\\Render\Renderer\\Pipeline.h" />
@@ -175,6 +178,9 @@
     <ClInclude Include="Public\Render\UI\Widget\ActorDetailWidget.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorListWidget.h" />
     <ClInclude Include="Public\Render\UI\Window\DetailWindow.h" />
+    <ClInclude Include="Public\Math\AABB.h" />
+    <ClInclude Include="Public\Render\AABBWireframeComponent.h" />
+    <ClInclude Include="Public\\Render\Renderer\\LineBatchRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />
