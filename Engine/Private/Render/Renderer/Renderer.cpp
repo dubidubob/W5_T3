@@ -354,7 +354,7 @@ void URenderer::RenderLevel()
 		Pipeline->Draw(static_cast<uint32>(PrimitiveComponent->GetVerticesData()->size()), 0);
 
 		// Render bounding boxes if enabled
-		if (IsShowFlagEnabled(EEngineShowFlags::SF_Bounds) && PrimitiveComponent->IsBoundingBoxVisible())
+		if (IsShowFlagEnabled(EEngineShowFlags::SF_Bounds))
 		{
 			RenderBoundingBox(PrimitiveComponent);
 		}
@@ -385,16 +385,21 @@ void URenderer::RenderBoundingBox(UPrimitiveComponent* PrimitiveComponent)
 		return; // 유효하지 않은 바운딩 박스는 렌더링하지 않음
 	}
 
-	FVector Center = WorldBounds.GetCenter();
-	FVector Size = WorldBounds.GetSize();
+	//FVector Center = WorldBounds.GetCenter();
+	//FVector Size = WorldBounds.GetSize();
 
 	WireframeComponent->SetAABB(WorldBounds);
 
-	if (WireframeComponent->GetVertexBuffer() && WireframeComponent->GetVerticesData()->size() > 0)
+	if (WireframeComponent->GetVertexBuffer() && WireframeComponent->GetIndexBuffer() && WireframeComponent->GetNumIndices() > 0)
 	{
-		uint32 VertexCount = static_cast<uint32>(WireframeComponent->GetVerticesData()->size());
-
-		Pipeline->UpdatePipeline(CreatePipelineInfo(WireframeComponent->GetRenderState()));
+		// AABB Wireframe을 위한 특별한 PipelineInfo 생성
+		ID3D11RasterizerState* RasterizerState = GetRasterizerState(WireframeComponent->GetRenderState());
+		FPipelineInfo WireframePipelineInfo = {
+			DefaultInputLayout, DefaultVertexShader,
+			RasterizerState, DefaultDepthStencilState, DefaultPixelShader, nullptr,
+			WireframeComponent->GetTopology()  // LINELIST 사용
+		};
+		Pipeline->UpdatePipeline(WireframePipelineInfo);
 
 		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
 		UpdateConstant(FVector(0, 0, 0), FVector(0, 0, 0), FVector(1, 1, 1));
@@ -403,7 +408,8 @@ void URenderer::RenderBoundingBox(UPrimitiveComponent* PrimitiveComponent)
 		UpdateConstant(WireframeComponent->GetColor());
 
 		Pipeline->SetVertexBuffer(WireframeComponent->GetVertexBuffer(), Stride);
-		Pipeline->Draw(24, 0);
+		Pipeline->SetIndexBuffer(WireframeComponent->GetIndexBuffer(), DXGI_FORMAT_R32_UINT);
+		Pipeline->DrawIndexed(WireframeComponent->GetNumIndices(), 0, 0);
 	}
 }
 
@@ -807,7 +813,8 @@ FPipelineInfo URenderer::CreatePipelineInfo(const FRenderState& InRenderState)
 
 	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
 	return FPipelineInfo{DefaultInputLayout, DefaultVertexShader,
-		RasterizerState, DefaultDepthStencilState, DefaultPixelShader, nullptr
+		RasterizerState, DefaultDepthStencilState, DefaultPixelShader, nullptr,
+		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
 	};
 }
 

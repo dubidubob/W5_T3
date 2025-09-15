@@ -216,7 +216,8 @@ USphereComponent::USphereComponent()
 
 FAABB USphereComponent::GetLocalBounds() const
 {
-	return FAABB(FVector(-1.0f, -1.0f, -1.0f), FVector(1.0f, 1.0f, 1.0f));
+	// 실제 버텍스 데이터에서 바운딩 박스 계산
+	return UPrimitiveComponent::GetLocalBounds();
 }
 
 IMPLEMENT_CLASS(UCubeComponent, UPrimitiveComponent)
@@ -233,7 +234,8 @@ UCubeComponent::UCubeComponent()
 
 FAABB UCubeComponent::GetLocalBounds() const
 {
-	return FAABB(FVector(-1.0f, -1.0f, -1.0f), FVector(1.0f, 1.0f, 1.0f));
+	// 실제 버텍스 데이터에서 바운딩 박스 계산
+	return UPrimitiveComponent::GetLocalBounds();
 }
 
 IMPLEMENT_CLASS(ULineComponent, UPrimitiveComponent)

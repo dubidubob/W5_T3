@@ -68,6 +68,7 @@ public:
 	void RenderTest();
 	void RenderEnd() const;
 	void RenderPrimitive(FEditorPrimitive& InPrimitive, struct FRenderState& InRenderState);
+	void RenderBoundingBox(UPrimitiveComponent* PrimitiveComponent);
 
 	void OnResize(uint32 Inwidth = 0, uint32 InHeight = 0);
 	bool GetIsResizing() { return bIsResizing;}

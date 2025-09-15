@@ -68,8 +68,6 @@ public:
 
 	virtual FAABB GetLocalBounds() const;
 	FAABB GetWorldBounds() const;
-	void SetBoundingBoxVisible(bool bVisible) { bShowBoundingBox = bVisible; }
-	bool IsBoundingBoxVisible() const { return bShowBoundingBox; }
 
 protected:
 	const TArray<FVertex>* Vertices = nullptr;
@@ -81,7 +79,6 @@ protected:
 	EPrimitiveType Type = EPrimitiveType::Cube;
 
 	bool bVisible = true;
-	bool bShowBoundingBox = false;
 
 };
 
