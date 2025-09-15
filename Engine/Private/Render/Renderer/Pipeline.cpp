@@ -9,7 +9,7 @@ UPipeline::UPipeline(ID3D11DeviceContext* InDeviceContext)
 
 UPipeline::~UPipeline()
 {
-	// Device Context는 Device Resource에서 제거
+	/** Device Context는 Device Resource에서 제거 */
 }
 
 
@@ -89,4 +89,16 @@ void UPipeline::Draw(uint32 VertexCount, uint32 StartLocation)
 void UPipeline::DrawInstanced(uint32 VertexCountPerInstance, uint32 InstanceCount, uint32 VertexStartLocation, uint32 InstanceStartLocation)
 {
 	DeviceContext->DrawInstanced(VertexCountPerInstance, InstanceCount, VertexStartLocation, InstanceStartLocation);
+}
+
+/// @brief 인덱스 버퍼를 설정
+void UPipeline::SetIndexBuffer(ID3D11Buffer* IndexBuffer, DXGI_FORMAT Format)
+{
+	DeviceContext->IASetIndexBuffer(IndexBuffer, Format, 0);
+}
+
+/// @brief 인덱스 버퍼를 사용한 드로우 호출
+void UPipeline::DrawIndexed(uint32 IndexCount, uint32 StartIndexLocation, uint32 BaseVertexLocation)
+{
+	DeviceContext->DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
 }
