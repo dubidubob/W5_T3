@@ -11,7 +11,7 @@ static const char* CameraMode[] = {
 
 IMPLEMENT_CLASS(UViewSettingsWidget, UWidget)
 
-UViewSettingsWidget::UViewSettingsWidget()
+UViewSettingsWidget::UViewSettingsWidget() : Grid(nullptr)
 {
 }
 
@@ -29,6 +29,13 @@ void UViewSettingsWidget::RenderWidget()
 {
 	ImGui::TextUnformatted("View Settings");
 	ImGui::Spacing();
+
+	// 그리드 간격
+	float CurrentCellSize = Grid->GetCellSize();
+	if (ImGui::DragFloat("그리드 간격", &CurrentCellSize, 0.001f, 10.0f))
+	{
+		Grid->SetCellSize(CurrentCellSize);	
+	}
 
 	if (ImGui::Combo("View Mode", &ViewModeIndex, CameraMode, IM_ARRAYSIZE(CameraMode)))
 	{

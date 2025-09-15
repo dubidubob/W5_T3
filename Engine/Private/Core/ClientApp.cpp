@@ -106,7 +106,7 @@ int FClientApp::InitializeSystem()
 	ULevelManager::GetInstance().CreateDefaultLevel();
 
 	// Initialize Editor
-	Editor = new UEditor;
+	Editor = NewObject<UEditor>();
 
 	return S_OK;
 }

@@ -14,6 +14,7 @@
 #include "Mesh/Actor.h"
 #include "Level/Level.h"
 #include "Render/UI/Widget/CameraControlWidget.h"
+#include "Render/UI/Widget/ViewSettingsWidget.h"
 
 IMPLEMENT_CLASS(UEditor, UObject)
 
@@ -23,9 +24,12 @@ UEditor::UEditor()
 
 	// Set Camera to Control Panel
 	auto& UIManager = UUIManager::GetInstance();
-	auto* CameraControlWidget =
-		reinterpret_cast<UCameraControlWidget*>(UIManager.FindWidget("UCameraControlWidget"));
+	UCameraControlWidget* CameraControlWidget =
+		Cast<UCameraControlWidget>(UIManager.FindWidget("UCameraControlWidget"));
 	CameraControlWidget->SetCamera(&Camera);
+	UViewSettingsWidget* ViewSettingsWidget =
+		Cast<UViewSettingsWidget>(UIManager.FindWidget("UViewSettingsWidget"));
+	ViewSettingsWidget->SetGrid(&Grid);
 
 };
 
