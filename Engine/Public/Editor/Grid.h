@@ -13,7 +13,8 @@ public:
 	UGrid();
 	~UGrid() override;
 	void SetLineVertices();
-	void SetGridProperty(float InCellSize, int InNumLines);
+	void SetCellSize(float InCellSize);
+	float GetCellSize() const { return CellSize; }
 
 	/** 기존 개별 렌더링 */
 	void RenderGrid();
@@ -22,8 +23,14 @@ public:
 	void AddToLineBatch(ULineBatchRenderer& LineBatch);
 
 private:
+	void SetupGrid();
+	void SaveGridSettings() const;
+	void LoadGridSettings();
+
 	float CellSize = 1.0f;
-	int NumLines = 250;
+	int32 NumLines = 250;
 	FEditorPrimitive Primitive;
 	TArray<FVertex> LineVertices;
+
+	static constexpr float DEFAULT_CELL_SIZE = 1.0f;
 };

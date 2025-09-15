@@ -60,6 +60,7 @@ void UCameraControlWidget::RenderWidget()
 	{
 		Camera->SetMouseSensitivity(CurrentSensitivity);
 	}
+
 	ImGui::Spacing();
 
 	if (ImGui::Combo("Mode", &CameraModeIndex, CameraMode, IM_ARRAYSIZE(CameraMode)))
