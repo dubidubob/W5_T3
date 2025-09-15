@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Editor/Axis.h"
 #include "Render/Renderer/Renderer.h"
+#include "Render/Renderer/LineBatchRenderer.h"
 
 IMPLEMENT_CLASS(UAxis, UObject)
 
@@ -34,4 +35,10 @@ void UAxis::Render()
 {
 	URenderer& Renderer = URenderer::GetInstance();
 	Renderer.RenderPrimitive(Primitive, Primitive.RenderState);
+}
+
+void UAxis::AddToLineBatch(ULineBatchRenderer& LineBatch)
+{
+	/** Axis 라인들을 배칭에 추가 */
+	LineBatch.AddLines(AxisVertices);
 }

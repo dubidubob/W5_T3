@@ -6,6 +6,8 @@
 #include "Core/Object.h"
 #include "Editor/ObjectPicker.h"
 
+class ULineBatchRenderer;
+
 class UEditor : public UObject
 {
 	DECLARE_CLASS(UEditor, UObject)
@@ -13,9 +15,11 @@ class UEditor : public UObject
 public:
 	UEditor();
 	~UEditor();
-	
+
 	void Update();
 	void RenderEditor();
+	/** 배칭 렌더링 버전 */
+	void RenderEditorBatched();
 
 private:
 

@@ -7,6 +7,7 @@
 #include "Editor/Axis.h"
 #include "Editor/ObjectPicker.h"
 #include "Render/Renderer/Renderer.h"
+#include "Render/Renderer/LineBatchRenderer.h"
 #include "Manager/Level/LevelManager.h"
 #include "Manager/UI/UIManager.h"
 #include "Manager/Input/InputManager.h"
@@ -46,6 +47,37 @@ void UEditor::RenderEditor()
 	Gizmo.RenderGizmo(ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor(), Camera.GetLocation());
 }
 
+void UEditor::RenderEditorBatched()
+{
+	ULineBatchRenderer& LineBatch = ULineBatchRenderer::GetInstance();
+
+	/** 모든 라인 렌더링을 하나의 배치로 통합 */
+	LineBatch.BeginBatch();
+	{
+		/** Grid 라인들 추가 */
+		Grid.AddToLineBatch(LineBatch);
+
+		/** Axis 라인들 추가 */
+		Axis.AddToLineBatch(LineBatch);
+
+		// /** AABB 라인들 추가 */
+		// AABB.AddToLineBatch(LineBatch);
+
+		/** Gizmo 라인들 추가 (오브젝트가 선택된 경우) */
+		AActor* SelectedActor = ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor();
+		if (SelectedActor)
+		{
+			/** Gizmo는 현재 RenderGizmo를 통해 렌더링되므로 따로 처리 */
+			/** 추후 Gizmo도 배칭 지원하도록 수정 가능 */
+		}
+	}
+	/** 1회 드로우콜로 모든 라인 렌더링 */
+	LineBatch.FlushBatch();
+
+	/** Gizmo는 별도로 렌더링 (기존 방식 유지) */
+	Gizmo.RenderGizmo(ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor(), Camera.GetLocation());
+}
+
 
 void UEditor::ProcessMouseInput(ULevel* InLevel)
 {
@@ -59,7 +91,7 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 	float ActorDistance = -1;
 
 	//로컬 기즈모, 쿼터니언 구현 후 사용
-	/*if (InputManager.IsKeyPressed(EKeyInput::Tab))
+	/**if (InputManager.IsKeyPressed(EKeyInput::Tab))
 	{
 		if (Gizmo.IsWorld())
 			Gizmo.SetLocal();
@@ -100,7 +132,8 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 	}
 	else
 	{
-		if (InLevel->GetSelectedActor()) //기즈모가 출력되고있음. 레이캐스팅을 계속 해야함.
+		/** 기즈모가 출력되고있음. 레이캐스팅을 계속 해야함. */
+		if (InLevel->GetSelectedActor())
 		{
 			ObjectPicker.PickGizmo(WorldRay, Gizmo, CollisionPoint);
 		}
@@ -120,7 +153,8 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 				ActorPicked = nullptr;
 		}
 
-		if (Gizmo.GetGizmoDirection() == EGizmoDirection::None) //기즈모에 호버링되거나 클릭되지 않았을 때. Actor 업데이트해줌.
+		/** 기즈모에 호버링되거나 클릭되지 않았을 때. Actor 업데이트해줌. */
+		if (Gizmo.GetGizmoDirection() == EGizmoDirection::None)
 		{
 			InLevel->SetSelectedActor(ActorPicked);
 			if (PreviousGizmoDirection != EGizmoDirection::None)
@@ -128,12 +162,13 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 				Gizmo.OnMouseRelease(PreviousGizmoDirection);
 			}
 		}
-		//기즈모가 선택되었을 때. Actor가 선택되지 않으면 기즈모도 선택되지 않으므로 이미 Actor가 선택된 상황.
-		//SelectedActor를 update하지 않고 마우스 인풋에 따라 hovering or drag
+		/** 기즈모가 선택되었을 때. Actor가 선택되지 않으면 기즈모도 선택되지 않으므로 이미 Actor가 선택된 상황. */
+		/** SelectedActor를 update하지 않고 마우스 인풋에 따라 hovering or drag */
 		else
 		{
 			PreviousGizmoDirection = Gizmo.GetGizmoDirection();
-			if (InputManager.IsKeyPressed(EKeyInput::MouseLeft)) //드래그
+			/** 드래그 */
+			if (InputManager.IsKeyPressed(EKeyInput::MouseLeft))
 			{
 				Gizmo.OnMouseDragStart(CollisionPoint);
 			}

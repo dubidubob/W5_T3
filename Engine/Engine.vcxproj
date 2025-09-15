@@ -177,7 +177,6 @@
     <ClInclude Include="Global\Matrix.h" />
     <ClInclude Include="Global\Memory.h" />
     <ClInclude Include="Global\Types.h" />
-    <ClInclude Include="Global\Struct.h" />
     <ClInclude Include="Global\Vector.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />
@@ -209,6 +208,7 @@
     <ClInclude Include="Public\\Core\\AppWindow.h" />
     <ClInclude Include="Public\\Core\\ClientApp.h" />
     <ClInclude Include="Public\\Render\Renderer\\DeviceResources.h" />
+    <ClInclude Include="Public\\Render\Renderer\\LineBatchRenderer.h" />
     <ClInclude Include="Public\\Render\Renderer\\Pipeline.h" />
     <ClInclude Include="Public\\Render\Renderer\\Renderer.h" />
     <ClInclude Include="Public\\Render\UI\Factory\\UIWindowFactory.h" />
@@ -278,6 +278,7 @@
     <ClCompile Include="Private\\Core\\AppWindow.cpp" />
     <ClCompile Include="Private\\Core\\ClientApp.cpp" />
     <ClCompile Include="Private\\Render\Renderer\\DeviceResources.cpp" />
+    <ClCompile Include="Private\\Render\Renderer\\LineBatchRenderer.cpp" />
     <ClCompile Include="Private\\Render\Renderer\\Pipeline.cpp" />
     <ClCompile Include="Private\\Render\Renderer\\Renderer.cpp" />
     <ClCompile Include="Private\\Render\UI\Factory\\UIWindowFactory.cpp" />

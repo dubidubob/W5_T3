@@ -73,7 +73,7 @@ public:
 	bool GetIsResizing() { return bIsResizing;}
 	void SetIsResizing(bool isResizing) { bIsResizing = isResizing; }
 
-	//Testing Func
+	/** Testing Func */
 	template<typename T>
 	ID3D11Buffer* CreateVertexBuffer(TArray<T>& InVertices) const
 	{
@@ -103,7 +103,7 @@ public:
 	void SetViewMode(EViewModeIndex InViewMode) { CurrentViewMode = InViewMode; }
 	EViewModeIndex GetViewMode(EViewModeIndex InViewMode) const { return CurrentViewMode; }
 
-	// Show Flags management
+	/** Show Flags management */
 	void SetShowFlags(EEngineShowFlags InShowFlags) { CurrentShowFlags = InShowFlags; }
 	EEngineShowFlags GetShowFlags() const { return CurrentShowFlags; }
 	void ToggleShowFlag(EEngineShowFlags InFlag) { CurrentShowFlags = CurrentShowFlags ^ InFlag; }
@@ -114,6 +114,14 @@ public:
 	IDXGISwapChain* GetSwapChain() const { return DeviceResources->GetSwapChain();}
 	ID3D11RenderTargetView* GetRenderTargetView() const { return DeviceResources->GetRenderTargetView(); }
 	UDeviceResources* GetDeviceResources() const { return DeviceResources; }
+
+	/** LineBatchRenderer에서 사용할 공개 메서드 */
+	UPipeline* GetPipeline() const { return Pipeline; }
+	ID3D11InputLayout* GetDefaultInputLayout() const { return DefaultInputLayout; }
+	ID3D11VertexShader* GetDefaultVertexShader() const { return DefaultVertexShader; }
+	ID3D11PixelShader* GetDefaultPixelShader() const { return DefaultPixelShader; }
+	ID3D11DepthStencilState* GetDefaultDepthStencilState() const { return DefaultDepthStencilState; }
+	ID3D11RasterizerState* GetRasterizerState(const FRenderState& InRenderState);
 
 private:
 	UPipeline* Pipeline = nullptr;
@@ -180,7 +188,6 @@ private:
 	TMap<FRasterKey, ID3D11RasterizerState*, FRasterKeyHasher> RasterCache;
 
 	FPipelineInfo CreatePipelineInfo(const FRenderState& InRenderState);
-	ID3D11RasterizerState* GetRasterizerState(const FRenderState& InRenderState);
 
 	bool bIsResizing = false;
 

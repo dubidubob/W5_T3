@@ -7,6 +7,7 @@
 #include "Manager/UI/UIManager.h"
 #include "Mesh/Actor.h"
 #include "Render/Renderer/Pipeline.h"
+#include "Render/Renderer/LineBatchRenderer.h"
 #include "Editor/Editor.h"
 #include "Mesh/TextComponent.h"
 
@@ -22,7 +23,7 @@ void URenderer::Init(HWND InWindowHandle)
 	DeviceResources = new UDeviceResources(InWindowHandle);
 	Pipeline = new UPipeline(GetDeviceContext());
 
-	// 래스터라이저 상태 생성
+	/** 래스터라이저 상태 생성 */
 	CreateRasterizerState();
 	CreateDepthStencilState();
 	CreateBlendState();
@@ -31,10 +32,16 @@ void URenderer::Init(HWND InWindowHandle)
 	CreateInstanceBuffer();
 
 	CreateConstantBuffer();
+
+	/** LineBatchRenderer 초기화 */
+	ULineBatchRenderer::GetInstance().Init();
 }
 
 void URenderer::Release()
 {
+	/** LineBatchRenderer 해제 */
+	ULineBatchRenderer::GetInstance().Release();
+
 	ReleaseConstantBuffer();
 	ReleaseDefaultShader();
 	ReleaseResource();
@@ -149,7 +156,7 @@ void URenderer::ReleaseResource()
 		DisabledDepthStencilState = nullptr;
 	}
 
-	// 렌더 타겟을 초기화
+	/** 렌더 타겟을 초기화 */
 	if (GetDeviceContext())
 	{
 		GetDeviceContext()->OMSetRenderTargets(0, nullptr, nullptr);
