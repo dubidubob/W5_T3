@@ -17,7 +17,8 @@ public:
         // UE 기준(X-forward) 원점 바라보도록 -X로 초기 위치 설정
         RelativeLocation(FVector(-10.0f, 0.0f, 0.0f)), RelativeRotation(FVector(0, 0, 0)),
         FovY(90.f), Aspect(float(Render::INIT_SCREEN_WIDTH) / Render::INIT_SCREEN_HEIGHT),
-        NearZ(0.1f), FarZ(100.f), CameraType(ECameraType::ECT_Perspective)
+        NearZ(0.1f), FarZ(100.f), CameraType(ECameraType::ECT_Perspective),
+        CurrentMoveSpeed(DEFAULT_CAMERA_SPEED), CurrentMouseSensitivity(DEFAULT_MOUSE_SENSITIVITY)
     {
 		LoadCameraSettings();
 	}
@@ -125,8 +126,8 @@ private:
 	ECameraType CameraType = {};
 
 	// Dynamic Movement Speed
-	float CurrentMoveSpeed = DEFAULT_CAMERA_SPEED;
+	float CurrentMoveSpeed;
 
 	// Dynamic Mouse Sensitivity
-	float CurrentMouseSensitivity = DEFAULT_MOUSE_SENSITIVITY;
+	float CurrentMouseSensitivity;
 };

@@ -81,7 +81,7 @@ void UViewSettingsWidget::RenderWidget()
 
 		// Bounds checkbox
 		bool bShowBounds = HasFlag(CurrentFlags, EEngineShowFlags::SF_Bounds);
-		if (ImGui::Checkbox("Bounding Boxes", &bShowBounds))
+		if (ImGui::Checkbox("Bounding Boxes (Alt + C)", &bShowBounds))
 		{
 			Renderer.ToggleShowFlag(EEngineShowFlags::SF_Bounds);
 		}

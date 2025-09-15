@@ -37,6 +37,7 @@ void UEditor::Update()
 	Camera.Update();
 
 	ProcessMouseInput(ULevelManager::GetInstance().GetCurrentLevel());
+	ProcessKeyboardInput();
 
 	Renderer.UpdateConstant(Camera.GetFViewProjConstants());
 }
@@ -78,6 +79,18 @@ void UEditor::RenderEditorBatched()
 	Gizmo.RenderGizmo(ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor(), Camera.GetLocation());
 }
 
+
+void UEditor::ProcessKeyboardInput()
+{
+	const UInputManager& InputManager = UInputManager::GetInstance();
+	auto& Renderer = URenderer::GetInstance();
+
+	// Alt+C로 바운딩 박스 토글
+	if (InputManager.IsKeyDown(EKeyInput::Alt) && InputManager.IsKeyPressed(EKeyInput::C))
+	{
+		Renderer.ToggleShowFlag(EEngineShowFlags::SF_Bounds);
+	}
+}
 
 void UEditor::ProcessMouseInput(ULevel* InLevel)
 {

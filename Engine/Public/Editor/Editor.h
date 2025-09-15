@@ -24,6 +24,7 @@ public:
 private:
 
 	void ProcessMouseInput(ULevel* InLevel);
+	void ProcessKeyboardInput();
 	TArray<UPrimitiveComponent*> FindCandidatePrimitives(ULevel* InLevel);
 
 	FVector GetGizmoDragLocation(FRay& WorldRay);

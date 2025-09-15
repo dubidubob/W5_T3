@@ -320,7 +320,9 @@ void UCamera::LoadCameraSettings()
 	);
 
 	float LoadedSpeed = std::stof(Buffer);
-	SetMoveSpeed(LoadedSpeed);
+	// 로드한 값을 직접 설정 (SaveCameraSettings 호출하지 않음)
+	CurrentMoveSpeed = max(LoadedSpeed, MIN_CAMERA_SPEED);
+	CurrentMoveSpeed = min(CurrentMoveSpeed, MAX_CAMERA_SPEED);
 
 	// Load Mouse Sensitivity
 	GetPrivateProfileStringA(
@@ -333,5 +335,7 @@ void UCamera::LoadCameraSettings()
 	);
 
 	float LoadedSensitivity = std::stof(Buffer);
-	SetMouseSensitivity(LoadedSensitivity);
+	// 로드한 값을 직접 설정 (SaveCameraSettings 호출하지 않음)
+	CurrentMouseSensitivity = max(LoadedSensitivity, MIN_MOUSE_SENSITIVITY);
+	CurrentMouseSensitivity = min(CurrentMouseSensitivity, MAX_MOUSE_SENSITIVITY);
 }
