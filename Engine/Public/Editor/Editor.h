@@ -18,6 +18,7 @@ public:
 
 	void Update();
 	void RenderEditor();
+	const FVector& GetCameraLocation();
 	/** 배칭 렌더링 버전 */
 	void RenderEditorBatched();
 

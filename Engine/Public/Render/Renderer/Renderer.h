@@ -67,7 +67,7 @@ public:
 	//void Update();
 	void RenderBegin();
 	void RenderLevel();
-	void RenderTest();
+	void RenderTest(const FVector& CameraLocation);
 	void RenderEnd() const;
 	void RenderPrimitive(FEditorPrimitive& InPrimitive, struct FRenderState& InRenderState);
 	void RenderBoundingBox(UPrimitiveComponent* PrimitiveComponent);
@@ -141,6 +141,7 @@ private:
 private:
 	ID3D11DepthStencilState* DefaultDepthStencilState = nullptr;
 	ID3D11DepthStencilState* DisabledDepthStencilState = nullptr;
+	ID3D11DepthStencilState* TextDepthStencilState = nullptr;
 	ID3D11BlendState* TextBlendState = nullptr;
 	ID3D11Buffer* ConstantBufferModels = nullptr;
 	ID3D11Buffer* ConstantBufferPerFrame = nullptr;

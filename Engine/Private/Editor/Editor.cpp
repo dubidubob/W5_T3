@@ -52,6 +52,11 @@ void UEditor::RenderEditor()
 	Gizmo.RenderGizmo(ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor(), Camera.GetLocation());
 }
 
+const FVector& UEditor::GetCameraLocation()
+{
+	return Camera.GetLocation();
+}
+
 void UEditor::RenderEditorBatched()
 {
     ULineBatchRenderer& LineBatch = ULineBatchRenderer::GetInstance();

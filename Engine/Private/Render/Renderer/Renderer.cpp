@@ -93,6 +93,21 @@ void URenderer::CreateDepthStencilState()
 		&descDisabled,
 		&DisabledDepthStencilState
 	);
+
+	D3D11_DEPTH_STENCIL_DESC DescText = {};
+
+	//Text(외 투명한 물체)는 깊이테스트를 하되 쓰지는 않아야 함.
+	DescText.DepthEnable = TRUE;
+	DescText.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+
+	DescDefault.StencilEnable = FALSE;
+	DescDefault.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+	DescDefault.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+
+	hr = DeviceResources->GetDevice()->CreateDepthStencilState(
+		&DescText,
+		&TextDepthStencilState
+	);
 }
 
 void URenderer::CreateBlendState()
@@ -343,8 +358,7 @@ void URenderer::Update(UEditor* Editor)
 	RenderLevel();
 	// Editor->RenderEditor();
 	Editor->RenderEditorBatched();
-	RenderTest();
-
+	RenderTest(Editor->GetCameraLocation());
 	//RenderLines();
 
 	UUIManager::GetInstance().Render();
@@ -411,46 +425,80 @@ void URenderer::RenderLevel()
 	}
 }
 
-void URenderer::RenderTest()
+void URenderer::RenderTest(const FVector& CameraLocation)
 {
 	if (IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText) == false) { return; }
 
+
+	//shader, rasterizaer state, depth stencil state, input layout 설정
 	FRenderState State = FRenderState{ ECullMode::None, EFillMode::Solid };
 	Pipeline->UpdatePipeline(CreateTextPipelineInfo(State));
-
+	
+	//텍스처, 샘플러 설정
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
 	ID3D11ShaderResourceView* Srv = ResourceManager.GetTexture("Asset/Font/Roboto-Medium.dds");
 	ID3D11SamplerState* SamplerState = ResourceManager.GetSamplerState(ESamplerType::Text);
-
 	Pipeline->SetTexture(0, false, Srv);
 	Pipeline->SetSamplerState(0, false, SamplerState);
 
+
+	//text(외 투명한 물체)들은 블랜딩을 적용하기 위해서 zbuffer에 쓰기를 하지 않음, 그래서 뒤에 있는 물체가 앞에 있는 물체 위에 렌더링되는 현상이 벌어짐
+	//그래서 zbuffer에 쓰지 않으면서 추가로 카메라로부터 거리순으로 정렬을 해서 멀리 있는 물체부터 그려줘야함.
+	struct RenderObject
+	{
+		UTextComponent* Component;
+		float DistanceToCamera;
+
+		bool operator<(const RenderObject& Other) const
+		{
+			return this->DistanceToCamera > Other.DistanceToCamera;
+		}
+	};
+
+	TArray<RenderObject> RenderList;
+
 	for (UTextComponent* Component : ULevelManager::GetInstance().GetCurrentLevel()->GetTextComponents())
 	{
-		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
-		
-		USceneComponent* RootComponent = Component->GetOwner()->GetRootComponent();
+		RenderObject Object;
+		Object.Component = Component;
+		Object.DistanceToCamera = (CameraLocation - Component->GetWorldLocation()).Length();
+		RenderList.push_back(Object);
+	}
 
-		if (RootComponent->GetComponentType() == EComponentType::Primitive)
+	std::sort(RenderList.begin(), RenderList.end());
+
+
+	//정렬된 리스트 순회하면서 렌더링
+	for (RenderObject& Object : RenderList)
+	{
+		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
+
+		USceneComponent* RootComponent = Object.Component->GetOwner()->GetRootComponent();
+
+		//루트컴포넌트가 PrimitiveComponent가 아닌 다른 component가 될 수 있는지는 모르겠지만 일단 예외처리를 함.
+		//AABB의 높이값을 이용해서 항상 엑터 위에 텍스트가 출력되도록 함
+		if (RootComponent->GetClass()->IsChildOf(UPrimitiveComponent::StaticClass()))
 		{
 			FAABB AABB = static_cast<UPrimitiveComponent*>(RootComponent)->GetWorldBounds();
 			FVector Position = AABB.GetCenter();
 			Position.Z = AABB.Max.Z + 1.f;
 			UpdateConstant(Position, FVector(0, 0, 0), FVector(0, 0, 0));
 		}
+		//루트컴포넌트가 primitive가 아니면 그냥 textcomponent의 월드좌표에 z축으로 2 더해서 출력해줌
 		else
 		{
-			UpdateConstant(Component->GetWorldLocation()+FVector(0,0,2.0f),FVector(), FVector());
+			UpdateConstant(Object.Component->GetWorldLocation() + FVector(0, 0, 2.0f), FVector(), FVector());
 		}
-		
-		
-		Pipeline->SetVertexBuffer(Component->GetVertexBuffer(), StrideTextVertex);
+
+
+		Pipeline->SetVertexBuffer(Object.Component->GetVertexBuffer(), StrideTextVertex);
 		Pipeline->SetInstanceBuffer(TextInstanceBuffer, StrideTextInstance);
 
-		TArray<FTextInstance>* InstanceData = Component->GetInstanceData();
+		//인스턴스 버퍼 업데이트(텍스트마다 다름)
+		TArray<FTextInstance>* InstanceData = Object.Component->GetInstanceData();
 		UpdateInstance(InstanceData);
 
-		Pipeline->DrawInstanced(Component->GetNumVertices(), InstanceData->size(), 0, 0);
+		Pipeline->DrawInstanced(Object.Component->GetNumVertices(), InstanceData->size(), 0, 0);
 	}
 }
 
@@ -832,7 +880,7 @@ FPipelineInfo URenderer::CreateTextPipelineInfo(const FRenderState& InRenderStat
 
 	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
 	return FPipelineInfo{ TextInputLayout, TextVertexShader,
-		RasterizerState, DefaultDepthStencilState, TextPixelShader, TextBlendState
+		RasterizerState, TextDepthStencilState, TextPixelShader, TextBlendState
 	};
 }
 
