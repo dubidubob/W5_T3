@@ -45,7 +45,7 @@ struct PS_INPUT
 
 
 
-float3 GetCameraPos();
+float3 GetCameraForward();
 
 PS_INPUT mainVS(VS_INPUT Input)
 {
@@ -56,9 +56,9 @@ PS_INPUT mainVS(VS_INPUT Input)
 	float3 BasePos = float3(Input.Position.x, Input.Position.y/2, Input.Position.z)*FontScale;
 	
 	float3 ModelPos = ModelMatrix[3].xyz;
-	float3 CameraPos = GetCameraPos();
+	float3 CameraForward = GetCameraForward();
 	
-	float3 Forward = normalize(ModelPos - CameraPos);
+	float3 Forward = CameraForward;
 	float3 Right = normalize(cross(float3(0, 0, 1), Forward));
 	float3 Up = normalize(cross(Forward, Right));
 
@@ -85,12 +85,12 @@ float4 mainPS(PS_INPUT Input) : SV_Target
 	return TextureColor;
 }
 
-float3 GetCameraPos()
+float3 GetCameraForward()
 {
 	float3 Result;
 
-	float3x3 RotationMatrix = float3x3(ViewMatrix[0].xyz, ViewMatrix[1].xyz, ViewMatrix[2].xyz);
-	float3 CameraPos = -mul(ViewMatrix[3].xyz, transpose(RotationMatrix));
+	float3x3 RotationMatrixInverse = transpose(float3x3(ViewMatrix[0].xyz, ViewMatrix[1].xyz, ViewMatrix[2].xyz));
+
 	
-	return CameraPos;
+	return RotationMatrixInverse[2].xyz;
 }
