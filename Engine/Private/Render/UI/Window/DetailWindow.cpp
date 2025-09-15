@@ -5,6 +5,8 @@
 #include "Render/UI/Widget/TargetActorTransformWidget.h"
 #include "Render/UI/Widget/ActorTerminationWidget.h"
 
+IMPLEMENT_CLASS(UDetailWindow, UUIWindow)
+
 UDetailWindow::UDetailWindow()
 {
 	FUIWindowConfig Config;

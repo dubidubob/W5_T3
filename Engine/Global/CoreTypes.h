@@ -7,8 +7,8 @@ struct FViewProjConstants
 {
 	FViewProjConstants()
 	{
-		View = FMatrix::Identity();
-		Projection = FMatrix::Identity();
+		View = FMatrix::Identity;
+		Projection = FMatrix::Identity;
 	}
 
 	FMatrix View;
@@ -88,7 +88,6 @@ enum class EPrimitiveType : uint8_t
 	CubeArrow,
 	Ring,
 	Line,
-	Quad,
 
 	End = 0xFF
 };

@@ -48,15 +48,19 @@ public:
 	void CreateRasterizerState();
 	void CreateDepthStencilState();
 	void CreateBlendState();
-	void ReleaseRasterizerState();
-
-	void ReleaseResource();
-
 	void CreateDefaultShader();
 	void CreateTextShader();
+	void CreateConstantBuffer();
+
 	void ReleaseDefaultShader();
 	void ReleaseTextShader();
+	static void ReleaseVertexBuffer(ID3D11Buffer* InVertexBuffer);
+	void ReleaseConstantBuffer();
+	void ReleaseRasterizerState();
+	void ReleaseResource();
 	void ReleaseBlendState();
+	void ReleaseInstanceBuffer();
+
 	void Update(UEditor* Editor);
 	//void Update();
 	void RenderBegin();
@@ -70,22 +74,26 @@ public:
 	void SetIsResizing(bool isResizing) { bIsResizing = isResizing; }
 
 	//Testing Func
-	ID3D11Buffer* CreateVertexBuffer(FVertex* InVertices, uint32 InByteWidth) const;
+	template<typename T>
+	ID3D11Buffer* CreateVertexBuffer(TArray<T>& InVertices) const
+	{
+		UINT ByteWidth = InVertices.size() * sizeof(T);
+		D3D11_BUFFER_DESC VertexBufferDesc = {};
+		VertexBufferDesc.ByteWidth = ByteWidth;
+		VertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE; // will never be updated
+		VertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+		D3D11_SUBRESOURCE_DATA VertexBufferSRD = { InVertices.data()};
+
+		ID3D11Buffer* vertexBuffer;
+
+		GetDevice()->CreateBuffer(&VertexBufferDesc, &VertexBufferSRD, &vertexBuffer);
+
+		return vertexBuffer;
+	};
 	ID3D11Buffer* CreateIndexBuffer(const void* InIndices, uint32 InByteWidth) const;
 	void CreateInstanceBuffer();
-	static void ReleaseVertexBuffer(ID3D11Buffer* InVertexBuffer);
 
-	///////////////////////////////////////
-	void CreateTestVertexBuffer();
-	void ReleaseTestVertexBuffer();
-	void ReleaseInstanceBuffer();
-	///////////////////////////////////////
-	void ReleaseTexture(ID3D11ShaderResourceView* Texture);
-
-	void ReleaseSamplerState(ID3D11SamplerState* Sampler);
-
-	void CreateConstantBuffer();
-	void ReleaseConstantBuffer();
 	void UpdateConstant(const UPrimitiveComponent* Primitive);
 	void UpdateConstant(const FVector& InPosition, const FVector& InRotation, const FVector& InScale) const;
 	void UpdateConstant(const FViewProjConstants& InViewProjConstants) const;
@@ -124,26 +132,7 @@ private:
 	ID3D11Buffer* ConstantBufferCharTable = nullptr;
 	//////////////////////////////////////
 
-	ID3D11Buffer* TestInstanceBuffer = nullptr;
-	ID3D11Buffer* TestVertexBuffer = nullptr;
-
-	TArray<FTextVertex> TestData =
-	{
-		// { Position },       U,      V
-		{ {-0.5f,  0.5f, 0.0f}, 0.0f,   0.0f }, // 좌상단
-		{ { 0.5f, -0.5f, 0.0f}, 1.0f,   1.0f }, // 우하단
-		{ {-0.5f, -0.5f, 0.0f}, 0.0f,   1.0f }, // 좌하단
-				
-		{ { 0.5f, -0.5f, 0.0f}, 1.0f,   1.0f }, // 우하단
-		{ {-0.5f,  0.5f, 0.0f}, 0.0f,   0.0f }, // 좌상단
-		{ { 0.5f,  0.5f, 0.0f}, 1.0f,   0.0f }, // 우상단
-	};
-
-	TArray<FTextInstance> TestInstance =
-	{
-		{{1,1,1,1}, {0,0.5,0}, 37},
-		{{1,1,1,1}, {32/512.0,0.5,0}, 37},
-	};
+	ID3D11Buffer* TextInstanceBuffer = nullptr;
 	/////////////////////////////////////
 	FLOAT ClearColor[4] = {0.025f, 0.025f, 0.025f, 1.0f};
 

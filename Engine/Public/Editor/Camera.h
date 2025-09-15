@@ -68,6 +68,15 @@ public:
 	}
 	void AdjustMoveSpeed(float InDelta) { SetMoveSpeed(CurrentMoveSpeed + InDelta); }
 
+	float GetMouseSensitivity() const { return CurrentMouseSensitivity; }
+	void SetMouseSensitivity(float InSensitivity)
+	{
+		CurrentMouseSensitivity = max(InSensitivity, MIN_MOUSE_SENSITIVITY);
+		CurrentMouseSensitivity = min(InSensitivity, MAX_MOUSE_SENSITIVITY);
+		SaveCameraSettings();
+	}
+	void AdjustMouseSensitivity(float InDelta) { SetMouseSensitivity(CurrentMouseSensitivity + InDelta); }
+
 	/* *
 	 * @brief Camera Settings Save/Load
 	 */
@@ -95,6 +104,11 @@ private:
 	static constexpr float DEFAULT_CAMERA_SPEED = 6.0f;
 	static constexpr float SPEED_ADJUST_STEP = 0.5f;
 
+	// Mouse Sensitivity Constants
+	static constexpr float MIN_MOUSE_SENSITIVITY = 0.001f;
+	static constexpr float MAX_MOUSE_SENSITIVITY = 0.5f;
+	static constexpr float DEFAULT_MOUSE_SENSITIVITY = 0.05f;
+
 private:
 	FViewProjConstants ViewProjConstants = {};
 	FVector RelativeLocation = {};
@@ -112,4 +126,7 @@ private:
 
 	// Dynamic Movement Speed
 	float CurrentMoveSpeed = DEFAULT_CAMERA_SPEED;
+
+	// Dynamic Mouse Sensitivity
+	float CurrentMouseSensitivity = DEFAULT_MOUSE_SENSITIVITY;
 };

@@ -25,15 +25,16 @@ struct FMatrix
 		float M30, float M31, float M32, float M33);
 
 	/**
-	* @brief 항등행렬
-	*/
-	static FMatrix Identity();
+	 * @brief 전치행렬
+	 */
+
+	static FMatrix Transpose(const FMatrix& InOtherMatrix);
 
 
 	/**
 	* @brief 두 행렬곱을 진행한 행렬을 반환하는 연산자 함수
 	*/
-	FMatrix operator*(const FMatrix& InOtherMatrix);
+	FMatrix operator*(const FMatrix& InOtherMatrix) const;
 	void operator*=(const FMatrix& InOtherMatrix);
 
 	/**
@@ -84,4 +85,14 @@ struct FMatrix
 	 */
 	static FMatrix BasisLHYToUE();
 	static FMatrix BasisUEToLHY();
+
+	/**
+	* @brief 항등행렬
+	*/
+	static const FMatrix Identity;
+
+	/**
+	 * @brief 영행렬
+	 */
+	static const FMatrix Zero;
 };

@@ -25,24 +25,15 @@ void UResourceManager::Initialize()
 	VertexDatas.emplace(EPrimitiveType::Line, &VerticesLine);
 
 	//TArray.GetData(), TArray.Num()*sizeof(FVertexSimple), TArray.GetTypeSize()
-	Vertexbuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(
-		VerticesCube.data(), static_cast<int>(VerticesCube.size()) * sizeof(FVertex)));
-	Vertexbuffers.emplace(EPrimitiveType::Sphere, Renderer.CreateVertexBuffer(
-		VerticesSphere.data(), static_cast<int>(VerticesSphere.size() * sizeof(FVertex))));
-	Vertexbuffers.emplace(EPrimitiveType::Triangle, Renderer.CreateVertexBuffer(
-		VerticesTriangle.data(), static_cast<int>(VerticesTriangle.size() * sizeof(FVertex))));
-	Vertexbuffers.emplace(EPrimitiveType::Square, Renderer.CreateVertexBuffer(
-		VerticesSquare.data(), static_cast<int>(VerticesSquare.size() * sizeof(FVertex))));
-	Vertexbuffers.emplace(EPrimitiveType::Torus, Renderer.CreateVertexBuffer(
-		VerticesTorus.data(), static_cast<int>(VerticesTorus.size() * sizeof(FVertex))));
-	Vertexbuffers.emplace(EPrimitiveType::Arrow, Renderer.CreateVertexBuffer(
-		VerticesArrow.data(), static_cast<int>(VerticesArrow.size() * sizeof(FVertex))));
-	Vertexbuffers.emplace(EPrimitiveType::CubeArrow, Renderer.CreateVertexBuffer(
-		VerticesCubeArrow.data(), static_cast<int>(VerticesCubeArrow.size() * sizeof(FVertex))));
-	Vertexbuffers.emplace(EPrimitiveType::Ring, Renderer.CreateVertexBuffer(
-		VerticesRing.data(), static_cast<int>(VerticesRing.size() * sizeof(FVertex))));
-	Vertexbuffers.emplace(EPrimitiveType::Line, Renderer.CreateVertexBuffer(
-		VerticesLine.data(), static_cast<int>(VerticesLine.size() * sizeof(FVertex))));
+	Vertexbuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(VerticesCube));
+	Vertexbuffers.emplace(EPrimitiveType::Sphere, Renderer.CreateVertexBuffer(VerticesSphere));
+	Vertexbuffers.emplace(EPrimitiveType::Triangle, Renderer.CreateVertexBuffer(VerticesTriangle));
+	Vertexbuffers.emplace(EPrimitiveType::Square, Renderer.CreateVertexBuffer(VerticesSquare));
+	Vertexbuffers.emplace(EPrimitiveType::Torus, Renderer.CreateVertexBuffer(VerticesTorus));
+	Vertexbuffers.emplace(EPrimitiveType::Arrow, Renderer.CreateVertexBuffer(VerticesArrow));
+	Vertexbuffers.emplace(EPrimitiveType::CubeArrow, Renderer.CreateVertexBuffer(VerticesCubeArrow));
+	Vertexbuffers.emplace(EPrimitiveType::Ring, Renderer.CreateVertexBuffer(VerticesRing));
+	Vertexbuffers.emplace(EPrimitiveType::Line, Renderer.CreateVertexBuffer(VerticesLine));
 
 	NumVertices.emplace(EPrimitiveType::Cube, static_cast<uint32>(VerticesCube.size()));
 	NumVertices.emplace(EPrimitiveType::Sphere, static_cast<uint32>(VerticesSphere.size()));
@@ -53,6 +44,12 @@ void UResourceManager::Initialize()
 	NumVertices.emplace(EPrimitiveType::CubeArrow, static_cast<uint32>(VerticesCubeArrow.size()));
 	NumVertices.emplace(EPrimitiveType::Ring, static_cast<uint32>(VerticesRing.size()));
 	NumVertices.emplace(EPrimitiveType::Line, static_cast<uint32>(VerticesLine.size()));
+
+	TextVertexData = &VerticesText;
+	TextVertexBuffer = Renderer.CreateVertexBuffer(VerticesText);
+	TextNumVertices = static_cast<uint32>(VerticesText.size());
+
+	CreateTextSampler();	
 }
 
 void UResourceManager::Release()
@@ -63,17 +60,19 @@ void UResourceManager::Release()
 	{
 		Renderer.ReleaseVertexBuffer(Pair.second);
 	}
+	Renderer.ReleaseVertexBuffer(TextVertexBuffer);
+
 	//TMap.Empty()
 	Vertexbuffers.clear();
 
 	for (auto& Pair : SamplerStates)
 	{
-		Renderer.ReleaseSamplerState(Pair.second);
+		Pair.second->Release();
 	}
 	SamplerStates.clear();
 	for (auto& Pair : ShaderResourceViews)
 	{
-		Renderer.ReleaseTexture(Pair.second);
+		Pair.second->Release();
 	}
 	ShaderResourceViews.clear();
 }
@@ -93,16 +92,11 @@ uint32 UResourceManager::GetNumVertices(EPrimitiveType Type)
 	return NumVertices[Type];
 }
 
-ID3D11ShaderResourceView* UResourceManager::LoadTexture(const FString& Path)
+
+void UResourceManager::CreateTextSampler()
 {
 	URenderer& Renderer = URenderer::GetInstance();
 	ID3D11Device* Device = Renderer.GetDevice();
-	const wstring WidePath = StringToWideString(Path);
-
-	ID3D11Resource* Texture;
-	ID3D11ShaderResourceView* NewResourceView;
-	HRESULT Hr = DirectX::CreateDDSTextureFromFile(Device, WidePath.c_str(), &Texture, &NewResourceView);
-
 
 	ID3D11SamplerState* SamplerState = nullptr;
 	D3D11_SAMPLER_DESC SamplerDesc = {};
@@ -118,6 +112,17 @@ ID3D11ShaderResourceView* UResourceManager::LoadTexture(const FString& Path)
 	Device->CreateSamplerState(&SamplerDesc, &SamplerState);
 
 	SamplerStates.emplace(ESamplerType::Text, SamplerState);
+
+}
+ID3D11ShaderResourceView* UResourceManager::LoadTexture(const FString& Path)
+{
+	URenderer& Renderer = URenderer::GetInstance();
+	ID3D11Device* Device = Renderer.GetDevice();
+	const wstring WidePath = StringToWideString(Path);
+
+	ID3D11Resource* Texture;
+	ID3D11ShaderResourceView* NewResourceView;
+	HRESULT Hr = DirectX::CreateDDSTextureFromFile(Device, WidePath.c_str(), &Texture, &NewResourceView);
 
 	Texture->Release();
 

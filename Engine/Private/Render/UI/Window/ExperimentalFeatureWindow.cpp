@@ -3,6 +3,7 @@
 
 #include "Render/UI/Widget/InputInformationWidget.h"
 
+IMPLEMENT_CLASS(UExperimentalFeatureWindow, UUIWindow)
 /**
  * @brief Window Constructor
  */

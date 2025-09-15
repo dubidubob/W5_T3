@@ -37,7 +37,7 @@ void USceneComponent::SetParentAttachment(USceneComponent* NewParent)
 
 	ParentAttachment = NewParent;
 
-	ParentAttachment->Children.push_back(this);
+	NewParent->Children.push_back(this);
 
 	MarkAsDirty();
 
@@ -135,10 +135,10 @@ const FMatrix& USceneComponent::GetWorldTransformMatrixInverse() const
 
 	if (bIsTransformDirtyInverse)
 	{
-		WorldTransformMatrixInverse = FMatrix::Identity();
-		for (USceneComponent* Ancester = ParentAttachment; Ancester && Ancester->ParentAttachment; Ancester = Ancester->ParentAttachment)
+		WorldTransformMatrixInverse = FMatrix::Identity;
+		for (USceneComponent* Ancestor = ParentAttachment; Ancestor && Ancestor->ParentAttachment; Ancestor = Ancestor->ParentAttachment)
 		{
-			WorldTransformMatrixInverse = FMatrix::GetModelMatrixInverse(Ancester->RelativeLocation, FVector::GetDegreeToRadian(Ancester->RelativeRotation), Ancester->RelativeScale3D) * WorldTransformMatrixInverse;
+			WorldTransformMatrixInverse = FMatrix::GetModelMatrixInverse(Ancestor->RelativeLocation, FVector::GetDegreeToRadian(Ancestor->RelativeRotation), Ancestor->RelativeScale3D) * WorldTransformMatrixInverse;
 
 		}
 		WorldTransformMatrixInverse = WorldTransformMatrixInverse * FMatrix::GetModelMatrixInverse(RelativeLocation, FVector::GetDegreeToRadian(RelativeRotation), RelativeScale3D);
@@ -153,11 +153,6 @@ const TArray<FVertex>* UPrimitiveComponent::GetVerticesData() const
 {
     UResourceManager& ResourceManager = UResourceManager::GetInstance();
     return ResourceManager.GetVertexData(Type);
-}
-
-ID3D11Buffer* UPrimitiveComponent::GetVertexBuffer() const
-{
-	return Vertexbuffer;
 }
 
 void UPrimitiveComponent::SetTopology(D3D11_PRIMITIVE_TOPOLOGY InTopology)

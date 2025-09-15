@@ -3,6 +3,8 @@
 
 #include "Render/UI/Widget/ActorListWidget.h"
 
+IMPLEMENT_CLASS(UOutlinerWindow, UUIWindow)
+
 UOutlinerWindow::UOutlinerWindow()
 {
 	FUIWindowConfig Config;

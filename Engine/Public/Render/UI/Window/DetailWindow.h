@@ -9,6 +9,7 @@ class ULevelManager;
  */
 class UDetailWindow : public UUIWindow
 {
+	DECLARE_CLASS(UDetailWindow, UUIWindow)
 public:
     UDetailWindow();
     void Initialize() override;
