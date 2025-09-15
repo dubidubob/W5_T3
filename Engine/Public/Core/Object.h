@@ -17,6 +17,7 @@ public:
 	FString GetName() const { return Name.ToString(); }
 	FString GetBaseName() const { return Name.ToBaseNameString(); }
 	const UObject* GetOuter() const { return Outer; }
+	uint32 GetUUID() const { return UUID; }
 
 	void SetName(const FName& InName) { Name = InName; }
 	void SetOuter(UObject* InObject);

@@ -13,7 +13,7 @@ UTextComponent::UTextComponent()
 	Vertexbuffer = ResourceManager.GetTextVertexBuffer();
 	NumVertices = ResourceManager.GetTextNumVertices();
 
-	FString Text = "UID: " + std::to_string(GUObjectArray.size());
+	FString Text = "UID: " + std::to_string(GetUUID());
 	SetInstanceData(Text);
 }
 
@@ -35,4 +35,3 @@ void UTextComponent::SetInstanceData(const FString& Characters)
 		InstanceData.push_back({ FVector4(1,1,1,1), FVector(0.0f,OffsetY,2.0f), (uint32)Characters[Index] });
 	}
 }
-
