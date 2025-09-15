@@ -31,6 +31,6 @@ void UTextComponent::SetInstanceData(const FString& Characters)
 	for (int Index = 0; Index < NumCharacters; Index++)
 	{
 		float OffsetY = (Index - NumCharacters/2);	
-		InstanceData.push_back({ FVector4(1,1,1,1), FVector(0.0f,OffsetY,2.0f), (uint32)Characters[Index] });
+		InstanceData.push_back({ FVector4(1,1,1,1), FVector(0.0f,OffsetY, 0.0f), (uint32)Characters[Index] });
 	}
 }

@@ -425,7 +425,22 @@ void URenderer::RenderTest()
 	for (UTextComponent* Component : ULevelManager::GetInstance().GetCurrentLevel()->GetTextComponents())
 	{
 		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
-		UpdateConstant(Component);
+		
+		USceneComponent* RootComponent = Component->GetOwner()->GetRootComponent();
+
+		if (RootComponent->GetComponentType() == EComponentType::Primitive)
+		{
+			FAABB AABB = static_cast<UPrimitiveComponent*>(RootComponent)->GetWorldBounds();
+			FVector Position = AABB.GetCenter();
+			Position.Z = AABB.Max.Z + 1.f;
+			UpdateConstant(Position, FVector(0, 0, 0), FVector(0, 0, 0));
+		}
+		else
+		{
+			UpdateConstant(Component->GetWorldLocation()+FVector(0,0,2.0f),FVector(), FVector());
+		}
+		
+		
 		Pipeline->SetVertexBuffer(Component->GetVertexBuffer(), StrideTextVertex);
 		Pipeline->SetInstanceBuffer(TextInstanceBuffer, StrideTextInstance);
 
