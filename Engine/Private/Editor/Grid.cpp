@@ -1,17 +1,18 @@
 #include "pch.h"
 #include "Editor/Grid.h"
 #include "Render/Renderer/Renderer.h"
+#include "Render/Renderer/LineBatchRenderer.h"
 #include "Editor/EditorPrimitive.h"
 
 IMPLEMENT_CLASS(UGrid, UObject)
 
 UGrid::UGrid()
 {
-	URenderer& Renderer = URenderer::GetInstance();
-	SetLineVertices();
+    URenderer& Renderer = URenderer::GetInstance();
+    Primitive.Color = FVector4(1, 1, 1, 0.2f);
+    SetLineVertices();
 
 	Primitive.NumVertices = static_cast<uint32>(LineVertices.size());
-	Primitive.Color = FVector4(1, 1, 1, 0.2f);
 	Primitive.Topology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
 	Primitive.Vertexbuffer = Renderer.CreateVertexBuffer(
 		LineVertices);
@@ -35,6 +36,19 @@ void UGrid::RenderGrid()
 	}
 
 	Renderer.RenderPrimitive(Primitive, Primitive.RenderState);
+}
+
+void UGrid::AddToLineBatch(ULineBatchRenderer& LineBatch)
+{
+	URenderer& Renderer = URenderer::GetInstance();
+
+	if (Renderer.IsShowFlagEnabled(EEngineShowFlags::SF_Grid) == false)
+	{
+		return;
+	}
+
+	/** 기존 LineVertices 데이터를 배칭에 추가 */
+	LineBatch.AddLines(LineVertices);
 }
 
 void UGrid::SetGridProperty(float InCellSize, int32 InNumLines)
