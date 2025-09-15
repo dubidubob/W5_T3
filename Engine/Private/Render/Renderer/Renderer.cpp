@@ -10,7 +10,6 @@
 #include "Render/Renderer/LineBatchRenderer.h"
 #include "Editor/Editor.h"
 #include "Mesh/TextComponent.h"
-#include "Render/AABBWireframeComponent.h"
 
 IMPLEMENT_CLASS(URenderer, UObject)
 IMPLEMENT_SINGLETON(URenderer)
@@ -30,6 +29,7 @@ void URenderer::Init(HWND InWindowHandle)
 	CreateBlendState();
 	CreateDefaultShader();
 	CreateTextShader();
+	CreateLineInstancedShader();
 	CreateInstanceBuffer();
 
 	CreateConstantBuffer();
@@ -47,6 +47,7 @@ void URenderer::Release()
 	ReleaseDefaultShader();
 	ReleaseResource();
 	ReleaseTextShader();
+	ReleaseLineInstancedShader();
 	ReleaseInstanceBuffer();
 	ReleaseBlendState();
 
@@ -235,6 +236,37 @@ void URenderer::CreateTextShader()
 	VertexShaderCSO->Release();
 	PixelShaderCSO->Release();
 }
+
+void URenderer::CreateLineInstancedShader()
+{
+	ID3DBlob* VertexShaderCSO = nullptr;
+	ID3DBlob* PixelShaderCSO = nullptr;
+
+	D3DCompileFromFile(L"Asset/Shader/LineInstanced.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0,
+		&VertexShaderCSO, nullptr);
+
+	GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), nullptr, &LineInstancedVertexShader);
+
+	D3DCompileFromFile(L"Asset/Shader/LineInstanced.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0,
+		&PixelShaderCSO, nullptr);
+
+	GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
+		PixelShaderCSO->GetBufferSize(), nullptr, &LineInstancedPixelShader);
+
+	// slot 0: POSITION (per-vertex), slot 1: COLOR (per-instance)
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+	};
+
+	GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), &LineInstancedInputLayout);
+
+	VertexShaderCSO->Release();
+	PixelShaderCSO->Release();
+}
 /**
  * @brief Shader Release
  */
@@ -274,9 +306,28 @@ void URenderer::ReleaseTextShader()
 	}
 
 	if (TextVertexShader)
-	{	
+	{
 		TextVertexShader->Release();
 		TextVertexShader = nullptr;
+	}
+}
+
+void URenderer::ReleaseLineInstancedShader()
+{
+	if (LineInstancedInputLayout)
+	{
+		LineInstancedInputLayout->Release();
+		LineInstancedInputLayout = nullptr;
+	}
+	if (LineInstancedPixelShader)
+	{
+		LineInstancedPixelShader->Release();
+		LineInstancedPixelShader = nullptr;
+	}
+	if (LineInstancedVertexShader)
+	{
+		LineInstancedVertexShader->Release();
+		LineInstancedVertexShader = nullptr;
 	}
 }
 
@@ -290,7 +341,8 @@ void URenderer::Update(UEditor* Editor)
 	RenderBegin();
 
 	RenderLevel();
-	Editor->RenderEditor();
+	// Editor->RenderEditor();
+	Editor->RenderEditorBatched();
 	RenderTest();
 
 	//RenderLines();
@@ -326,16 +378,17 @@ void URenderer::RenderLevel()
 	//
 	// 여기에 카메라 VP 업데이트 한 번 싹
 	//
-	if (!ULevelManager::GetInstance().GetCurrentLevel())
-		return;
+	if (!ULevelManager::GetInstance().GetCurrentLevel()){ return; }
+
+	// Check show flags for primitive components
+	if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false) { return; }
 
 	for (auto& PrimitiveComponent : ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents())
 	{
-		// Check show flags for primitive components
-		if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false) { break; }
+
 
 		if (!PrimitiveComponent) { continue; }
-		
+
 		Pipeline->UpdatePipeline(CreatePipelineInfo(PrimitiveComponent->GetRenderState()));
 
 		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
@@ -353,60 +406,8 @@ void URenderer::RenderLevel()
 		// Render bounding boxes if enabled
 		if (IsShowFlagEnabled(EEngineShowFlags::SF_Bounds))
 		{
-			RenderBoundingBox(PrimitiveComponent);
+			// RenderBoundingBox(PrimitiveComponent);
 		}
-	}
-}
-
-void URenderer::RenderBoundingBox(UPrimitiveComponent* PrimitiveComponent)
-{
-	if (!PrimitiveComponent) return;
-
-	static TMap<UPrimitiveComponent*, UAABBWireframeComponent*> WireframeCache;
-
-	UAABBWireframeComponent* WireframeComponent = nullptr;
-
-	if (WireframeCache.count(PrimitiveComponent))
-	{
-		WireframeComponent = WireframeCache[PrimitiveComponent];
-	}
-	else
-	{
-		WireframeComponent = new UAABBWireframeComponent();
-		WireframeCache[PrimitiveComponent] = WireframeComponent;
-	}
-
-	FAABB WorldBounds = PrimitiveComponent->GetWorldBounds();
-	if (!WorldBounds.IsValid())
-	{
-		return; // 유효하지 않은 바운딩 박스는 렌더링하지 않음
-	}
-
-	//FVector Center = WorldBounds.GetCenter();
-	//FVector Size = WorldBounds.GetSize();
-
-	WireframeComponent->SetAABB(WorldBounds);
-
-	if (WireframeComponent->GetVertexBuffer() && WireframeComponent->GetIndexBuffer() && WireframeComponent->GetNumIndices() > 0)
-	{
-		// AABB Wireframe을 위한 특별한 PipelineInfo 생성
-		ID3D11RasterizerState* RasterizerState = GetRasterizerState(WireframeComponent->GetRenderState());
-		FPipelineInfo WireframePipelineInfo = {
-			DefaultInputLayout, DefaultVertexShader,
-			RasterizerState, DefaultDepthStencilState, DefaultPixelShader, nullptr,
-			WireframeComponent->GetTopology()  // LINELIST 사용
-		};
-		Pipeline->UpdatePipeline(WireframePipelineInfo);
-
-		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
-		UpdateConstant(FVector(0, 0, 0), FVector(0, 0, 0), FVector(1, 1, 1));
-
-		Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
-		UpdateConstant(WireframeComponent->GetColor());
-
-		Pipeline->SetVertexBuffer(WireframeComponent->GetVertexBuffer(), Stride);
-		Pipeline->SetIndexBuffer(WireframeComponent->GetIndexBuffer(), DXGI_FORMAT_R32_UINT);
-		Pipeline->DrawIndexed(WireframeComponent->GetNumIndices(), 0, 0);
 	}
 }
 
@@ -763,7 +764,7 @@ void URenderer::UpdateInstance(const TArray<FTextInstance>* Instance)
 		GetDeviceContext()->Map(TextInstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &InstanceBufferMSR);
 		// update constant buffer every frame
 		memcpy(InstanceBufferMSR.pData, Instance->data(), sizeof(FTextInstance) * Instance->size());
-	
+
 		GetDeviceContext()->Unmap(TextInstanceBuffer, 0);
 	}
 

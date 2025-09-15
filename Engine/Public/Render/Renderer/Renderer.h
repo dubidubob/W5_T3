@@ -50,10 +50,12 @@ public:
 	void CreateBlendState();
 	void CreateDefaultShader();
 	void CreateTextShader();
+	void CreateLineInstancedShader();
 	void CreateConstantBuffer();
 
 	void ReleaseDefaultShader();
 	void ReleaseTextShader();
+	void ReleaseLineInstancedShader();
 	static void ReleaseVertexBuffer(ID3D11Buffer* InVertexBuffer);
 	void ReleaseConstantBuffer();
 	void ReleaseRasterizerState();
@@ -124,6 +126,11 @@ public:
 	ID3D11DepthStencilState* GetDefaultDepthStencilState() const { return DefaultDepthStencilState; }
 	ID3D11RasterizerState* GetRasterizerState(const FRenderState& InRenderState);
 
+	/** Instanced line shader accessors */
+	ID3D11InputLayout* GetLineInstancedInputLayout() const { return LineInstancedInputLayout; }
+	ID3D11VertexShader* GetLineInstancedVertexShader() const { return LineInstancedVertexShader; }
+	ID3D11PixelShader* GetLineInstancedPixelShader() const { return LineInstancedPixelShader; }
+
 private:
 	UPipeline* Pipeline = nullptr;
 	UDeviceResources* DeviceResources = nullptr;
@@ -152,6 +159,10 @@ private:
 	ID3D11VertexShader* TextVertexShader = nullptr;
 	ID3D11PixelShader* TextPixelShader = nullptr;
 	ID3D11InputLayout* TextInputLayout = nullptr;
+
+	ID3D11VertexShader* LineInstancedVertexShader = nullptr;
+	ID3D11PixelShader* LineInstancedPixelShader = nullptr;
+	ID3D11InputLayout* LineInstancedInputLayout = nullptr;
 
 	uint32 Stride = 0;
 	uint32 StrideTextVertex = 0;
