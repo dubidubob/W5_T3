@@ -362,18 +362,19 @@ void URenderer::RenderBoundingBox(UPrimitiveComponent* PrimitiveComponent)
 {
 	if (!PrimitiveComponent) return;
 
-	static TMap<UPrimitiveComponent*, UAABBWireframeComponent*> WireframeCache;
+	static TMap<UPrimitiveComponent*, std::unique_ptr<UAABBWireframeComponent>> WireframeCache;
 
 	UAABBWireframeComponent* WireframeComponent = nullptr;
 
 	if (WireframeCache.count(PrimitiveComponent))
 	{
-		WireframeComponent = WireframeCache[PrimitiveComponent];
+		WireframeComponent = WireframeCache[PrimitiveComponent].get();
 	}
 	else
 	{
-		WireframeComponent = new UAABBWireframeComponent();
-		WireframeCache[PrimitiveComponent] = WireframeComponent;
+		auto UniquePtr = std::make_unique<UAABBWireframeComponent>();
+		WireframeComponent = UniquePtr.get();
+		WireframeCache[PrimitiveComponent] = std::move(UniquePtr);
 	}
 
 	FAABB WorldBounds = PrimitiveComponent->GetWorldBounds();
@@ -381,9 +382,6 @@ void URenderer::RenderBoundingBox(UPrimitiveComponent* PrimitiveComponent)
 	{
 		return; // 유효하지 않은 바운딩 박스는 렌더링하지 않음
 	}
-
-	//FVector Center = WorldBounds.GetCenter();
-	//FVector Size = WorldBounds.GetSize();
 
 	WireframeComponent->SetAABB(WorldBounds);
 
