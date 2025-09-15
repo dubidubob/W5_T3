@@ -165,6 +165,32 @@ D3D11_PRIMITIVE_TOPOLOGY UPrimitiveComponent::GetTopology() const
 	return Topology;
 }
 
+FAABB UPrimitiveComponent::GetLocalBounds() const
+{
+	if (!Vertices || Vertices->empty())
+	{
+		return FAABB();
+	}
+
+	FAABB Bounds;
+	for (const FVertex& Vertex : *Vertices)
+	{
+		Bounds.AddPoint(Vertex.Position);
+	}
+	return Bounds;
+}
+
+FAABB UPrimitiveComponent::GetWorldBounds() const
+{
+	FAABB LocalBounds = GetLocalBounds();
+	if (!LocalBounds.IsValid())
+	{
+		return FAABB();
+	}
+
+	return LocalBounds.TransformBy(GetWorldTransformMatrix());
+}
+
 //void UPrimitiveComponent::Render(const URenderer& Renderer) const
 //{
 //	Renderer.RenderPrimitive(Vertexbuffer, NumVertices);
@@ -188,6 +214,11 @@ USphereComponent::USphereComponent()
 	RenderState.FillMode = EFillMode::Solid;
 }
 
+FAABB USphereComponent::GetLocalBounds() const
+{
+	return FAABB(FVector(-1.0f, -1.0f, -1.0f), FVector(1.0f, 1.0f, 1.0f));
+}
+
 IMPLEMENT_CLASS(UCubeComponent, UPrimitiveComponent)
 UCubeComponent::UCubeComponent()
 {
@@ -198,6 +229,11 @@ UCubeComponent::UCubeComponent()
 	NumVertices = ResourceManager.GetNumVertices(Type);
 	RenderState.CullMode = ECullMode::Back;
 	RenderState.FillMode = EFillMode::Solid;
+}
+
+FAABB UCubeComponent::GetLocalBounds() const
+{
+	return FAABB(FVector(-1.0f, -1.0f, -1.0f), FVector(1.0f, 1.0f, 1.0f));
 }
 
 IMPLEMENT_CLASS(ULineComponent, UPrimitiveComponent)
@@ -213,6 +249,11 @@ ULineComponent::ULineComponent()
 	RenderState.FillMode = EFillMode::WireFrame;
 }
 
+FAABB ULineComponent::GetLocalBounds() const
+{
+	return UPrimitiveComponent::GetLocalBounds();
+}
+
 IMPLEMENT_CLASS(UTriangleComponent, UPrimitiveComponent)
 UTriangleComponent::UTriangleComponent()
 {
@@ -225,6 +266,11 @@ UTriangleComponent::UTriangleComponent()
 	RenderState.FillMode = EFillMode::Solid;
 }
 
+FAABB UTriangleComponent::GetLocalBounds() const
+{
+	return UPrimitiveComponent::GetLocalBounds();
+}
+
 IMPLEMENT_CLASS(USquareComponent, UPrimitiveComponent)
 USquareComponent::USquareComponent()
 {
@@ -235,4 +281,9 @@ USquareComponent::USquareComponent()
 	NumVertices = ResourceManager.GetNumVertices(Type);
 	RenderState.CullMode = ECullMode::None;
 	RenderState.FillMode = EFillMode::Solid;
+}
+
+FAABB USquareComponent::GetLocalBounds() const
+{
+	return UPrimitiveComponent::GetLocalBounds();
 }

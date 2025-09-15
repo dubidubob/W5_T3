@@ -10,6 +10,7 @@
 #include "Render/Renderer/LineBatchRenderer.h"
 #include "Editor/Editor.h"
 #include "Mesh/TextComponent.h"
+#include "Render/AABBWireframeComponent.h"
 
 IMPLEMENT_CLASS(URenderer, UObject)
 IMPLEMENT_SINGLETON(URenderer)
@@ -331,7 +332,7 @@ void URenderer::RenderLevel()
 	for (auto& PrimitiveComponent : ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents())
 	{
 		if (!PrimitiveComponent) { continue; }
-		
+
 		// Check show flags for primitive components
 		if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false)
 		{
@@ -348,9 +349,61 @@ void URenderer::RenderLevel()
 
 		Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
 		UpdateConstant(PrimitiveComponent->GetColor());
-		
+
 		Pipeline->SetVertexBuffer(PrimitiveComponent->GetVertexBuffer(), Stride);
 		Pipeline->Draw(static_cast<uint32>(PrimitiveComponent->GetVerticesData()->size()), 0);
+
+		// Render bounding boxes if enabled
+		if (IsShowFlagEnabled(EEngineShowFlags::SF_Bounds) && PrimitiveComponent->IsBoundingBoxVisible())
+		{
+			RenderBoundingBox(PrimitiveComponent);
+		}
+	}
+}
+
+void URenderer::RenderBoundingBox(UPrimitiveComponent* PrimitiveComponent)
+{
+	if (!PrimitiveComponent) return;
+
+	static TMap<UPrimitiveComponent*, UAABBWireframeComponent*> WireframeCache;
+
+	UAABBWireframeComponent* WireframeComponent = nullptr;
+
+	if (WireframeCache.count(PrimitiveComponent))
+	{
+		WireframeComponent = WireframeCache[PrimitiveComponent];
+	}
+	else
+	{
+		WireframeComponent = new UAABBWireframeComponent();
+		WireframeCache[PrimitiveComponent] = WireframeComponent;
+	}
+
+	FAABB WorldBounds = PrimitiveComponent->GetWorldBounds();
+	if (!WorldBounds.IsValid())
+	{
+		return; // 유효하지 않은 바운딩 박스는 렌더링하지 않음
+	}
+
+	FVector Center = WorldBounds.GetCenter();
+	FVector Size = WorldBounds.GetSize();
+
+	WireframeComponent->SetAABB(WorldBounds);
+
+	if (WireframeComponent->GetVertexBuffer() && WireframeComponent->GetVerticesData()->size() > 0)
+	{
+		uint32 VertexCount = static_cast<uint32>(WireframeComponent->GetVerticesData()->size());
+
+		Pipeline->UpdatePipeline(CreatePipelineInfo(WireframeComponent->GetRenderState()));
+
+		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
+		UpdateConstant(FVector(0, 0, 0), FVector(0, 0, 0), FVector(1, 1, 1));
+
+		Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
+		UpdateConstant(WireframeComponent->GetColor());
+
+		Pipeline->SetVertexBuffer(WireframeComponent->GetVertexBuffer(), Stride);
+		Pipeline->Draw(24, 0);
 	}
 }
 

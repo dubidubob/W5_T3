@@ -1,6 +1,7 @@
 #pragma once
 #include "Mesh/ActorComponent.h"
 #include "ResourceManager.h"
+#include "Math/AABB.h"
 
 class USceneComponent : public UActorComponent
 {
@@ -65,6 +66,11 @@ public:
 	FVector4 GetColor() const { return Color; }
 	void SetColor(const FVector4& InColor) { Color = InColor; }
 
+	virtual FAABB GetLocalBounds() const;
+	FAABB GetWorldBounds() const;
+	void SetBoundingBoxVisible(bool bVisible) { bShowBoundingBox = bVisible; }
+	bool IsBoundingBoxVisible() const { return bShowBoundingBox; }
+
 protected:
 	const TArray<FVertex>* Vertices = nullptr;
 	FVector4 Color = FVector4{ 0.f,0.f,0.f,0.f };
@@ -75,6 +81,7 @@ protected:
 	EPrimitiveType Type = EPrimitiveType::Cube;
 
 	bool bVisible = true;
+	bool bShowBoundingBox = false;
 
 };
 
@@ -83,6 +90,7 @@ class UTriangleComponent : public UPrimitiveComponent
 	DECLARE_CLASS(UTriangleComponent, UPrimitiveComponent)
 public:
 	UTriangleComponent();
+	virtual FAABB GetLocalBounds() const override;
 };
 
 class USquareComponent : public UPrimitiveComponent
@@ -90,6 +98,7 @@ class USquareComponent : public UPrimitiveComponent
 	DECLARE_CLASS(USquareComponent, UPrimitiveComponent)
 public:
 	USquareComponent();
+	virtual FAABB GetLocalBounds() const override;
 };
 
 class UCubeComponent : public UPrimitiveComponent
@@ -97,6 +106,7 @@ class UCubeComponent : public UPrimitiveComponent
 	DECLARE_CLASS(UCubeComponent, UPrimitiveComponent)
 public:
 	UCubeComponent();
+	virtual FAABB GetLocalBounds() const override;
 };
 
 class USphereComponent : public UPrimitiveComponent
@@ -104,6 +114,7 @@ class USphereComponent : public UPrimitiveComponent
 	DECLARE_CLASS(USphereComponent, UPrimitiveComponent)
 public:
 	USphereComponent();
+	virtual FAABB GetLocalBounds() const override;
 };
 
 class ULineComponent : public UPrimitiveComponent
@@ -111,4 +122,5 @@ class ULineComponent : public UPrimitiveComponent
 	DECLARE_CLASS(ULineComponent, UPrimitiveComponent)
 public:
 	ULineComponent();
+	virtual FAABB GetLocalBounds() const override;
 };
