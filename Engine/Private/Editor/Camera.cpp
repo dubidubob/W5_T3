@@ -53,8 +53,8 @@ void UCamera::Update()
 		* @brief 마우스 위치 변화량을 감지하여 카메라의 회전을 담당합니다.
 		*/
 		const FVector MouseDelta = UInputManager::GetInstance().GetMouseDelta();
-		RelativeRotation.X += MouseDelta.Y * KeySensitivityDegPerPixel;
-		RelativeRotation.Y += MouseDelta.X * KeySensitivityDegPerPixel;
+		RelativeRotation.X += MouseDelta.Y * CurrentMouseSensitivity;
+		RelativeRotation.Y += MouseDelta.X * CurrentMouseSensitivity;
 
 		// Pitch 클램프(짐벌 플립 방지)
 		if (RelativeRotation.X > 89.0f) RelativeRotation.X = 89.0f;
@@ -279,11 +279,18 @@ FVector UCamera::CalculatePlaneNormal(const FVector& Axis)
 void UCamera::SaveCameraSettings() const
 {
 	const path ConfigFilePath = UPathManager::GetInstance().GetConfigPath() / "editor.ini";
-	
+
 	WritePrivateProfileStringA(
 		"Camera",
 		"MoveSpeed",
 		std::to_string(CurrentMoveSpeed).c_str(),
+		ConfigFilePath.string().c_str()
+	);
+
+	WritePrivateProfileStringA(
+		"Camera",
+		"MouseSensitivity",
+		std::to_string(CurrentMouseSensitivity).c_str(),
 		ConfigFilePath.string().c_str()
 	);
 }
@@ -291,7 +298,7 @@ void UCamera::SaveCameraSettings() const
 void UCamera::LoadCameraSettings()
 {
 	const path ConfigFilePath = UPathManager::GetInstance().GetConfigPath() / "editor.ini";
-	
+
 	// Check if config file exists
 	if (!std::filesystem::exists(ConfigFilePath))
 	{
@@ -299,8 +306,10 @@ void UCamera::LoadCameraSettings()
 		SaveCameraSettings();
 		return;
 	}
-	
+
 	char Buffer[32];
+
+	// Load Move Speed
 	GetPrivateProfileStringA(
 		"Camera",
 		"MoveSpeed",
@@ -309,7 +318,20 @@ void UCamera::LoadCameraSettings()
 		sizeof(Buffer),
 		ConfigFilePath.string().c_str()
 	);
-	
+
 	float LoadedSpeed = std::stof(Buffer);
 	SetMoveSpeed(LoadedSpeed);
+
+	// Load Mouse Sensitivity
+	GetPrivateProfileStringA(
+		"Camera",
+		"MouseSensitivity",
+		std::to_string(DEFAULT_MOUSE_SENSITIVITY).c_str(),
+		Buffer,
+		sizeof(Buffer),
+		ConfigFilePath.string().c_str()
+	);
+
+	float LoadedSensitivity = std::stof(Buffer);
+	SetMouseSensitivity(LoadedSensitivity);
 }

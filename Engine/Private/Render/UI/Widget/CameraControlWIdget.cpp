@@ -53,6 +53,13 @@ void UCameraControlWidget::RenderWidget()
 	{
 		Camera->SetMoveSpeed(CurrentSpeed);
 	}
+
+	// 카메라 감도 표시 및 조절
+	float CurrentSensitivity = Camera->GetMouseSensitivity();
+	if (ImGui::SliderFloat("마우스 감도", &CurrentSensitivity, 0.001f, 0.5f, "%.3f"))
+	{
+		Camera->SetMouseSensitivity(CurrentSensitivity);
+	}
 	ImGui::Spacing();
 
 	if (ImGui::Combo("Mode", &CameraModeIndex, CameraMode, IM_ARRAYSIZE(CameraMode)))
