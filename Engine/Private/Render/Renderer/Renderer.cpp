@@ -481,7 +481,7 @@ void URenderer::RenderTest(const FVector& CameraLocation)
 		//AABB의 높이값을 이용해서 항상 엑터 위에 텍스트가 출력되도록 함
 		if (RootComponent->GetClass()->IsChildOf(UPrimitiveComponent::StaticClass()))
 		{
-			FAABB AABB = static_cast<UPrimitiveComponent*>(RootComponent)->GetWorldBounds();
+			FAABB AABB = static_cast<UPrimitiveComponent*>(RootComponent)->GetLocalBounds();
 			FVector Position = AABB.GetCenter();
 			Position.Z = AABB.Max.Z + 1.f;
 			UpdateConstant(Position, FVector(0, 0, 0), FVector(0, 0, 0));

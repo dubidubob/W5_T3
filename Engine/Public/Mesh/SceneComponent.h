@@ -78,7 +78,7 @@ public:
 	void SetColor(const FVector4& InColor) { Color = InColor; }
 
 	virtual FAABB GetLocalBounds() const;
-	FAABB GetWorldBounds() const;
+	//FAABB GetWorldBounds() const;
 
 protected:
 	const TArray<FVertex>* Vertices = nullptr;

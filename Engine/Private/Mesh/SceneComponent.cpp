@@ -191,23 +191,20 @@ FAABB UPrimitiveComponent::GetLocalBounds() const
 	}
 
 	FAABB Bounds;
+	const FMatrix& Transform = GetWorldTransformMatrix();
+
 	for (const FVertex& Vertex : *Vertices)
 	{
-		Bounds.AddPoint(Vertex.Position);
+		FVector4 TransformedPoint = FVector4(Vertex.Position.X, Vertex.Position.Y, Vertex.Position.Z, 1.0f) * Transform;
+		Bounds.AddPoint(FVector(TransformedPoint.X, TransformedPoint.Y, TransformedPoint.Z));
 	}
 	return Bounds;
 }
 
-FAABB UPrimitiveComponent::GetWorldBounds() const
-{
-	FAABB LocalBounds = GetLocalBounds();
-	if (!LocalBounds.IsValid())
-	{
-		return FAABB();
-	}
-
-	return LocalBounds.TransformBy(GetWorldTransformMatrix());
-}
+//FAABB UPrimitiveComponent::GetWorldBounds() const
+//{
+//	return GetLocalBounds();
+//}
 
 //void UPrimitiveComponent::Render(const URenderer& Renderer) const
 //{

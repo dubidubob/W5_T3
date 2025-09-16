@@ -81,7 +81,7 @@ void UEditor::RenderEditorBatched()
 				for (UPrimitiveComponent* Prim : Primitives)
 				{
 					if (!Prim) { continue; }
-					FAABB Bounds = Prim->GetWorldBounds();
+					FAABB Bounds = Prim->GetLocalBounds();
 					if (!Bounds.IsValid()) { continue; }
 					LineBatch.AddAABB(Bounds.Min, Bounds.Max, FVector4(0,1,0,1));
 				}
