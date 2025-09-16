@@ -54,8 +54,17 @@ public:
 	UPrimitiveComponent();
 
 	const TArray<FVertex>* GetVerticesData() const;
-	ID3D11Buffer* GetVertexBuffer() const { return Vertexbuffer; }
-	uint32 GetNumVertices() const { return NumVertices; }
+	const TArray<FVertex>* GetReducedVerticesData() const;
+	const TArray<uint32>* GetIndicesData() const;
+
+	ID3D11Buffer* GetVertexBuffer() const { return VertexBuffer; }
+	ID3D11Buffer* GetReducedVertexBuffer() const { return ReducedVertexBuffer; }
+	ID3D11Buffer* GetIndexBuffer() const { return IndexBuffer; }
+
+	uint32 GetVertexNum() const { return VertexNum; }
+	uint32 GetReducedVertexNum() const { return ReducedVertexNum; }
+	uint32 GetIndexNum() const { return IndexNum; }
+
 	const FRenderState& GetRenderState() const { return RenderState; }
 
 	void SetTopology(D3D11_PRIMITIVE_TOPOLOGY InTopology);
@@ -74,8 +83,12 @@ public:
 protected:
 	const TArray<FVertex>* Vertices = nullptr;
 	FVector4 Color = FVector4{ 0.f,0.f,0.f,0.f };
-	ID3D11Buffer* Vertexbuffer = nullptr;
-	uint32 NumVertices = 0;
+	ID3D11Buffer* VertexBuffer = nullptr;
+	ID3D11Buffer* ReducedVertexBuffer = nullptr;
+	ID3D11Buffer* IndexBuffer = nullptr;
+	uint32 VertexNum = 0;
+	uint32 ReducedVertexNum = 0;
+	uint32 IndexNum = 0;
 	D3D11_PRIMITIVE_TOPOLOGY Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	FRenderState RenderState = {};
 	EPrimitiveType Type = EPrimitiveType::Cube;

@@ -3,6 +3,8 @@
 #include "Mesh/VertexDatas.h"
 #include "Render/Renderer/Renderer.h"
 
+#include <ranges>
+
 IMPLEMENT_CLASS(UResourceManager, UObject)
 IMPLEMENT_SINGLETON(UResourceManager)
 
@@ -13,57 +15,124 @@ UResourceManager::~UResourceManager() = default;
 void UResourceManager::Initialize()
 {
 	URenderer& Renderer = URenderer::GetInstance();
-	//TMap.Add()
-	VertexDatas.emplace(EPrimitiveType::Cube, &VerticesCube);
-	VertexDatas.emplace(EPrimitiveType::Sphere, &VerticesSphere);
-	VertexDatas.emplace(EPrimitiveType::Triangle, &VerticesTriangle);
-	VertexDatas.emplace(EPrimitiveType::Square, &VerticesSquare);
-	VertexDatas.emplace(EPrimitiveType::Torus, &VerticesTorus);
-	VertexDatas.emplace(EPrimitiveType::Arrow, &VerticesArrow);
-	VertexDatas.emplace(EPrimitiveType::CubeArrow, &VerticesCubeArrow);
-	VertexDatas.emplace(EPrimitiveType::Ring, &VerticesRing);
-	VertexDatas.emplace(EPrimitiveType::Line, &VerticesLine);
+	// TMap.Add()
+	VertexData.emplace(EPrimitiveType::Cube, &VerticesCube);
+	VertexData.emplace(EPrimitiveType::Sphere, &VerticesSphere);
+	VertexData.emplace(EPrimitiveType::Triangle, &VerticesTriangle);
+	VertexData.emplace(EPrimitiveType::Square, &VerticesSquare);
+	VertexData.emplace(EPrimitiveType::Torus, &VerticesTorus);
+	VertexData.emplace(EPrimitiveType::Arrow, &VerticesArrow);
+	VertexData.emplace(EPrimitiveType::CubeArrow, &VerticesCubeArrow);
+	VertexData.emplace(EPrimitiveType::Ring, &VerticesRing);
+	VertexData.emplace(EPrimitiveType::Line, &VerticesLine);
 
-	//TArray.GetData(), TArray.Num()*sizeof(FVertexSimple), TArray.GetTypeSize()
-	Vertexbuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(VerticesCube));
-	Vertexbuffers.emplace(EPrimitiveType::Sphere, Renderer.CreateVertexBuffer(VerticesSphere));
-	Vertexbuffers.emplace(EPrimitiveType::Triangle, Renderer.CreateVertexBuffer(VerticesTriangle));
-	Vertexbuffers.emplace(EPrimitiveType::Square, Renderer.CreateVertexBuffer(VerticesSquare));
-	Vertexbuffers.emplace(EPrimitiveType::Torus, Renderer.CreateVertexBuffer(VerticesTorus));
-	Vertexbuffers.emplace(EPrimitiveType::Arrow, Renderer.CreateVertexBuffer(VerticesArrow));
-	Vertexbuffers.emplace(EPrimitiveType::CubeArrow, Renderer.CreateVertexBuffer(VerticesCubeArrow));
-	Vertexbuffers.emplace(EPrimitiveType::Ring, Renderer.CreateVertexBuffer(VerticesRing));
-	Vertexbuffers.emplace(EPrimitiveType::Line, Renderer.CreateVertexBuffer(VerticesLine));
+	// TArray.GetData(), TArray.Num()*sizeof(FVertexSimple), TArray.GetTypeSize()
+	VertexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(VerticesCube));
+	VertexBuffers.emplace(EPrimitiveType::Sphere, Renderer.CreateVertexBuffer(VerticesSphere));
+	VertexBuffers.emplace(EPrimitiveType::Triangle, Renderer.CreateVertexBuffer(VerticesTriangle));
+	VertexBuffers.emplace(EPrimitiveType::Square, Renderer.CreateVertexBuffer(VerticesSquare));
+	VertexBuffers.emplace(EPrimitiveType::Torus, Renderer.CreateVertexBuffer(VerticesTorus));
+	VertexBuffers.emplace(EPrimitiveType::Arrow, Renderer.CreateVertexBuffer(VerticesArrow));
+	VertexBuffers.emplace(EPrimitiveType::CubeArrow, Renderer.CreateVertexBuffer(VerticesCubeArrow));
+	VertexBuffers.emplace(EPrimitiveType::Ring, Renderer.CreateVertexBuffer(VerticesRing));
+	VertexBuffers.emplace(EPrimitiveType::Line, Renderer.CreateVertexBuffer(VerticesLine));
 
-	NumVertices.emplace(EPrimitiveType::Cube, static_cast<uint32>(VerticesCube.size()));
-	NumVertices.emplace(EPrimitiveType::Sphere, static_cast<uint32>(VerticesSphere.size()));
-	NumVertices.emplace(EPrimitiveType::Triangle, static_cast<uint32>(VerticesTriangle.size()));
-	NumVertices.emplace(EPrimitiveType::Square, static_cast<uint32>(VerticesSquare.size()));
-	NumVertices.emplace(EPrimitiveType::Torus, static_cast<uint32>(VerticesTorus.size()));
-	NumVertices.emplace(EPrimitiveType::Arrow, static_cast<uint32>(VerticesArrow.size()));
-	NumVertices.emplace(EPrimitiveType::CubeArrow, static_cast<uint32>(VerticesCubeArrow.size()));
-	NumVertices.emplace(EPrimitiveType::Ring, static_cast<uint32>(VerticesRing.size()));
-	NumVertices.emplace(EPrimitiveType::Line, static_cast<uint32>(VerticesLine.size()));
+	VertexNum.emplace(EPrimitiveType::Cube, static_cast<uint32>(VerticesCube.size()));
+	VertexNum.emplace(EPrimitiveType::Sphere, static_cast<uint32>(VerticesSphere.size()));
+	VertexNum.emplace(EPrimitiveType::Triangle, static_cast<uint32>(VerticesTriangle.size()));
+	VertexNum.emplace(EPrimitiveType::Square, static_cast<uint32>(VerticesSquare.size()));
+	VertexNum.emplace(EPrimitiveType::Torus, static_cast<uint32>(VerticesTorus.size()));
+	VertexNum.emplace(EPrimitiveType::Arrow, static_cast<uint32>(VerticesArrow.size()));
+	VertexNum.emplace(EPrimitiveType::CubeArrow, static_cast<uint32>(VerticesCubeArrow.size()));
+	VertexNum.emplace(EPrimitiveType::Ring, static_cast<uint32>(VerticesRing.size()));
+	VertexNum.emplace(EPrimitiveType::Line, static_cast<uint32>(VerticesLine.size()));
 
 	TextVertexData = &VerticesText;
 	TextVertexBuffer = Renderer.CreateVertexBuffer(VerticesText);
-	TextNumVertices = static_cast<uint32>(VerticesText.size());
+	TexVertexNum = static_cast<uint32>(VerticesText.size());
 
-	CreateTextSampler();	
+	CreateTextSampler();
+
+
+	// Create Reduced Vertex Data and Index Data
+	ReducedVertexData.emplace(EPrimitiveType::Cube, &ReducedVerticesCube);
+	ReducedVertexData.emplace(EPrimitiveType::Sphere, &ReducedVerticesSphere);
+	ReducedVertexData.emplace(EPrimitiveType::Triangle, &ReducedVerticesTriangle);
+	ReducedVertexData.emplace(EPrimitiveType::Square, &ReducedVerticesSquare);
+	ReducedVertexData.emplace(EPrimitiveType::Torus, &ReducedVerticesTorus);
+	ReducedVertexData.emplace(EPrimitiveType::Arrow, &ReducedVerticesArrow);
+	ReducedVertexData.emplace(EPrimitiveType::CubeArrow, &ReducedVerticesCubeArrow);
+	ReducedVertexData.emplace(EPrimitiveType::Ring, &ReducedVerticesRing);
+	ReducedVertexData.emplace(EPrimitiveType::Line, &ReducedVerticesLine);
+
+	ReducedVertexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(ReducedVerticesCube));
+	ReducedVertexBuffers.emplace(EPrimitiveType::Sphere, Renderer.CreateVertexBuffer(ReducedVerticesSphere));
+	ReducedVertexBuffers.emplace(EPrimitiveType::Triangle, Renderer.CreateVertexBuffer(ReducedVerticesTriangle));
+	ReducedVertexBuffers.emplace(EPrimitiveType::Square, Renderer.CreateVertexBuffer(ReducedVerticesSquare));
+	ReducedVertexBuffers.emplace(EPrimitiveType::Torus, Renderer.CreateVertexBuffer(ReducedVerticesTorus));
+	ReducedVertexBuffers.emplace(EPrimitiveType::Arrow, Renderer.CreateVertexBuffer(ReducedVerticesArrow));
+	ReducedVertexBuffers.emplace(EPrimitiveType::CubeArrow, Renderer.CreateVertexBuffer(ReducedVerticesCubeArrow));
+	ReducedVertexBuffers.emplace(EPrimitiveType::Ring, Renderer.CreateVertexBuffer(ReducedVerticesRing));
+	ReducedVertexBuffers.emplace(EPrimitiveType::Line, Renderer.CreateVertexBuffer(ReducedVerticesLine));
+
+	ReducedVertexNum.emplace(EPrimitiveType::Cube, static_cast<uint32>(ReducedVerticesCube.size()));
+	ReducedVertexNum.emplace(EPrimitiveType::Sphere, static_cast<uint32>(ReducedVerticesSphere.size()));
+	ReducedVertexNum.emplace(EPrimitiveType::Triangle, static_cast<uint32>(ReducedVerticesTriangle.size()));
+	ReducedVertexNum.emplace(EPrimitiveType::Square, static_cast<uint32>(ReducedVerticesSquare.size()));
+	ReducedVertexNum.emplace(EPrimitiveType::Torus, static_cast<uint32>(ReducedVerticesTorus.size()));
+	ReducedVertexNum.emplace(EPrimitiveType::Arrow, static_cast<uint32>(ReducedVerticesArrow.size()));
+	ReducedVertexNum.emplace(EPrimitiveType::CubeArrow, static_cast<uint32>(ReducedVerticesCubeArrow.size()));
+	ReducedVertexNum.emplace(EPrimitiveType::Ring, static_cast<uint32>(ReducedVerticesRing.size()));
+	ReducedVertexNum.emplace(EPrimitiveType::Line, static_cast<uint32>(ReducedVerticesLine.size()));
+
+
+	// Create Index Data from Vertex Data and Reduced Vertex Data
+	// IndexData = TMap<EPrimitiveType, TArray<uint32>>
+	// Build index buffers by mapping each original vertex to its index in the reduced (unique) vertex list.
+	// Compare by value (FVertex::operator==), not by pointer address.
+	for (const auto& key : VertexData | std::views::keys)
+	{
+		EPrimitiveType Type = key;
+		const TArray<FVertex>& SourceVertices = *VertexData[Type];
+		const TArray<FVertex>& ReducedVertices = *ReducedVertexData[Type];
+
+		IndexData[Type].clear();
+		IndexData[Type].reserve(SourceVertices.size());
+
+		for (const FVertex& Vertex : SourceVertices)
+		{
+			for (uint32 Index = 0; Index < ReducedVertices.size(); ++Index)
+			{
+				if (Vertex == ReducedVertices[Index])
+				{
+					IndexData[Type].push_back(Index);
+					break;
+				}
+			}
+		}
+	}
+
+	// Create Index Buffer from Index Data
+	for (auto& Pair : IndexData)
+	{
+		IndexBuffers.emplace(Pair.first, Renderer.CreateIndexBuffer(Pair.second));
+		IndexNum.emplace(Pair.first, static_cast<uint32>(IndexData[Pair.first].size()));
+	}
+
 }
 
 void UResourceManager::Release()
 {
 	URenderer& Renderer = URenderer::GetInstance();
 	//TMap.Value()
-	for (auto& Pair : Vertexbuffers)
+	for (auto& Pair : VertexBuffers)
 	{
 		Renderer.ReleaseVertexBuffer(Pair.second);
 	}
 	Renderer.ReleaseVertexBuffer(TextVertexBuffer);
 
 	//TMap.Empty()
-	Vertexbuffers.clear();
+	VertexBuffers.clear();
 
 	for (auto& Pair : SamplerStates)
 	{
@@ -79,17 +148,47 @@ void UResourceManager::Release()
 
 TArray<FVertex>* UResourceManager::GetVertexData(EPrimitiveType Type)
 {
-	return VertexDatas[Type];
+	return VertexData[Type];
 }
 
-ID3D11Buffer* UResourceManager::GetVertexbuffer(EPrimitiveType Type)
+ID3D11Buffer* UResourceManager::GetVertexBuffer(EPrimitiveType Type)
 {
-	return Vertexbuffers[Type];
+	return VertexBuffers[Type];
 }
 
-uint32 UResourceManager::GetNumVertices(EPrimitiveType Type)
+uint32 UResourceManager::GetVertexNum(EPrimitiveType Type)
 {
-	return NumVertices[Type];
+	return VertexNum[Type];
+}
+
+TArray<FVertex>* UResourceManager::GetReducedVertexData(EPrimitiveType Type)
+{
+	return ReducedVertexData[Type];
+}
+
+ID3D11Buffer* UResourceManager::GetReducedVertexBuffer(EPrimitiveType Type)
+{
+	return ReducedVertexBuffers[Type];
+}
+
+uint32 UResourceManager::GetReducedVertexNum(EPrimitiveType Type)
+{
+	return ReducedVertexNum[Type];
+}
+
+TArray<uint32>* UResourceManager::GetIndexData(EPrimitiveType Type)
+{
+	return &IndexData[Type];
+}
+
+ID3D11Buffer* UResourceManager::GetIndexBuffer(EPrimitiveType Type)
+{
+	return IndexBuffers[Type];
+}
+
+uint32 UResourceManager::GetIndexNum(EPrimitiveType Type)
+{
+	return IndexNum[Type];
 }
 
 

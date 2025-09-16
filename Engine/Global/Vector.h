@@ -1,5 +1,4 @@
 #pragma once
-
 struct FMatrix;
 
 struct FVector
@@ -102,6 +101,11 @@ struct FVector
 			Y /= Length;
 			Z /= Length;
 		}
+	}
+
+	bool operator==(const FVector& vector) const
+	{
+		return (X == vector.X) && (Y == vector.Y) && (Z == vector.Z);
 	}
 
 	/**
@@ -212,6 +216,11 @@ struct FVector4
 	inline float Dot3(const FVector& OtherVector) const
 	{
 		return X * OtherVector.X + Y * OtherVector.Y + Z * OtherVector.Z;
+	}
+
+	bool operator==(const FVector4& color) const
+	{
+		return (X == color.X) && (Y == color.Y) && (Z == color.Z) && (W == color.W);
 	}
 
 	/**

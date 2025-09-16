@@ -20,9 +20,41 @@ struct FViewProjConstants
 
 struct FVertex
 {
-	FVector Position;
-	FVector4 Color;
+    FVector Position;
+    FVector4 Color;
+
+    // 동등 비교 연산자
+    bool operator==(const FVertex& Other) const
+    {
+        return Position == Other.Position && Color == Other.Color;
+    }
 };
+
+namespace std
+{
+	template<>
+	struct hash<FVertex>
+	{
+		size_t operator()(const FVertex& V) const noexcept
+		{
+			auto HashCombine = [](size_t Seed, size_t Value) -> size_t
+			{
+				Seed ^= Value + 0x9e3779b97f4a7c15ULL + (Seed << 6) + (Seed >> 2);
+				return Seed;
+			};
+
+			size_t H = 0;
+			H = HashCombine(H, std::hash<float>{}(V.Position.X));
+			H = HashCombine(H, std::hash<float>{}(V.Position.Y));
+			H = HashCombine(H, std::hash<float>{}(V.Position.Z));
+			H = HashCombine(H, std::hash<float>{}(V.Color.X));
+			H = HashCombine(H, std::hash<float>{}(V.Color.Y));
+			H = HashCombine(H, std::hash<float>{}(V.Color.Z));
+			H = HashCombine(H, std::hash<float>{}(V.Color.W));
+			return H;
+		}
+	};
+}
 
 struct FTextVertex
 {
@@ -141,7 +173,7 @@ enum class EEngineShowFlags : uint64
 	SF_BillboardText = 1 << 1,   // Show billboard text
 	SF_Grid = 1 << 2,            // Show grid
 	SF_Bounds = 1 << 3,          // Show bounding boxes
-	
+
 	// Default flags (everything visible)
 	SF_Default = SF_Primitives | SF_BillboardText | SF_Grid
 };
@@ -188,7 +220,7 @@ inline bool HasFlag(EEngineShowFlags flags, EEngineShowFlags flag)
 }
 
 /**
- * @brief Render State Settings for Actor's Component 
+ * @brief Render State Settings for Actor's Component
  */
 struct FRenderState
 {

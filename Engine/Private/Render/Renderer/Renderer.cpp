@@ -414,8 +414,9 @@ void URenderer::RenderLevel()
 		Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
 		UpdateConstant(PrimitiveComponent->GetColor());
 
-		Pipeline->SetVertexBuffer(PrimitiveComponent->GetVertexBuffer(), Stride);
-		Pipeline->Draw(static_cast<uint32>(PrimitiveComponent->GetVerticesData()->size()), 0);
+		Pipeline->SetVertexBuffer(PrimitiveComponent->GetReducedVertexBuffer(), Stride);
+		Pipeline->SetIndexBuffer(PrimitiveComponent->GetIndexBuffer(), DXGI_FORMAT_R32_UINT);
+		Pipeline->DrawIndexed(PrimitiveComponent->GetIndexNum(), 0, 0);
 
 		// Render bounding boxes if enabled
 		if (IsShowFlagEnabled(EEngineShowFlags::SF_Bounds))
@@ -433,7 +434,7 @@ void URenderer::RenderTest(const FVector& CameraLocation)
 	//shader, rasterizaer state, depth stencil state, input layout 설정
 	FRenderState State = FRenderState{ ECullMode::None, EFillMode::Solid };
 	Pipeline->UpdatePipeline(CreateTextPipelineInfo(State));
-	
+
 	//텍스처, 샘플러 설정
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
 	ID3D11ShaderResourceView* Srv = ResourceManager.GetTexture("Asset/Font/Roboto-Medium.dds");
@@ -499,7 +500,7 @@ void URenderer::RenderTest(const FVector& CameraLocation)
 		TArray<FTextInstance>* InstanceData = Object.Component->GetInstanceData();
 		UpdateInstance(InstanceData);
 
-		Pipeline->DrawInstanced(Object.Component->GetNumVertices(), InstanceData->size(), 0, 0);
+		Pipeline->DrawInstanced(Object.Component->GetVertexNum(), InstanceData->size(), 0, 0);
 	}
 }
 
@@ -567,27 +568,6 @@ void URenderer::RenderPrimitive(FEditorPrimitive& Primitive, struct FRenderState
 	Pipeline->Draw(Primitive.NumVertices, 0);
 }
 
-
-/**
- * @brief Index Buffer 생성 함수
- * @param InIndices
- * @param InByteWidth
- * @return
- */
-ID3D11Buffer* URenderer::CreateIndexBuffer(const void* InIndices, uint32 InByteWidth) const
-{
-	D3D11_BUFFER_DESC desc = {};
-	desc.ByteWidth = InByteWidth;
-	desc.Usage = D3D11_USAGE_IMMUTABLE;
-	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-
-	D3D11_SUBRESOURCE_DATA srd = {};
-	srd.pSysMem = InIndices;
-
-	ID3D11Buffer* buffer = nullptr;
-	GetDevice()->CreateBuffer(&desc, &srd, &buffer);
-	return buffer;
-}
 
 void URenderer::CreateInstanceBuffer()
 {
