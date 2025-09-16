@@ -399,8 +399,6 @@ void URenderer::RenderLevel()
 
 	for (auto& PrimitiveComponent : ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents())
 	{
-
-
 		if (!PrimitiveComponent) { continue; }
 
 		Pipeline->UpdatePipeline(CreatePipelineInfo(PrimitiveComponent->GetRenderState()));
@@ -414,6 +412,7 @@ void URenderer::RenderLevel()
 		Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
 		UpdateConstant(PrimitiveComponent->GetColor());
 
+		// TODO: 여기는 왜 RenderPrimitive로 안그리지?
 		Pipeline->SetVertexBuffer(PrimitiveComponent->GetReducedVertexBuffer(), Stride);
 		Pipeline->SetIndexBuffer(PrimitiveComponent->GetIndexBuffer(), DXGI_FORMAT_R32_UINT);
 		Pipeline->DrawIndexed(PrimitiveComponent->GetIndexNum(), 0, 0);
@@ -538,7 +537,7 @@ static inline D3D11_FILL_MODE ToD3D11(EFillMode InFill)
 	}
 }
 
-void URenderer::RenderPrimitive(FEditorPrimitive& Primitive, struct FRenderState& InRenderState)
+void URenderer::RenderEditorPrimitive(FEditorPrimitive& Primitive, struct FRenderState& InRenderState)
 {
 	ID3D11DepthStencilState* DepthStencilState =
 		Primitive.bShouldAlwaysVisible ? DisabledDepthStencilState : DefaultDepthStencilState;
