@@ -76,25 +76,41 @@ public:
 	bool GetIsResizing() { return bIsResizing;}
 	void SetIsResizing(bool isResizing) { bIsResizing = isResizing; }
 
-	/** Testing Func */
+
 	template<typename T>
 	ID3D11Buffer* CreateVertexBuffer(TArray<T>& InVertices) const
 	{
-		UINT ByteWidth = InVertices.size() * sizeof(T);
 		D3D11_BUFFER_DESC VertexBufferDesc = {};
-		VertexBufferDesc.ByteWidth = ByteWidth;
+		VertexBufferDesc.ByteWidth = InVertices.size() * sizeof(T);
 		VertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE; // will never be updated
 		VertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
 		D3D11_SUBRESOURCE_DATA VertexBufferSRD = { InVertices.data()};
 
-		ID3D11Buffer* vertexBuffer;
+		ID3D11Buffer* VertexBuffer;
 
-		GetDevice()->CreateBuffer(&VertexBufferDesc, &VertexBufferSRD, &vertexBuffer);
+		GetDevice()->CreateBuffer(&VertexBufferDesc, &VertexBufferSRD, &VertexBuffer);
 
-		return vertexBuffer;
-	};
-	ID3D11Buffer* CreateIndexBuffer(const void* InIndices, uint32 InByteWidth) const;
+		return VertexBuffer;
+	}
+
+	template<typename T>
+	ID3D11Buffer* CreateIndexBuffer(TArray<T>& InIndices) const
+	{
+		D3D11_BUFFER_DESC IndexBufferDesc = {};
+		IndexBufferDesc.ByteWidth = InIndices.size() * sizeof(T);
+		IndexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE; // will never be updated
+		IndexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+
+		D3D11_SUBRESOURCE_DATA IndexBufferSRD = { InIndices.data()};
+
+		ID3D11Buffer* IndexBuffer;
+
+		GetDevice()->CreateBuffer(&IndexBufferDesc, &IndexBufferSRD, &IndexBuffer);
+
+		return IndexBuffer;
+	}
+
 	void CreateInstanceBuffer();
 
 	void UpdateConstant(const UPrimitiveComponent* Primitive);

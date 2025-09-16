@@ -92,7 +92,7 @@ void UPipeline::SetIndexBuffer(ID3D11Buffer* IndexBuffer, DXGI_FORMAT Format)
 }
 
 /// @brief 인덱스 버퍼를 사용한 드로우 호출
-void UPipeline::DrawIndexed(uint32 IndexCount, uint32 StartIndexLocation, uint32 BaseVertexLocation)
+void UPipeline::DrawIndexed(uint32 IndexCount, uint32 StartIndexLocation, int32 BaseVertexLocation)
 {
 	DeviceContext->DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
 }

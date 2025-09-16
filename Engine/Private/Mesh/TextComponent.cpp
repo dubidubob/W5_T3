@@ -10,8 +10,8 @@ UTextComponent::UTextComponent()
 	RenderState.CullMode = ECullMode::None;
 	RenderState.FillMode = EFillMode::Solid;
 	ComponentType = EComponentType::Text;
-	Vertexbuffer = ResourceManager.GetTextVertexBuffer();
-	NumVertices = ResourceManager.GetTextNumVertices();
+	VertexBuffer = ResourceManager.GetTextVertexBuffer();
+	VertexNum = ResourceManager.GetTextNumVertices();
 
 	FString Text = "UID: " + std::to_string(GetUUID());
 	SetInstanceData(Text);

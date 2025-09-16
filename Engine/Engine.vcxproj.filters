@@ -84,7 +84,6 @@
     <ClCompile Include="Private\Render\UI\Widget\ActorListWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Window\DetailWindow.cpp" />
     <ClCompile Include="Private\Math\AABB.cpp" />
-    <ClCompile Include="Private\Render\AABBWireframeComponent.cpp" />
     <ClCompile Include="Private\\Render\Renderer\\LineBatchRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -179,7 +178,6 @@
     <ClInclude Include="Public\Render\UI\Widget\ActorListWidget.h" />
     <ClInclude Include="Public\Render\UI\Window\DetailWindow.h" />
     <ClInclude Include="Public\Math\AABB.h" />
-    <ClInclude Include="Public\Render\AABBWireframeComponent.h" />
     <ClInclude Include="Public\\Render\Renderer\\LineBatchRenderer.h" />
   </ItemGroup>
   <ItemGroup>

@@ -161,6 +161,18 @@ const TArray<FVertex>* UPrimitiveComponent::GetVerticesData() const
     return ResourceManager.GetVertexData(Type);
 }
 
+const TArray<FVertex>* UPrimitiveComponent::GetReducedVerticesData() const
+{
+	UResourceManager& ResourceManager = UResourceManager::GetInstance();
+	return ResourceManager.GetReducedVertexData(Type);
+}
+
+const TArray<uint32>* UPrimitiveComponent::GetIndicesData() const
+{
+	UResourceManager& ResourceManager = UResourceManager::GetInstance();
+	return ResourceManager.GetIndexData(Type);
+}
+
 void UPrimitiveComponent::SetTopology(D3D11_PRIMITIVE_TOPOLOGY InTopology)
 {
 	Topology = InTopology;
@@ -213,9 +225,17 @@ USphereComponent::USphereComponent()
 {
     UResourceManager& ResourceManager = UResourceManager::GetInstance();
     Type = EPrimitiveType::Sphere;
+
     Vertices = ResourceManager.GetVertexData(Type);
-    Vertexbuffer = ResourceManager.GetVertexbuffer(Type);
-    NumVertices = ResourceManager.GetNumVertices(Type);
+
+    VertexBuffer = ResourceManager.GetVertexBuffer(Type);
+	ReducedVertexBuffer = ResourceManager.GetReducedVertexBuffer(Type);
+	IndexBuffer = ResourceManager.GetIndexBuffer(Type);
+
+    VertexNum = ResourceManager.GetVertexNum(Type);
+	ReducedVertexNum = ResourceManager.GetReducedVertexNum(Type);
+	IndexNum = ResourceManager.GetIndexNum(Type);
+
 	RenderState.CullMode = ECullMode::Back;
 	RenderState.FillMode = EFillMode::Solid;
 }
@@ -232,8 +252,15 @@ UCubeComponent::UCubeComponent()
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
 	Type = EPrimitiveType::Cube;
 	Vertices = ResourceManager.GetVertexData(Type);
-	Vertexbuffer = ResourceManager.GetVertexbuffer(Type);
-	NumVertices = ResourceManager.GetNumVertices(Type);
+
+	VertexBuffer = ResourceManager.GetVertexBuffer(Type);
+	ReducedVertexBuffer = ResourceManager.GetReducedVertexBuffer(Type);
+	IndexBuffer = ResourceManager.GetIndexBuffer(Type);
+
+	VertexNum = ResourceManager.GetVertexNum(Type);
+	ReducedVertexNum = ResourceManager.GetReducedVertexNum(Type);
+	IndexNum = ResourceManager.GetIndexNum(Type);
+
 	RenderState.CullMode = ECullMode::Back;
 	RenderState.FillMode = EFillMode::Solid;
 }
@@ -250,8 +277,15 @@ ULineComponent::ULineComponent()
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
 	Type = EPrimitiveType::Line;
 	Vertices = ResourceManager.GetVertexData(Type);
-	Vertexbuffer = ResourceManager.GetVertexbuffer(Type);
-	NumVertices = ResourceManager.GetNumVertices(Type);
+
+	VertexBuffer = ResourceManager.GetVertexBuffer(Type);
+	ReducedVertexBuffer = ResourceManager.GetReducedVertexBuffer(Type);
+	IndexBuffer = ResourceManager.GetIndexBuffer(Type);
+
+	VertexNum = ResourceManager.GetVertexNum(Type);
+	ReducedVertexNum = ResourceManager.GetReducedVertexNum(Type);
+	IndexNum = ResourceManager.GetIndexNum(Type);
+
 	Topology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
 	RenderState.CullMode = ECullMode::None;
 	RenderState.FillMode = EFillMode::WireFrame;
@@ -268,8 +302,15 @@ UTriangleComponent::UTriangleComponent()
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
 	Type = EPrimitiveType::Triangle;
 	Vertices = ResourceManager.GetVertexData(Type);
-	Vertexbuffer = ResourceManager.GetVertexbuffer(Type);
-	NumVertices = ResourceManager.GetNumVertices(Type);
+
+	VertexBuffer = ResourceManager.GetVertexBuffer(Type);
+	ReducedVertexBuffer = ResourceManager.GetReducedVertexBuffer(Type);
+	IndexBuffer = ResourceManager.GetIndexBuffer(Type);
+
+	VertexNum = ResourceManager.GetVertexNum(Type);
+	ReducedVertexNum = ResourceManager.GetReducedVertexNum(Type);
+	IndexNum = ResourceManager.GetIndexNum(Type);
+
 	RenderState.CullMode = ECullMode::None;
 	RenderState.FillMode = EFillMode::Solid;
 }
@@ -285,8 +326,15 @@ USquareComponent::USquareComponent()
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
 	Type = EPrimitiveType::Square;
 	Vertices = ResourceManager.GetVertexData(Type);
-	Vertexbuffer = ResourceManager.GetVertexbuffer(Type);
-	NumVertices = ResourceManager.GetNumVertices(Type);
+
+	VertexBuffer = ResourceManager.GetVertexBuffer(Type);
+	ReducedVertexBuffer = ResourceManager.GetReducedVertexBuffer(Type);
+	IndexBuffer = ResourceManager.GetIndexBuffer(Type);
+
+	VertexNum = ResourceManager.GetVertexNum(Type);
+	ReducedVertexNum = ResourceManager.GetReducedVertexNum(Type);
+	IndexNum = ResourceManager.GetIndexNum(Type);
+
 	RenderState.CullMode = ECullMode::None;
 	RenderState.FillMode = EFillMode::Solid;
 }
