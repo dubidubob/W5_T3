@@ -183,7 +183,7 @@ D3D11_PRIMITIVE_TOPOLOGY UPrimitiveComponent::GetTopology() const
 	return Topology;
 }
 
-FAABB UPrimitiveComponent::GetLocalBounds() const
+FAABB UPrimitiveComponent::GetWorldBounds() const
 {
 	if (!Vertices || Vertices->empty())
 	{
@@ -237,10 +237,10 @@ USphereComponent::USphereComponent()
 	RenderState.FillMode = EFillMode::Solid;
 }
 
-FAABB USphereComponent::GetLocalBounds() const
+FAABB USphereComponent::GetWorldBounds() const
 {
 	// 실제 버텍스 데이터에서 바운딩 박스 계산
-	return UPrimitiveComponent::GetLocalBounds();
+	return UPrimitiveComponent::GetWorldBounds();
 }
 
 IMPLEMENT_CLASS(UCubeComponent, UPrimitiveComponent)
@@ -262,10 +262,10 @@ UCubeComponent::UCubeComponent()
 	RenderState.FillMode = EFillMode::Solid;
 }
 
-FAABB UCubeComponent::GetLocalBounds() const
+FAABB UCubeComponent::GetWorldBounds() const
 {
 	// 실제 버텍스 데이터에서 바운딩 박스 계산
-	return UPrimitiveComponent::GetLocalBounds();
+	return UPrimitiveComponent::GetWorldBounds();
 }
 
 IMPLEMENT_CLASS(ULineComponent, UPrimitiveComponent)
@@ -288,9 +288,9 @@ ULineComponent::ULineComponent()
 	RenderState.FillMode = EFillMode::WireFrame;
 }
 
-FAABB ULineComponent::GetLocalBounds() const
+FAABB ULineComponent::GetWorldBounds() const
 {
-	return UPrimitiveComponent::GetLocalBounds();
+	return UPrimitiveComponent::GetWorldBounds();
 }
 
 IMPLEMENT_CLASS(UTriangleComponent, UPrimitiveComponent)
@@ -312,9 +312,9 @@ UTriangleComponent::UTriangleComponent()
 	RenderState.FillMode = EFillMode::Solid;
 }
 
-FAABB UTriangleComponent::GetLocalBounds() const
+FAABB UTriangleComponent::GetWorldBounds() const
 {
-	return UPrimitiveComponent::GetLocalBounds();
+	return UPrimitiveComponent::GetWorldBounds();
 }
 
 IMPLEMENT_CLASS(USquareComponent, UPrimitiveComponent)
@@ -336,7 +336,7 @@ USquareComponent::USquareComponent()
 	RenderState.FillMode = EFillMode::Solid;
 }
 
-FAABB USquareComponent::GetLocalBounds() const
+FAABB USquareComponent::GetWorldBounds() const
 {
-	return UPrimitiveComponent::GetLocalBounds();
+	return UPrimitiveComponent::GetWorldBounds();
 }

@@ -77,7 +77,7 @@ public:
 	FVector4 GetColor() const { return Color; }
 	void SetColor(const FVector4& InColor) { Color = InColor; }
 
-	virtual FAABB GetLocalBounds() const;
+	virtual FAABB GetWorldBounds() const;
 	//FAABB GetWorldBounds() const;
 
 protected:
@@ -102,7 +102,7 @@ class UTriangleComponent : public UPrimitiveComponent
 	DECLARE_CLASS(UTriangleComponent, UPrimitiveComponent)
 public:
 	UTriangleComponent();
-	virtual FAABB GetLocalBounds() const override;
+	virtual FAABB GetWorldBounds() const override;
 };
 
 class USquareComponent : public UPrimitiveComponent
@@ -110,7 +110,7 @@ class USquareComponent : public UPrimitiveComponent
 	DECLARE_CLASS(USquareComponent, UPrimitiveComponent)
 public:
 	USquareComponent();
-	virtual FAABB GetLocalBounds() const override;
+	virtual FAABB GetWorldBounds() const override;
 };
 
 class UCubeComponent : public UPrimitiveComponent
@@ -118,7 +118,7 @@ class UCubeComponent : public UPrimitiveComponent
 	DECLARE_CLASS(UCubeComponent, UPrimitiveComponent)
 public:
 	UCubeComponent();
-	virtual FAABB GetLocalBounds() const override;
+	virtual FAABB GetWorldBounds() const override;
 };
 
 class USphereComponent : public UPrimitiveComponent
@@ -126,7 +126,7 @@ class USphereComponent : public UPrimitiveComponent
 	DECLARE_CLASS(USphereComponent, UPrimitiveComponent)
 public:
 	USphereComponent();
-	virtual FAABB GetLocalBounds() const override;
+	virtual FAABB GetWorldBounds() const override;
 };
 
 class ULineComponent : public UPrimitiveComponent
@@ -134,5 +134,5 @@ class ULineComponent : public UPrimitiveComponent
 	DECLARE_CLASS(ULineComponent, UPrimitiveComponent)
 public:
 	ULineComponent();
-	virtual FAABB GetLocalBounds() const override;
+	virtual FAABB GetWorldBounds() const override;
 };
