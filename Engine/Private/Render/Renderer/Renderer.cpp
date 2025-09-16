@@ -403,11 +403,9 @@ void URenderer::RenderLevel()
 
 		Pipeline->UpdatePipeline(CreatePipelineInfo(PrimitiveComponent->GetRenderState()));
 
-		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
-		UpdateConstant(
-			PrimitiveComponent->GetRelativeLocation(),
-			PrimitiveComponent->GetRelativeRotation(),
-			PrimitiveComponent->GetRelativeScale3D() );
+        Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
+        // Use quaternion-based cached world matrix from component
+        UpdateConstant(PrimitiveComponent);
 
 		Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
 		UpdateConstant(PrimitiveComponent->GetColor());

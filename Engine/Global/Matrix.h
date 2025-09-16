@@ -55,6 +55,10 @@ struct FMatrix
 	static FMatrix RotationMatrix(const FVector& InOtherVector);
 	static FMatrix RotationMatrixInverse(const FVector& InOtherVector);
 
+	// Quaternion 기반 회전행렬 (row-major)
+	static FMatrix RotationMatrix(const struct FQuat& Q);
+	static FMatrix RotationMatrixInverse(const struct FQuat& Q);
+
 	/**
 	 * @brief Camera용 Rotation의 정보를 행렬로 변환하여 제공하는 함수
 	 */
@@ -78,6 +82,10 @@ struct FMatrix
 	static FMatrix GetModelMatrix(const FVector& Location, const FVector& Rotation, const FVector& Scale);
 
 	static FMatrix GetModelMatrixInverse(const FVector& Location, const FVector& Rotation, const FVector& Scale);
+
+	// Quaternion 버전 TRS 조합 (row-major, row-vector: I * S * R * T)
+	static FMatrix GetModelMatrix(const FVector& Location, const struct FQuat& Rotation, const FVector& Scale);
+	static FMatrix GetModelMatrixInverse(const FVector& Location, const struct FQuat& Rotation, const FVector& Scale);
 
 	/**
 	 * @brief LHY+ -> UE(LHZ+, X-forward) 기준변환 행렬과 그 역행렬

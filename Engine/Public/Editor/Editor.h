@@ -6,6 +6,8 @@
 #include "Core/Object.h"
 #include "Editor/ObjectPicker.h"
 
+struct FQuat;
+
 class ULineBatchRenderer;
 
 class UEditor : public UObject
@@ -32,6 +34,7 @@ private:
 
 	FVector GetGizmoDragLocation(const FRay& WorldRay);
 	FVector GetGizmoDragRotation(const FRay& WorldRay);
+	FQuat GetGizmoDragRotationQuat(const FRay& WorldRay);
 	FVector GetGizmoDragScale(const FRay& WorldRay);
 
 	UCamera Camera;

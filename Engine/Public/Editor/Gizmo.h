@@ -3,6 +3,7 @@
 #include "Core/Object.h"
 #include "Mesh/Actor.h"
 
+struct FQuat;
 class UObjectPicker;
 
 enum class EGizmoMode
@@ -58,6 +59,7 @@ public:
 	void SetLocation(const FVector& Location);
 	void SetGizmoDirection(EGizmoDirection Direction) { GizmoDirection = Direction; }
 	void SetActorRotation(const FVector& Rotation) { TargetActor->SetActorRotation(Rotation); }
+	void SetActorRotation(const FQuat& Rotation) { TargetActor->SetActorRotation(Rotation); }
 	void SetActorScale(const FVector& Scale) { TargetActor->SetActorScale3D(Scale); }
 
 	// 로컬 기즈모, 쿼터니언 구현 후 사용
@@ -70,10 +72,12 @@ public:
 	const EGizmoDirection GetGizmoDirection() { return GizmoDirection; }
 	const FVector& GetGizmoLocation() { return Primitives[(int)GizmoMode].Location; }
 	const FVector& GetActorRotation() { return TargetActor->GetActorRotation(); }
+	const FQuat& GetActorRotationQuat() { return TargetActor->GetActorRotationQuat(); }
 	const FVector& GetActorScale() { return TargetActor->GetActorScale3D(); }
 	const FVector& GetDragStartMouseLocation() { return DragStartMouseLocation; }
 	const FVector& GetDragStartActorLocation() { return DragStartActorLocation; }
 	const FVector& GetDragStartActorRotation() { return DragStartActorRotation; }
+	const FQuat& GetDragStartActorRotationQuat() { return DragStartActorRotationQuat; }
 	const FVector& GetDragStartActorScale() { return DragStartActorScale; }
 	const EGizmoMode GetGizmoMode() { return GizmoMode; }
 	const FVector GetGizmoAxis() {
@@ -123,6 +127,7 @@ private:
 	FVector DragStartActorLocation;
 	FVector DragStartMouseLocation;
 	FVector DragStartActorRotation;
+	FQuat DragStartActorRotationQuat;
 	FVector DragStartActorScale;
 
 	FGizmoTranslationCollisionConfig TranslateCollisionConfig;

@@ -29,6 +29,7 @@
 #include "Global/Constant.h"
 #include "Global/Enum.h"
 #include "Global/Matrix.h"
+#include "Global/Quat.h"
 #include "Global/Vector.h"
 #include "Global/CoreTypes.h"
 #include "Global/Macro.h"
