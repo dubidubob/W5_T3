@@ -31,11 +31,11 @@ UAxis::~UAxis()
 	URenderer::ReleaseVertexBuffer(Primitive.Vertexbuffer);
 }
 
-void UAxis::Render()
-{
-	URenderer& Renderer = URenderer::GetInstance();
-	Renderer.RenderPrimitive(Primitive, Primitive.RenderState);
-}
+// void UAxis::Render()
+// {
+// 	URenderer& Renderer = URenderer::GetInstance();
+// 	Renderer.RenderEditorPrimitive(Primitive, Primitive.RenderState);
+// }
 
 void UAxis::AddToLineBatch(ULineBatchRenderer& LineBatch)
 {

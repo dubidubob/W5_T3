@@ -45,12 +45,13 @@ void UEditor::Update()
 
 	Renderer.UpdateConstant(Camera.GetFViewProjConstants());
 }
-void UEditor::RenderEditor()
-{
-	Grid.RenderGrid();
-	Axis.Render();
-	Gizmo.RenderGizmo(ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor(), Camera.GetLocation());
-}
+
+// void UEditor::RenderEditor()
+// {
+// 	Grid.RenderGrid();
+// 	Axis.Render();
+// 	Gizmo.RenderGizmo(ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor(), Camera.GetLocation());
+// }
 
 const FVector& UEditor::GetCameraLocation()
 {
