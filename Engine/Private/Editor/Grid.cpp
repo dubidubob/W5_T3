@@ -19,17 +19,17 @@ UGrid::~UGrid()
 	URenderer::ReleaseVertexBuffer(Primitive.Vertexbuffer);
 }
 
-void UGrid::RenderGrid()
-{
-	URenderer& Renderer = URenderer::GetInstance();
-
-	if (Renderer.IsShowFlagEnabled(EEngineShowFlags::SF_Grid) == false)
-	{
-		return;
-	}
-
-	Renderer.RenderPrimitive(Primitive, Primitive.RenderState);
-}
+// void UGrid::RenderGrid()
+// {
+// 	URenderer& Renderer = URenderer::GetInstance();
+//
+// 	if (Renderer.IsShowFlagEnabled(EEngineShowFlags::SF_Grid) == false)
+// 	{
+// 		return;
+// 	}
+//
+// 	Renderer.RenderEditorPrimitive(Primitive, Primitive.RenderState);
+// }
 
 void UGrid::AddToLineBatch(ULineBatchRenderer& LineBatch)
 {

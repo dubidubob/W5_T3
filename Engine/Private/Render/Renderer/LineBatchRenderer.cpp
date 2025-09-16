@@ -303,7 +303,7 @@ void ULineBatchRenderer::RenderBatch()
 	LinePrimitive.bShouldAlwaysVisible = false;
 
 	// 기존 RenderPrimitive 사용 (인덱스 버퍼 미사용 버전)
-	Renderer.RenderPrimitive(LinePrimitive, LineRenderState);
+	Renderer.RenderEditorPrimitive(LinePrimitive, LineRenderState);
 }
 
 void ULineBatchRenderer::GenerateLineIndices(uint32 StartVertex, uint32 VertexCount)

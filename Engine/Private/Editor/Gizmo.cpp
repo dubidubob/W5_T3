@@ -86,17 +86,17 @@ void UGizmo::RenderGizmo(AActor* Actor, const FVector& CameraLocation)
 
 	P.Rotation = FVector{0,89.99f,0} + LocalRotation;
 	P.Color = ColorFor(EGizmoDirection::Right);
-	Renderer.RenderPrimitive(P, RenderState);
+	Renderer.RenderEditorPrimitive(P, RenderState);
 
 	// Y (Up)
 	P.Rotation = FVector{ -89.99f,0,0 } + LocalRotation;
 	P.Color = ColorFor(EGizmoDirection::Up);
-	Renderer.RenderPrimitive(P, RenderState);
+	Renderer.RenderEditorPrimitive(P, RenderState);
 
 	// Z (Forward)
 	P.Rotation = FVector{ 0, 0, 0 } + LocalRotation;
 	P.Color = ColorFor(EGizmoDirection::Forward);
-	Renderer.RenderPrimitive(P, RenderState);
+	Renderer.RenderEditorPrimitive(P, RenderState);
 }
 
 void UGizmo::ChangeGizmoMode()
@@ -108,7 +108,7 @@ void UGizmo::ChangeGizmoMode()
 	case EGizmoMode::Rotate:
 		GizmoMode = EGizmoMode::Scale; break;
 	case EGizmoMode::Scale:
-		GizmoMode = EGizmoMode::Translate; 
+		GizmoMode = EGizmoMode::Translate;
 	}
 }
 

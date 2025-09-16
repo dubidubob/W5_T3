@@ -16,8 +16,8 @@ public:
 	void SetCellSize(float InCellSize);
 	float GetCellSize() const { return CellSize; }
 
-	/** 기존 개별 렌더링 */
-	void RenderGrid();
+	// /** 기존 개별 렌더링 */
+	// void RenderGrid();
 
 	/** 배칭 렌더링 */
 	void AddToLineBatch(ULineBatchRenderer& LineBatch);

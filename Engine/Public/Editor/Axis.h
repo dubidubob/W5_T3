@@ -13,8 +13,8 @@ public:
 	UAxis();
 	~UAxis() override;
 
-	/** 기존 개별 렌더링 */
-	void Render();
+	// /** 기존 개별 렌더링 */
+	// void Render();
 
 	/** 배칭 렌더링 */
 	void AddToLineBatch(ULineBatchRenderer& LineBatch);
