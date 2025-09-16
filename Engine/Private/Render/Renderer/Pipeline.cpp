@@ -56,13 +56,13 @@ void UPipeline::SetConstantBuffer(uint32 Slot, bool bIsVS, ID3D11Buffer* Constan
 	}
 }
 
-/// @brief 텍스처를 설정
-void UPipeline::SetTexture(uint32 Slot, bool bIsVS, ID3D11ShaderResourceView* Srv)
+/// @brief 셰이더 리소스 뷰 설정
+void UPipeline::SetShaderResourceView(uint32 Slot, bool bIsVS, ID3D11ShaderResourceView* ShaderResourceView)
 {
 		if (bIsVS)
-			DeviceContext->VSSetShaderResources(Slot, 1, &Srv);
+			DeviceContext->VSSetShaderResources(Slot, 1, &ShaderResourceView);
 		else
-			DeviceContext->PSSetShaderResources(Slot, 1, &Srv);
+			DeviceContext->PSSetShaderResources(Slot, 1, &ShaderResourceView);
 }
 
 /// @brief 샘플러 상태를 설정

@@ -500,7 +500,7 @@ void ULineBatchRenderer::RenderAABBInstances()
     Pipeline->SetInstanceBuffer(AABBInstanceBuffer, StrideInstance);
 
     // VS SRV t0: Worlds structured buffer
-    Pipeline->SetTexture(0, true, AABBWorldSRV);
+    Pipeline->SetShaderResourceView(0, true, AABBWorldSRV);
 
     // Draw
     Pipeline->DrawInstanced(24, static_cast<uint32>(AABBWorlds.size()), 0, 0);
