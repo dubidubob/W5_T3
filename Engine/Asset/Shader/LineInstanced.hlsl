@@ -6,7 +6,12 @@ cbuffer PerFrame : register(b1)
     float3 _Pad0;
 }
 
-StructuredBuffer<float4x4> gWorlds : register(t0);
+struct FWorldMatrix
+{
+	row_major float4x4 M;
+};
+
+StructuredBuffer<FWorldMatrix> WorldMatrices : register(t0);
 
 struct VS_INPUT
 {
@@ -24,10 +29,9 @@ PS_INPUT mainVS(VS_INPUT Input, uint InstanceID : SV_InstanceID)
 {
     PS_INPUT Output;
     float4 pos = float4(Input.Position, 1.0f);
-    float4x4 World = gWorlds[InstanceID];
-	World = transpose(World);
+    FWorldMatrix World = WorldMatrices[InstanceID];
 
-    pos = mul(pos, World);
+    pos = mul(pos, World.M);
     pos = mul(pos, View);
     pos = mul(pos, Projection);
 

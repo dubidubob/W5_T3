@@ -438,7 +438,8 @@ void URenderer::RenderTest(const FVector& CameraLocation)
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
 	ID3D11ShaderResourceView* Srv = ResourceManager.GetTexture("Asset/Font/Roboto-Medium.dds");
 	ID3D11SamplerState* SamplerState = ResourceManager.GetSamplerState(ESamplerType::Text);
-	Pipeline->SetTexture(0, false, Srv);
+
+	Pipeline->SetShaderResourceView(0, false, Srv);
 	Pipeline->SetSamplerState(0, false, SamplerState);
 
 
