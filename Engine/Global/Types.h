@@ -23,6 +23,7 @@ using int64 = std::int64_t;
 
 /** UE5 스타일 문자열 정의 */
 using FString = std::string;
+using FWstring = std::wstring;
 
 /** TPair 구현 */
 template<typename T1, typename T2>

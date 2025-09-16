@@ -13,8 +13,7 @@ UTextComponent::UTextComponent()
 	VertexBuffer = ResourceManager.GetTextVertexBuffer();
 	VertexNum = ResourceManager.GetTextNumVertices();
 
-	FString Text = "UID: " + std::to_string(GetUUID());
-	SetInstanceData(Text);
+	SetText(L"[크래프톤정글게임테크랩] UID:" + std::to_wstring(GetUUID()));
 }
 
 UTextComponent::~UTextComponent()
@@ -22,15 +21,24 @@ UTextComponent::~UTextComponent()
 
 }
 
-void UTextComponent::SetInstanceData(const FString& Characters)
+void UTextComponent::SetInstanceData(const FWstring& Characters)
 {
+	UResourceManager& ResourceManager = UResourceManager::GetInstance();
 	InstanceData.clear();
-	const int CellWidth = 32;
-	const int BitMapWidth = 512;
 	int NumCharacters = Characters.size();
 	for (int Index = 0; Index < NumCharacters; Index++)
 	{
-		float OffsetY = (Index - NumCharacters/2);	
-		InstanceData.push_back({ FVector4(1,1,1,1), FVector(0.0f,OffsetY, 0.0f), (uint32)Characters[Index] });
+		float OffsetY = (Index - NumCharacters/2);
+		FVector4 Color(1, 1, 1, 1);
+		FVector Offset(0.0f, OffsetY, 0.0f);
+		uint32 CharIdx = ResourceManager.GetCharInfoIdx(Characters[Index]);
+
+		InstanceData.push_back({ Color, Offset, CharIdx });
 	}
+}
+
+void UTextComponent::SetText(const FWstring& InText)
+{
+	Text = InText;
+	SetInstanceData(Text);
 }
