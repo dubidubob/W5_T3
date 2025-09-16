@@ -429,19 +429,17 @@ void URenderer::RenderTest(const FVector& CameraLocation)
 {
 	if (IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText) == false) { return; }
 
-
 	//shader, rasterizaer state, depth stencil state, input layout 설정
 	FRenderState State = FRenderState{ ECullMode::None, EFillMode::Solid };
 	Pipeline->UpdatePipeline(CreateTextPipelineInfo(State));
 
 	//텍스처, 샘플러 설정
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
-	ID3D11ShaderResourceView* Srv = ResourceManager.GetTexture("Asset/Font/Roboto-Medium.dds");
+	ID3D11ShaderResourceView* Srv = ResourceManager.GetTexture("Asset/Font/Pretendard-Regular.dds");
 	ID3D11SamplerState* SamplerState = ResourceManager.GetSamplerState(ESamplerType::Text);
 
 	Pipeline->SetShaderResourceView(0, false, Srv);
 	Pipeline->SetSamplerState(0, false, SamplerState);
-
 
 	//text(외 투명한 물체)들은 블랜딩을 적용하기 위해서 zbuffer에 쓰기를 하지 않음, 그래서 뒤에 있는 물체가 앞에 있는 물체 위에 렌더링되는 현상이 벌어짐
 	//그래서 zbuffer에 쓰지 않으면서 추가로 카메라로부터 거리순으로 정렬을 해서 멀리 있는 물체부터 그려줘야함.
@@ -465,7 +463,6 @@ void URenderer::RenderTest(const FVector& CameraLocation)
 		Object.DistanceToCamera = (CameraLocation - Component->GetWorldLocation()).Length();
 		RenderList.push_back(Object);
 	}
-
 	std::sort(RenderList.begin(), RenderList.end());
 
 
@@ -490,7 +487,6 @@ void URenderer::RenderTest(const FVector& CameraLocation)
 		{
 			UpdateConstant(Object.Component->GetWorldLocation() + FVector(0, 0, 2.0f), FVector(), FVector());
 		}
-
 
 		Pipeline->SetVertexBuffer(Object.Component->GetVertexBuffer(), StrideTextVertex);
 		Pipeline->SetInstanceBuffer(TextInstanceBuffer, StrideTextInstance);
@@ -672,17 +668,15 @@ void URenderer::CreateConstantBuffer()
 	 * @brief 폰트에 사용될 조회 테이블 상수 버퍼 생성
 	 */
 	{
-		FCharacterInfo* CharTable;
-
-		CharTable = ResourceManager.LoadCharTable();
+		const TArray<FCharacterInfo>& CharTable = ResourceManager.GetCharInfos();
 		D3D11_BUFFER_DESC ConstantBufferDesc = {};
-		ConstantBufferDesc.ByteWidth = (sizeof(FCharacterInfo)) * 95; //95개 CharacterSet의 UV좌표
+		ConstantBufferDesc.ByteWidth = sizeof(FCharacterInfo) * CharTable.Num();
 		ConstantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		ConstantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		ConstantBufferDesc.CPUAccessFlags = 0;
 
 		D3D11_SUBRESOURCE_DATA CharTableData = {};
-		CharTableData.pSysMem = CharTable;
+		CharTableData.pSysMem = CharTable.data();
 		GetDevice()->CreateBuffer(&ConstantBufferDesc, &CharTableData, &ConstantBufferCharTable);
 
 		Pipeline->SetConstantBuffer(4, true, ConstantBufferCharTable);

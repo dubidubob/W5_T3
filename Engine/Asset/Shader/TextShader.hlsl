@@ -19,7 +19,7 @@ struct CharUv
 
 cbuffer CharTable : register(b4)
 {
-	CharUv UvTable[95];
+	CharUv UvTable[2446];
 }
 
 Texture2D FontAtlas : register(t0);
@@ -45,8 +45,6 @@ struct PS_INPUT
 	float2 UV : TEXCOORD0;
 };
 
-
-
 float3 GetCameraForward();
 
 PS_INPUT mainVS(VS_INPUT Input)
@@ -55,7 +53,7 @@ PS_INPUT mainVS(VS_INPUT Input)
 
 	float FontScale = 1 / 3.0f;
 	//가로 32픽셀 세로 64픽셀이므로 Y를 2배 스케일(zxy->xyz)
-	float3 BasePos = float3(Input.Position.x, Input.Position.y, Input.Position.z * 2) * FontScale;
+	float3 BasePos = float3(Input.Position.x, Input.Position.y, Input.Position.z) * FontScale;
 	Input.Offset.y *= FontScale;
 	
 	float3 ModelPos = ModelMatrix[3].xyz;
@@ -76,7 +74,7 @@ PS_INPUT mainVS(VS_INPUT Input)
 	Output.WorldPos = OutputPos;
 	
 
-	Output.UV = UvTable[Input.CharID - 32].UvSize * Input.UV + UvTable[Input.CharID - 32].UvOffset;
+	Output.UV = UvTable[Input.CharID].UvSize * Input.UV + UvTable[Input.CharID].UvOffset;
 	Output.Color = Input.Color;
 	return Output;
 }

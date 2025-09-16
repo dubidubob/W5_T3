@@ -33,9 +33,11 @@ public:
 
 	ID3D11SamplerState* GetSamplerState(ESamplerType Type);
 
-	FCharacterInfo* LoadCharTable();
+	int32 GetCharInfoIdx(WCHAR Char);
+	const TArray<FCharacterInfo>& GetCharInfos();
 
 private:
+	void LoadCharInfoMap();
 
 	TMap<EPrimitiveType, TArray<FVertex>*> VertexData;
 	TMap<EPrimitiveType, ID3D11Buffer*> VertexBuffers;
@@ -56,5 +58,6 @@ private:
 	TMap<FString, ID3D11ShaderResourceView*> ShaderResourceViews;
 	TMap<ESamplerType, ID3D11SamplerState*> SamplerStates;
 
-	FCharacterInfo CharTable[95];
+	TArray<FCharacterInfo> CharInfos;
+	TMap<WCHAR, int32> CharInfoIdxMap;
 };
