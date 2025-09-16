@@ -37,8 +37,8 @@ struct FGizmoRotateCollisionConfig
 		: OuterRadius(1.0f), InnerRadius(0.9f), Scale(2.f) {
 	}
 
-	float OuterRadius = {1.0f};  // 링 큰 반지름 
-	float InnerRadius = {0.9f};  // 링 굵기 r  
+	float OuterRadius = {1.0f};  // 링 큰 반지름
+	float InnerRadius = {0.9f};  // 링 굵기 r
 	float Scale = {2.0f};
 };
 
@@ -60,10 +60,9 @@ public:
 	void SetActorRotation(const FVector& Rotation) { TargetActor->SetActorRotation(Rotation); }
 	void SetActorScale(const FVector& Scale) { TargetActor->SetActorScale3D(Scale); }
 
-	//로컬 기즈모, 쿼터니언 구현 후 사용
-	//void SetWorld() { bIsWorld = true; }
-	//void SetLocal() { bIsWorld = false; }
-	//////////////////
+	// 로컬 기즈모, 쿼터니언 구현 후 사용
+	void SetWorld() { bIsWorld = true; }
+	void SetLocal() { bIsWorld = false; }
 
 	/* *
 	* @brief Getter
@@ -94,9 +93,9 @@ public:
 	*/
 	void EndDrag() { bIsDragging = false; }
 	bool IsDragging() const { return bIsDragging; }
-	 
+
 	//로컬 기즈모, 쿼터니언 구현 후 사용
-	//bool IsWorld() const { return bIsWorld; }
+	bool IsWorld() const { return bIsWorld; }
 	void OnMouseHovering() {}
 	void OnMouseDragStart(FVector& CollisionPoint);
 	void OnMouseRelease(EGizmoDirection DirectionReleased) {}
@@ -115,7 +114,7 @@ private:
 
 	// 렌더 시 하이라이트 색상 계산(상태 오염 방지)
 	FVector4 ColorFor(EGizmoDirection InAxis) const;
-	
+
 
 	TArray<FEditorPrimitive> Primitives;
 	AActor* TargetActor = nullptr;
@@ -134,7 +133,7 @@ private:
 	bool bIsDragging = false;
 
 	//로컬 기즈모. 쿼터니언 구현 후 사용
-	//bool bIsWorld = true;
+	bool bIsWorld = true;
 
 	FRenderState RenderState;
 

@@ -74,7 +74,6 @@ void UGizmo::RenderGizmo(AActor* Actor, const FVector& CameraLocation)
 	{
 		LocalRotation = TargetActor->GetActorRotation();
 	}*/
-	// X (Right)
 
 	float Scale = DistanceToCamera * ScaleFactor;
 	if (DistanceToCamera < MinScaleFactor)
@@ -84,16 +83,17 @@ void UGizmo::RenderGizmo(AActor* Actor, const FVector& CameraLocation)
 
 	P.Scale = FVector(Scale, Scale, Scale);
 
+	// X (Forward)
 	P.Rotation = FVector{0,89.99f,0} + LocalRotation;
 	P.Color = ColorFor(EGizmoDirection::Right);
 	Renderer.RenderEditorPrimitive(P, RenderState);
 
-	// Y (Up)
+	// Y (Right)
 	P.Rotation = FVector{ -89.99f,0,0 } + LocalRotation;
 	P.Color = ColorFor(EGizmoDirection::Up);
 	Renderer.RenderEditorPrimitive(P, RenderState);
 
-	// Z (Forward)
+	// Z (Up)
 	P.Rotation = FVector{ 0, 0, 0 } + LocalRotation;
 	P.Color = ColorFor(EGizmoDirection::Forward);
 	Renderer.RenderEditorPrimitive(P, RenderState);

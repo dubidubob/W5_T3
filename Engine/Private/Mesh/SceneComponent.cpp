@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "pch.h"
 #include "Mesh/SceneComponent.h"
 #include "Mesh/ResourceManager.h"
@@ -79,12 +81,9 @@ void USceneComponent::SetRelativeRotation(const FVector& Rotation)
 void USceneComponent::SetRelativeScale3D(const FVector& Scale)
 {
 	FVector ActualScale = Scale;
-	if (ActualScale.X < MinScale)
-		ActualScale.X = MinScale;
-	if (ActualScale.Y < MinScale)
-		ActualScale.Y = MinScale;
-	if (ActualScale.Z < MinScale)
-		ActualScale.Z = MinScale;
+	ActualScale.X = std::max(ActualScale.X, MinScale);
+	ActualScale.Y = std::max(ActualScale.Y, MinScale);
+	ActualScale.Z = std::max(ActualScale.Z, MinScale);
 	RelativeScale3D = ActualScale;
 	MarkAsDirty();
 }
