@@ -114,10 +114,12 @@ public:
 	void CreateInstanceBuffer();
 
 	void UpdateConstant(const UPrimitiveComponent* Primitive);
+	void UpdateConstant(const FMatrix& InMatrix) const;
 	void UpdateConstant(const FVector& InPosition, const FVector& InRotation, const FVector& InScale) const;
 	void UpdateConstant(const FViewProjConstants& InViewProjConstants) const;
 	void UpdateConstant(const FVector4& Color) const;
 	void UpdateInstance(const TArray<FTextInstance>* Instance);
+	void UpdateInstanceDrawConstants(bool bUseInstancing, uint32 BaseInstanceOffset, uint32 InstanceCount) const;
 
 	void SetViewMode(EViewModeIndex InViewMode) { CurrentViewMode = InViewMode; }
 	EViewModeIndex GetViewMode(EViewModeIndex InViewMode) const { return CurrentViewMode; }
@@ -163,6 +165,7 @@ private:
 	ID3D11Buffer* ConstantBufferPerFrame = nullptr;
 	ID3D11Buffer* ConstantBufferColor = nullptr;
 	ID3D11Buffer* ConstantBufferCharTable = nullptr;
+	ID3D11Buffer* ConstantBufferInstance = nullptr;
 	//////////////////////////////////////
 
 	ID3D11Buffer* TextInstanceBuffer = nullptr;
@@ -184,6 +187,51 @@ private:
 	uint32 Stride = 0;
 	uint32 StrideTextVertex = 0;
 	uint32 StrideTextInstance = 0;
+
+	struct FPrimitiveBatchKey
+	{
+		ID3D11Buffer* VertexBuffer = nullptr;
+		ID3D11Buffer* IndexBuffer = nullptr;
+		uint32 IndexCount = 0;
+		FRenderState RenderState = {};
+		bool operator==(const FPrimitiveBatchKey& InRhs) const
+		{
+			return VertexBuffer == InRhs.VertexBuffer &&
+				IndexBuffer == InRhs.IndexBuffer &&
+				IndexCount == InRhs.IndexCount &&
+				RenderState.CullMode == InRhs.RenderState.CullMode &&
+				RenderState.FillMode == InRhs.RenderState.FillMode;
+		}
+	};
+
+	struct FPrimitiveBatchKeyHasher
+	{
+		size_t operator()(const FPrimitiveBatchKey& InKey) const noexcept
+		{
+			auto Mix = [](size_t& H, size_t V)
+			{
+				H ^= V + 0x9e3779b97f4a7c15ULL + (H << 6) + (H >> 2);
+			};
+
+			size_t Hash = 0;
+			Mix(Hash, reinterpret_cast<size_t>(InKey.VertexBuffer));
+			Mix(Hash, reinterpret_cast<size_t>(InKey.IndexBuffer));
+			Mix(Hash, static_cast<size_t>(InKey.IndexCount));
+			Mix(Hash, static_cast<size_t>(InKey.RenderState.CullMode));
+			Mix(Hash, static_cast<size_t>(InKey.RenderState.FillMode));
+
+			return Hash;
+		}
+	};
+
+	struct FInstanceBufferResource
+	{
+		ID3D11Buffer* Buffer = nullptr;
+		ID3D11ShaderResourceView* ShaderResourceView = nullptr;
+		uint32 Capacity = 0;
+	};
+
+	TMap<FPrimitiveBatchKey, FInstanceBufferResource, FPrimitiveBatchKeyHasher> PrimitiveInstanceBuffers;
 
 private:
 	struct FRasterKey
@@ -218,6 +266,10 @@ private:
 
 	FPipelineInfo CreatePipelineInfo(const FRenderState& InRenderState);
 	FPipelineInfo CreateTextPipelineInfo(const FRenderState& InRenderState);
+	FInstanceBufferResource& GetOrCreateInstanceBuffer(const FPrimitiveBatchKey& InKey);
+	void EnsureInstanceBufferCapacity(FInstanceBufferResource& InResource, uint32 InRequiredInstanceCount);
+	void UploadInstanceBufferData(FInstanceBufferResource& InResource, const void* InData, uint32 InInstanceCount);
+	void ReleasePrimitiveInstanceBuffers();
 
 	bool bIsResizing = false;
 

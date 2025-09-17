@@ -96,3 +96,8 @@ void UPipeline::DrawIndexed(uint32 IndexCount, uint32 StartIndexLocation, int32 
 {
 	DeviceContext->DrawIndexed(IndexCount, StartIndexLocation, BaseVertexLocation);
 }
+
+void UPipeline::DrawIndexedInstanced(uint32 IndexCountPerInstance, uint32 InstanceCount, uint32 StartIndexLocation, int32 BaseVertexLocation, uint32 StartInstanceLocation)
+{
+	DeviceContext->DrawIndexedInstanced(IndexCountPerInstance, InstanceCount, StartIndexLocation, BaseVertexLocation, StartInstanceLocation);
+}

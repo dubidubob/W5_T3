@@ -50,7 +50,7 @@ void UPrimitiveSpawnWidget::RenderWidget()
 	ImGui::SetNextItemWidth(80);
 	ImGui::InputInt("##NumberOfSpawn", &NumberOfSpawn);
 	NumberOfSpawn = max(1, NumberOfSpawn);
-	NumberOfSpawn = min(100, NumberOfSpawn);
+	NumberOfSpawn = min(10000, NumberOfSpawn);
 
 	ImGui::SameLine();
 	if (ImGui::Button("Spawn Actors"))
