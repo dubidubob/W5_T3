@@ -51,8 +51,8 @@ void UTargetActorTransformWidget::RenderWidget()
 {
 	// Level Memory Information
 	ImGui::Text("Level Memory Information");
-	ImGui::Text("Object Count: %s", to_string(LevelObjectCount).c_str());
-	ImGui::Text("Memory Byte: %s", to_string(LevelMemoryByte).c_str());
+	ImGui::Text("Level Object Count: %s", to_string(LevelObjectCount).c_str());
+	ImGui::Text("Level Memory Byte: %s", to_string(LevelMemoryByte).c_str());
 	ImGui::Separator();
 
 	ImGui::Text("Transform");
