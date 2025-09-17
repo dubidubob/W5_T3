@@ -36,6 +36,7 @@ public:
 	void SetIndexBuffer(ID3D11Buffer* IndexBuffer, DXGI_FORMAT Format);
 
 	void DrawIndexed(uint32 IndexCount, uint32 StartIndexLocation, int32 BaseVertexLocation);
+	void DrawIndexedInstanced(uint32 IndexCountPerInstance, uint32 InstanceCount, uint32 StartIndexLocation, int32 BaseVertexLocation, uint32 StartInstanceLocation);
 private:
 	ID3D11DeviceContext* DeviceContext;
 };

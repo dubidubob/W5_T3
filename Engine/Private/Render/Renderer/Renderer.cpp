@@ -11,6 +11,23 @@
 #include "Editor/Editor.h"
 #include "Mesh/TextComponent.h"
 
+namespace
+{
+	struct FInstanceGPUData
+	{
+		FMatrix World;
+		FVector4 Color;
+	};
+
+	struct FInstanceDrawConstants
+	{
+		uint32 bUseInstancing = 0;
+		uint32 BaseInstanceOffset = 0;
+		uint32 InstanceCount = 0;
+		uint32 Padding = 0;
+	};
+}
+
 IMPLEMENT_CLASS(URenderer, UObject)
 IMPLEMENT_SINGLETON(URenderer)
 
@@ -60,7 +77,6 @@ void URenderer::Release()
  */
 void URenderer::CreateRasterizerState()
 {
-
 }
 
 void URenderer::CreateDepthStencilState()
@@ -129,7 +145,6 @@ void URenderer::CreateBlendState()
 	RtBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
 	GetDevice()->CreateBlendState(&BlendDesc, &TextBlendState);
-
 }
 
 /**
@@ -188,17 +203,17 @@ void URenderer::CreateDefaultShader()
 	ID3DBlob* VertexShaderCSO;
 	ID3DBlob* PixelShaderCSO;
 
-	D3DCompileFromFile(L"Asset/Shader/SampleShader.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0,
+	D3DCompileFromFile(L"Asset/Shader/SampleShader.hlsl", nullptr, nullptr, "MainVS", "vs_5_0", 0, 0,
 	                   &VertexShaderCSO, nullptr);
 
 	GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
-	                           VertexShaderCSO->GetBufferSize(), nullptr, &DefaultVertexShader);
+	                                VertexShaderCSO->GetBufferSize(), nullptr, &DefaultVertexShader);
 
-	D3DCompileFromFile(L"Asset/Shader/SampleShader.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0,
+	D3DCompileFromFile(L"Asset/Shader/SampleShader.hlsl", nullptr, nullptr, "MainPS", "ps_5_0", 0, 0,
 	                   &PixelShaderCSO, nullptr);
 
 	GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
-	                          PixelShaderCSO->GetBufferSize(), nullptr, &DefaultPixelShader);
+	                               PixelShaderCSO->GetBufferSize(), nullptr, &DefaultPixelShader);
 
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
@@ -207,7 +222,7 @@ void URenderer::CreateDefaultShader()
 	};
 
 	GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
-	                          VertexShaderCSO->GetBufferSize(), &DefaultInputLayout);
+	                               VertexShaderCSO->GetBufferSize(), &DefaultInputLayout);
 
 	Stride = sizeof(FVertex);
 
@@ -221,29 +236,29 @@ void URenderer::CreateTextShader()
 	ID3DBlob* PixelShaderCSO;
 
 	D3DCompileFromFile(L"Asset/Shader/TextShader.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0,
-		&VertexShaderCSO, nullptr);
+	                   &VertexShaderCSO, nullptr);
 
 	GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
-		VertexShaderCSO->GetBufferSize(), nullptr, &TextVertexShader);
+	                                VertexShaderCSO->GetBufferSize(), nullptr, &TextVertexShader);
 
 	D3DCompileFromFile(L"Asset/Shader/TextShader.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0,
-		&PixelShaderCSO, nullptr);
+	                   &PixelShaderCSO, nullptr);
 
 	GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
-		PixelShaderCSO->GetBufferSize(), nullptr, &TextPixelShader);
+	                               PixelShaderCSO->GetBufferSize(), nullptr, &TextPixelShader);
 
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
 
-		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA,1},
-		{"OFFSET", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA,1},
-		{"TEXCOORD", 1, DXGI_FORMAT_R32_UINT, 1, 28, D3D11_INPUT_PER_INSTANCE_DATA,1},
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{"OFFSET", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{"TEXCOORD", 1, DXGI_FORMAT_R32_UINT, 1, 28, D3D11_INPUT_PER_INSTANCE_DATA, 1},
 	};
 
 	GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
-		VertexShaderCSO->GetBufferSize(), &TextInputLayout);
+	                               VertexShaderCSO->GetBufferSize(), &TextInputLayout);
 
 	StrideTextVertex = sizeof(FTextVertex);
 	StrideTextInstance = sizeof(FTextInstance);
@@ -258,30 +273,31 @@ void URenderer::CreateLineInstancedShader()
 	ID3DBlob* PixelShaderCSO = nullptr;
 
 	D3DCompileFromFile(L"Asset/Shader/LineInstanced.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0,
-		&VertexShaderCSO, nullptr);
+	                   &VertexShaderCSO, nullptr);
 
 	GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
-		VertexShaderCSO->GetBufferSize(), nullptr, &LineInstancedVertexShader);
+	                                VertexShaderCSO->GetBufferSize(), nullptr, &LineInstancedVertexShader);
 
 	D3DCompileFromFile(L"Asset/Shader/LineInstanced.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0,
-		&PixelShaderCSO, nullptr);
+	                   &PixelShaderCSO, nullptr);
 
 	GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
-		PixelShaderCSO->GetBufferSize(), nullptr, &LineInstancedPixelShader);
+	                               PixelShaderCSO->GetBufferSize(), nullptr, &LineInstancedPixelShader);
 
 	// slot 0: POSITION (per-vertex), slot 1: COLOR (per-instance)
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
 	};
 
 	GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
-		VertexShaderCSO->GetBufferSize(), &LineInstancedInputLayout);
+	                               VertexShaderCSO->GetBufferSize(), &LineInstancedInputLayout);
 
 	VertexShaderCSO->Release();
 	PixelShaderCSO->Release();
 }
+
 /**
  * @brief Shader Release
  */
@@ -371,16 +387,16 @@ void URenderer::Update(UEditor* Editor)
  */
 void URenderer::RenderBegin()
 {
-	auto* rtv = DeviceResources->GetRenderTargetView();
-	GetDeviceContext()->ClearRenderTargetView(rtv, ClearColor);
-	auto* dsv = DeviceResources->GetDepthStencilView();
-	GetDeviceContext()->ClearDepthStencilView(dsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	ID3D11RenderTargetView* RenderTargetView = DeviceResources->GetRenderTargetView();
+	GetDeviceContext()->ClearRenderTargetView(RenderTargetView, ClearColor);
+	ID3D11DepthStencilView* DepthStencilView = DeviceResources->GetDepthStencilView();
+	GetDeviceContext()->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
 
-	ID3D11RenderTargetView* rtvs[] = { rtv };  // 배열 생성
+	ID3D11RenderTargetView* RenderTargetViews[] = {RenderTargetView}; // 배열 생성
 
-	GetDeviceContext()->OMSetRenderTargets(1, rtvs, DeviceResources->GetDepthStencilView());
+	GetDeviceContext()->OMSetRenderTargets(1, RenderTargetViews, DeviceResources->GetDepthStencilView());
 	DeviceResources->UpdateViewport();
 }
 
@@ -392,35 +408,84 @@ void URenderer::RenderLevel()
 	//
 	// 여기에 카메라 VP 업데이트 한 번 싹
 	//
-	if (!ULevelManager::GetInstance().GetCurrentLevel()){ return; }
+	if (!ULevelManager::GetInstance().GetCurrentLevel()) { return; }
 
 	// Check show flags for primitive components
 	if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false) { return; }
 
-	for (auto& PrimitiveComponent : ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents())
+	TMap<FPrimitiveBatchKey, TArray<FInstanceGPUData>, FPrimitiveBatchKeyHasher> InstanceBatches;
+
+	const TArray<UPrimitiveComponent*>& PrimitiveComponents =
+		ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
+
+	for (UPrimitiveComponent* PrimitiveComponent : PrimitiveComponents)
 	{
 		if (!PrimitiveComponent) { continue; }
+		if (!PrimitiveComponent->IsVisible()) { continue; }
 
-		Pipeline->UpdatePipeline(CreatePipelineInfo(PrimitiveComponent->GetRenderState()));
+		FPrimitiveBatchKey Key;
+		Key.VertexBuffer = PrimitiveComponent->GetReducedVertexBuffer();
+		Key.IndexBuffer = PrimitiveComponent->GetIndexBuffer();
+		Key.IndexCount = PrimitiveComponent->GetIndexNum();
+		Key.RenderState = PrimitiveComponent->GetRenderState();
 
-        Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
-        // Use quaternion-based cached world matrix from component
-        UpdateConstant(PrimitiveComponent);
+
+		if (!Key.VertexBuffer || !Key.IndexBuffer || Key.IndexCount == 0)
+		{
+			continue;
+		}
+
+		InstanceBatches[Key].Emplace(PrimitiveComponent->GetWorldTransformMatrix(), PrimitiveComponent->GetColor());
+	}
+
+	if (InstanceBatches.IsEmpty())
+	{
+		UpdateInstanceDrawConstants(false, 0, 0);
+		ID3D11ShaderResourceView* NullSRV = nullptr;
+		GetDeviceContext()->VSSetShaderResources(0, 1, &NullSRV);
+		return;
+	}
+
+	for (auto& Batch : InstanceBatches)
+	{
+		const FPrimitiveBatchKey& Key = Batch.first;
+		TArray<FInstanceGPUData>& Instances = Batch.second;
+
+		if (Instances.IsEmpty())
+		{
+			continue;
+		}
+
+		FInstanceBufferResource& Resource = GetOrCreateInstanceBuffer(Key);
+		EnsureInstanceBufferCapacity(Resource, static_cast<uint32>(Instances.Num()));
+		if (!Resource.Buffer || !Resource.ShaderResourceView)
+		{
+			continue;
+		}
+
+		UploadInstanceBufferData(Resource, Instances.data(), static_cast<uint32>(Instances.Num()));
+
+		Pipeline->UpdatePipeline(CreatePipelineInfo(Key.RenderState));
+
+		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
+		UpdateConstant(FMatrix::Identity);
 
 		Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
-		UpdateConstant(PrimitiveComponent->GetColor());
+		UpdateConstant(FVector4(0.f, 0.f, 0.f, 0.f));
 
-		// TODO: 여기는 왜 RenderPrimitive로 안그리지?
-		Pipeline->SetVertexBuffer(PrimitiveComponent->GetReducedVertexBuffer(), Stride);
-		Pipeline->SetIndexBuffer(PrimitiveComponent->GetIndexBuffer(), DXGI_FORMAT_R32_UINT);
-		Pipeline->DrawIndexed(PrimitiveComponent->GetIndexNum(), 0, 0);
+		Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
+		UpdateInstanceDrawConstants(true, 0, static_cast<uint32>(Instances.Num()));
 
-		// Render bounding boxes if enabled
-		if (IsShowFlagEnabled(EEngineShowFlags::SF_Bounds))
-		{
-			// RenderBoundingBox(PrimitiveComponent);
-		}
+		Pipeline->SetVertexBuffer(Key.VertexBuffer, Stride);
+		Pipeline->SetIndexBuffer(Key.IndexBuffer, DXGI_FORMAT_R32_UINT);
+		Pipeline->SetShaderResourceView(0, true, Resource.ShaderResourceView);
+
+		Pipeline->DrawIndexedInstanced(Key.IndexCount, static_cast<uint32>(Instances.Num()), 0, 0, 0);
 	}
+
+	UpdateInstanceDrawConstants(false, 0, 0);
+	ID3D11ShaderResourceView* NullSRV = nullptr;
+	GetDeviceContext()->VSSetShaderResources(0, 1, &NullSRV);
 }
 
 void URenderer::RenderTest(const FVector& CameraLocation)
@@ -428,7 +493,7 @@ void URenderer::RenderTest(const FVector& CameraLocation)
 	if (IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText) == false) { return; }
 
 	//shader, rasterizaer state, depth stencil state, input layout 설정
-	FRenderState State = FRenderState{ ECullMode::None, EFillMode::Solid };
+	FRenderState State = FRenderState{ECullMode::None, EFillMode::Solid};
 	Pipeline->UpdatePipeline(CreateTextPipelineInfo(State));
 
 	//텍스처, 샘플러 설정
@@ -495,6 +560,8 @@ void URenderer::RenderTest(const FVector& CameraLocation)
 
 		Pipeline->DrawInstanced(Object.Component->GetVertexNum(), InstanceData->size(), 0, 0);
 	}
+
+	UpdateInstanceDrawConstants(false, 0, 0);
 }
 
 /**
@@ -507,7 +574,8 @@ void URenderer::RenderEnd() const
 
 static inline D3D11_CULL_MODE ToD3D11(ECullMode InCull)
 {
-	switch (InCull) {
+	switch (InCull)
+	{
 	case ECullMode::Back:
 		return D3D11_CULL_BACK;
 	case ECullMode::Front:
@@ -521,7 +589,8 @@ static inline D3D11_CULL_MODE ToD3D11(ECullMode InCull)
 
 static inline D3D11_FILL_MODE ToD3D11(EFillMode InFill)
 {
-	switch (InFill) {
+	switch (InFill)
+	{
 	case EFillMode::Solid:
 		return D3D11_FILL_SOLID;
 	case EFillMode::WireFrame:
@@ -540,13 +609,13 @@ void URenderer::RenderEditorPrimitive(FEditorPrimitive& Primitive, struct FRende
 		GetRasterizerState(InRenderState);
 
 	FPipelineInfo PipelineInfo = {
-			DefaultInputLayout,
-			DefaultVertexShader,
-			RasterizerState,
-			DepthStencilState,
-			DefaultPixelShader,
-			nullptr,
-			Primitive.Topology
+		DefaultInputLayout,
+		DefaultVertexShader,
+		RasterizerState,
+		DepthStencilState,
+		DefaultPixelShader,
+		nullptr,
+		Primitive.Topology
 	};
 
 	Pipeline->UpdatePipeline(PipelineInfo);
@@ -564,7 +633,7 @@ void URenderer::RenderEditorPrimitive(FEditorPrimitive& Primitive, struct FRende
 
 void URenderer::CreateInstanceBuffer()
 {
-	uint32 InByteWidth = sizeof(FTextInstance)* 100;
+	uint32 InByteWidth = sizeof(FTextInstance) * 100;
 	D3D11_BUFFER_DESC InstanceBufferDesc = {};
 	InstanceBufferDesc.ByteWidth = InByteWidth;
 	InstanceBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -577,7 +646,13 @@ void URenderer::CreateInstanceBuffer()
 
 void URenderer::ReleaseInstanceBuffer()
 {
-	TextInstanceBuffer->Release();
+	if (TextInstanceBuffer)
+	{
+		TextInstanceBuffer->Release();
+		TextInstanceBuffer = nullptr;
+	}
+
+	ReleasePrimitiveInstanceBuffers();
 }
 
 void URenderer::OnResize(uint32 InWidth, uint32 InHeight)
@@ -600,9 +675,9 @@ void URenderer::OnResize(uint32 InWidth, uint32 InHeight)
 	DeviceResources->CreateFrameBuffer();
 	DeviceResources->CreateDepthBuffer();
 
-	auto* rtv = DeviceResources->GetRenderTargetView();
-	ID3D11RenderTargetView* rtvs[] = { rtv };  // 배열 생성
-	GetDeviceContext()->OMSetRenderTargets(1, rtvs, DeviceResources->GetDepthStencilView());
+	ID3D11RenderTargetView* RenderTargetView = DeviceResources->GetRenderTargetView();
+	ID3D11RenderTargetView* RenderTargetViews[] = {RenderTargetView}; // 배열 생성
+	GetDeviceContext()->OMSetRenderTargets(1, RenderTargetViews, DeviceResources->GetDepthStencilView());
 }
 
 /**
@@ -663,6 +738,19 @@ void URenderer::CreateConstantBuffer()
 	}
 
 	/**
+	 * @brief 인스턴싱 드로우 제어용 상수 버퍼 생성
+	 */
+	{
+		D3D11_BUFFER_DESC ConstantBufferDesc = {};
+		ConstantBufferDesc.ByteWidth = sizeof(FInstanceDrawConstants);
+		ConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+		ConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		ConstantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+		GetDevice()->CreateBuffer(&ConstantBufferDesc, nullptr, &ConstantBufferInstance);
+	}
+
+	/**
 	 * @brief 폰트에 사용될 조회 테이블 상수 버퍼 생성
 	 */
 	{
@@ -679,6 +767,8 @@ void URenderer::CreateConstantBuffer()
 
 		Pipeline->SetConstantBuffer(4, true, ConstantBufferCharTable);
 	}
+
+	UpdateInstanceDrawConstants(false, 0, 0);
 }
 
 /**
@@ -704,6 +794,12 @@ void URenderer::ReleaseConstantBuffer()
 		ConstantBufferPerFrame = nullptr;
 	}
 
+	if (ConstantBufferInstance)
+	{
+		ConstantBufferInstance->Release();
+		ConstantBufferInstance = nullptr;
+	}
+
 	if (ConstantBufferCharTable)
 	{
 		ConstantBufferCharTable->Release();
@@ -727,6 +823,19 @@ void URenderer::UpdateConstant(const UPrimitiveComponent* Primitive)
 		GetDeviceContext()->Unmap(ConstantBufferModels, 0);
 	}
 }
+
+void URenderer::UpdateConstant(const FMatrix& InMatrix) const
+{
+	if (ConstantBufferModels)
+	{
+		D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR;
+		GetDeviceContext()->Map(ConstantBufferModels, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
+		FMatrix* Constants = static_cast<FMatrix*>(ConstantBufferMSR.pData);
+		*Constants = InMatrix;
+		GetDeviceContext()->Unmap(ConstantBufferModels, 0);
+	}
+}
+
 /**
  * @brief 상수 버퍼 업데이트 함수
  * @param InOffset
@@ -802,7 +911,32 @@ void URenderer::UpdateInstance(const TArray<FTextInstance>* Instance)
 
 		GetDeviceContext()->Unmap(TextInstanceBuffer, 0);
 	}
+}
 
+void URenderer::UpdateInstanceDrawConstants(bool bUseInstancing, uint32 BaseInstanceOffset, uint32 InstanceCount) const
+{
+	if (!ConstantBufferInstance)
+	{
+		return;
+	}
+
+	Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
+
+	D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR = {};
+	HRESULT Hr = GetDeviceContext()->Map(ConstantBufferInstance, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
+	if (FAILED(Hr))
+	{
+		UE_LOG("Failed to map instancing constant buffer");
+		return;
+	}
+
+	auto* Constants = static_cast<FInstanceDrawConstants*>(ConstantBufferMSR.pData);
+	Constants->bUseInstancing = bUseInstancing ? 1u : 0u;
+	Constants->BaseInstanceOffset = BaseInstanceOffset;
+	Constants->InstanceCount = InstanceCount;
+	Constants->Padding = 0;
+
+	GetDeviceContext()->Unmap(ConstantBufferInstance, 0);
 }
 
 // TODO - 추후 ViewMode가 증가하거나, 바꿔야하는 설정이 많을 경우 별개의 Handler에서 진행하도록 변경
@@ -828,7 +962,8 @@ FPipelineInfo URenderer::CreatePipelineInfo(const FRenderState& InRenderState)
 	}
 
 	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
-	return FPipelineInfo{DefaultInputLayout, DefaultVertexShader,
+	return FPipelineInfo{
+		DefaultInputLayout, DefaultVertexShader,
 		RasterizerState, DefaultDepthStencilState, DefaultPixelShader, nullptr,
 		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
 	};
@@ -851,9 +986,124 @@ FPipelineInfo URenderer::CreateTextPipelineInfo(const FRenderState& InRenderStat
 	}
 
 	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
-	return FPipelineInfo{ TextInputLayout, TextVertexShader,
+	return FPipelineInfo{
+		TextInputLayout, TextVertexShader,
 		RasterizerState, TextDepthStencilState, TextPixelShader, TextBlendState
 	};
+}
+
+URenderer::FInstanceBufferResource& URenderer::GetOrCreateInstanceBuffer(const FPrimitiveBatchKey& InKey)
+{
+	return PrimitiveInstanceBuffers[InKey];
+}
+
+void URenderer::EnsureInstanceBufferCapacity(FInstanceBufferResource& InResource, uint32 InRequiredInstanceCount)
+{
+	if (InRequiredInstanceCount == 0)
+	{
+		return;
+	}
+
+	if (InResource.Capacity >= InRequiredInstanceCount && InResource.Buffer && InResource.ShaderResourceView)
+	{
+		return;
+	}
+
+	uint32 NewCapacity = InResource.Capacity > 0 ? InResource.Capacity : 64u;
+	while (NewCapacity < InRequiredInstanceCount)
+	{
+		NewCapacity *= 2u;
+	}
+
+	if (InResource.ShaderResourceView)
+	{
+		InResource.ShaderResourceView->Release();
+		InResource.ShaderResourceView = nullptr;
+	}
+
+	if (InResource.Buffer)
+	{
+		InResource.Buffer->Release();
+		InResource.Buffer = nullptr;
+	}
+
+	D3D11_BUFFER_DESC BufferDesc = {};
+	BufferDesc.ByteWidth = sizeof(FInstanceGPUData) * NewCapacity;
+	BufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	BufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	BufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	BufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+	BufferDesc.StructureByteStride = sizeof(FInstanceGPUData);
+
+	ID3D11Device* Device = GetDevice();
+	HRESULT Hr = Device->CreateBuffer(&BufferDesc, nullptr, &InResource.Buffer);
+	if (FAILED(Hr) || !InResource.Buffer)
+	{
+		UE_LOG("Failed to create instance structured buffer");
+		InResource.Capacity = 0;
+		return;
+	}
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
+	SrvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	SrvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+	SrvDesc.Buffer.FirstElement = 0;
+	SrvDesc.Buffer.NumElements = NewCapacity;
+
+	Hr = Device->CreateShaderResourceView(InResource.Buffer, &SrvDesc, &InResource.ShaderResourceView);
+	if (FAILED(Hr) || !InResource.ShaderResourceView)
+	{
+		UE_LOG("Failed to create instance buffer SRV");
+		InResource.Buffer->Release();
+		InResource.Buffer = nullptr;
+		InResource.Capacity = 0;
+		return;
+	}
+
+	InResource.Capacity = NewCapacity;
+}
+
+void URenderer::UploadInstanceBufferData(FInstanceBufferResource& InResource, const void* InData,
+                                         uint32 InInstanceCount)
+{
+	if (!InResource.Buffer || InInstanceCount == 0)
+	{
+		return;
+	}
+
+	D3D11_MAPPED_SUBRESOURCE Mapped = {};
+	HRESULT Hr = GetDeviceContext()->Map(InResource.Buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
+	if (FAILED(Hr))
+	{
+		UE_LOG("Failed to map instance buffer");
+		return;
+	}
+
+	const size_t CopySize = sizeof(FInstanceGPUData) * static_cast<size_t>(InInstanceCount);
+	memcpy(Mapped.pData, InData, CopySize);
+	GetDeviceContext()->Unmap(InResource.Buffer, 0);
+}
+
+void URenderer::ReleasePrimitiveInstanceBuffers()
+{
+	for (auto& Pair : PrimitiveInstanceBuffers)
+	{
+		if (Pair.second.ShaderResourceView)
+		{
+			Pair.second.ShaderResourceView->Release();
+			Pair.second.ShaderResourceView = nullptr;
+		}
+
+		if (Pair.second.Buffer)
+		{
+			Pair.second.Buffer->Release();
+			Pair.second.Buffer = nullptr;
+		}
+
+		Pair.second.Capacity = 0;
+	}
+
+	PrimitiveInstanceBuffers.Empty();
 }
 
 ID3D11RasterizerState* URenderer::GetRasterizerState(const FRenderState& InRenderState)
@@ -861,7 +1111,7 @@ ID3D11RasterizerState* URenderer::GetRasterizerState(const FRenderState& InRende
 	D3D11_FILL_MODE FillMode = ToD3D11(InRenderState.FillMode);
 	D3D11_CULL_MODE CullMode = ToD3D11(InRenderState.CullMode);
 
-	const FRasterKey Key{ FillMode, CullMode };
+	const FRasterKey Key{FillMode, CullMode};
 	if (auto It = RasterCache.find(Key); It != RasterCache.end())
 		return It->second;
 
