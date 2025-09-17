@@ -128,6 +128,14 @@ void UResourceManager::Release()
 	{
 		Renderer.ReleaseVertexBuffer(Pair.second);
 	}
+	for (auto& Pair : ReducedVertexBuffers)
+	{
+		Renderer.ReleaseVertexBuffer(Pair.second);
+	}
+	for (auto& Pair : IndexBuffers)
+	{
+		Renderer.ReleaseVertexBuffer(Pair.second);
+	}
 	Renderer.ReleaseVertexBuffer(TextVertexBuffer);
 
 	//TMap.Empty()
