@@ -262,7 +262,15 @@ FVector UEditor::GetGizmoDragLocation(const FRay& WorldRay)
 {
 	FVector MouseWorld;
 	FVector PlaneOrigin{Gizmo.GetGizmoLocation()};
-	FVector GizmoAxis = Gizmo.GetGizmoAxis();
+	const FVector AxisLocal = Gizmo.GetGizmoAxis(); // (1,0,0) or (0,1,0) or (0,0,1)
+	FVector GizmoAxis = AxisLocal;
+
+	// 로컬 모드일 때는 드래그 시작 시점의 로컬 축을 월드로 변환 해줌
+	if (!Gizmo.IsWorld())
+	{
+		const FQuat QuatDragStart = Gizmo.GetDragStartActorRotationQuat();
+		GizmoAxis = QuatDragStart.RotateVector(AxisLocal);
+	}
 
 	if (ObjectPicker.IsRayCollideWithPlane(WorldRay, PlaneOrigin,
 	                                       Camera.CalculatePlaneNormal(GizmoAxis).Cross(GizmoAxis), MouseWorld))
