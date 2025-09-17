@@ -84,15 +84,20 @@ void UCameraControlWidget::RenderWidget()
 		}
 	}
 
-	// 회전 입력 및 보정 (degree 단위)
-	bool RotationChanged = false;
-	RotationChanged |= ImGui::DragFloat3("Camera Rotation", &Rotation.X, 0.1f);
+    // 회전 입력 및 보정 (degree 단위)
+    bool RotationChanged = false;
+    float rotDisplay[3] = { Rotation.Z, Rotation.X, Rotation.Y }; // 현재 UI 표시 순서 유지
+    RotationChanged |= ImGui::DragFloat3("Camera Rotation", rotDisplay, 0.1f);
+    // UI -> 내부 순서 반영
+    Rotation.Z = rotDisplay[0];
+    Rotation.X = rotDisplay[1];
+    Rotation.Y = rotDisplay[2];
 
-	// Pitch / Yaw 간단 보정
-	Rotation.X = max(-89.0f, Rotation.X);
-	Rotation.X = min(89.0f, Rotation.X);
-	Rotation.Y = max(-180.0f, Rotation.Y);
-	Rotation.Y = min(180.0f, Rotation.Y);
+    // Pitch / Yaw 간단 보정
+    Rotation.X = max(-89.0f, Rotation.X);
+    Rotation.X = min(89.0f, Rotation.X);
+    Rotation.Y = max(-180.0f, Rotation.Y);
+    Rotation.Y = min(180.0f, Rotation.Y);
 
 	if (RotationChanged)
 	{

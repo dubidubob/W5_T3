@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="Global\Name.h" />
     <ClInclude Include="Global\NameTable.h" />
+    <ClInclude Include="Global\Quat.h" />
     <ClInclude Include="Public\Math\AABB.h" />
     <ClInclude Include="Public\Mesh\TextComponent.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorDetailWidget.h" />
@@ -249,6 +250,7 @@
     <ClCompile Include="Private\\Editor\\Grid.cpp" />
     <ClCompile Include="Private\\Editor\\ObjectPicker.cpp" />
     <ClCompile Include="Global\Matrix.cpp" />
+    <ClCompile Include="Global\Quat.cpp" />
     <ClCompile Include="Global\Memory.cpp" />
     <ClCompile Include="Global\Vector.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />

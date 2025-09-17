@@ -45,10 +45,18 @@ void AActor::SetActorLocation(const FVector& InLocation) const
 
 void AActor::SetActorRotation(const FVector& InRotation) const
 {
-	if (RootComponent)
-	{
-		RootComponent->SetRelativeRotation(InRotation);
-	}
+    if (RootComponent)
+    {
+        RootComponent->SetRelativeRotation(InRotation);
+    }
+}
+
+void AActor::SetActorRotation(const FQuat& InRotation) const
+{
+    if (RootComponent)
+    {
+        RootComponent->SetRelativeRotation(InRotation);
+    }
 }
 
 void AActor::SetActorScale3D(const FVector& InScale) const
@@ -84,8 +92,14 @@ const FVector& AActor::GetActorLocation() const
 
 const FVector& AActor::GetActorRotation() const
 {
-	assert(RootComponent);
-	return RootComponent->GetRelativeRotation();
+    assert(RootComponent);
+    return RootComponent->GetRelativeRotation();
+}
+
+const FQuat& AActor::GetActorRotationQuat() const
+{
+    assert(RootComponent);
+    return RootComponent->GetRelativeRotationQuat();
 }
 
 const FVector& AActor::GetActorScale3D() const

@@ -31,11 +31,12 @@ FMatrix::FMatrix(
  */
 FMatrix FMatrix::Transpose(const FMatrix& InOtherMatrix)
 {
-	return FMatrix(
+	return {
 		InOtherMatrix.Data[0][0], InOtherMatrix.Data[1][0], InOtherMatrix.Data[2][0], InOtherMatrix.Data[3][0],
 		InOtherMatrix.Data[0][1], InOtherMatrix.Data[1][1], InOtherMatrix.Data[2][1], InOtherMatrix.Data[3][1],
 		InOtherMatrix.Data[0][2], InOtherMatrix.Data[1][2], InOtherMatrix.Data[2][2], InOtherMatrix.Data[3][2],
-		InOtherMatrix.Data[0][3], InOtherMatrix.Data[1][3], InOtherMatrix.Data[2][3], InOtherMatrix.Data[3][3]);
+		InOtherMatrix.Data[0][3], InOtherMatrix.Data[1][3], InOtherMatrix.Data[2][3], InOtherMatrix.Data[3][3]
+	};
 }
 
 
@@ -120,7 +121,7 @@ FMatrix FMatrix::ScaleMatrixInverse(const FVector& InOtherVector)
 */
 FMatrix FMatrix::RotationMatrix(const FVector& InOtherVector)
 {
-	return RotationX(InOtherVector.X) * RotationY(InOtherVector.Y) * RotationZ(InOtherVector.Z);
+    return RotationX(InOtherVector.X) * RotationY(InOtherVector.Y) * RotationZ(InOtherVector.Z);
 }
 
 FMatrix FMatrix::RotationMatrixInverse(const FVector& InOtherVector)
@@ -197,14 +198,24 @@ FMatrix FMatrix::RotationZ(float Radian)
 	return Result;
 }
 
-//
+// Quaternion 기반 회전행렬 (row-major)
+FMatrix FMatrix::RotationMatrix(const FQuat& Q)
+{
+    return QuatToRotationMatrix(Q);
+}
+
+FMatrix FMatrix::RotationMatrixInverse(const FQuat& Q)
+{
+    return QuatToRotationMatrixInverse(Q);
+}
+
 FMatrix FMatrix::GetModelMatrix(const FVector& Location, const FVector& Rotation, const FVector& Scale)
 {
-	FMatrix T = TranslationMatrix(Location);
-	FMatrix R = RotationMatrix(Rotation);
-	FMatrix S = ScaleMatrix(Scale);
+    FMatrix T = TranslationMatrix(Location);
+    FMatrix R = RotationMatrix(Rotation);
+    FMatrix S = ScaleMatrix(Scale);
 
-	return FMatrix::Identity * S * R * T;
+    return S * R * T;
 }
 
 FMatrix FMatrix::GetModelMatrixInverse(const FVector& Location, const FVector& Rotation, const FVector& Scale)
@@ -213,7 +224,23 @@ FMatrix FMatrix::GetModelMatrixInverse(const FVector& Location, const FVector& R
 	FMatrix R = RotationMatrixInverse(Rotation);
 	FMatrix S = ScaleMatrixInverse(Scale);
 
-	return FMatrix::Identity * T * R * S;
+    return T * R * S;
+}
+
+FMatrix FMatrix::GetModelMatrix(const FVector& Location, const FQuat& Rotation, const FVector& Scale)
+{
+    FMatrix T = TranslationMatrix(Location);
+    FMatrix R = RotationMatrix(Rotation);
+    FMatrix S = ScaleMatrix(Scale);
+    return S * R * T;
+}
+
+FMatrix FMatrix::GetModelMatrixInverse(const FVector& Location, const FQuat& Rotation, const FVector& Scale)
+{
+    FMatrix T = TranslationMatrixInverse(Location);
+    FMatrix R = RotationMatrixInverse(Rotation);
+    FMatrix S = ScaleMatrixInverse(Scale);
+    return T * R * S;
 }
 
 /**

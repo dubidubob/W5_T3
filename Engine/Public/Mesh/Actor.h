@@ -15,7 +15,8 @@ public:
 	virtual ~AActor() override;
 
 	void SetActorLocation(const FVector& InLocation) const;
-	void SetActorRotation(const FVector& InRotation) const;
+    void SetActorRotation(const FVector& InRotation) const;
+    void SetActorRotation(const struct FQuat& InRotation) const;
 	void SetActorScale3D(const FVector& InScale) const;
 	void SetUniformScale(bool IsUniform);
 
@@ -35,7 +36,8 @@ public:
 	void SetRootComponent(USceneComponent* InOwnedComponents) { RootComponent = InOwnedComponents; }
 
 	const FVector& GetActorLocation() const;
-	const FVector& GetActorRotation() const;
+    const FVector& GetActorRotation() const;
+    const FQuat& GetActorRotationQuat() const;
 	const FVector& GetActorScale3D() const;
 
 private:

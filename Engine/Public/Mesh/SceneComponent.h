@@ -2,6 +2,7 @@
 #include "Mesh/ActorComponent.h"
 #include "ResourceManager.h"
 #include "Math/AABB.h"
+#include "Global/Quat.h"
 
 class USceneComponent : public UActorComponent
 {
@@ -16,7 +17,8 @@ public:
 	void MarkAsDirty();
 
 	void SetRelativeLocation(const FVector& Location);
-	void SetRelativeRotation(const FVector& Rotation);
+    void SetRelativeRotation(const FVector& Rotation);
+    void SetRelativeRotation(const FQuat& Rotation) { RelativeRotationQuat = Rotation; RelativeRotation = FQuat::ToEulerXYZ(Rotation); MarkAsDirty(); }
 	void SetRelativeScale3D(const FVector& Scale);
 	void SetUniformScale(bool bIsUniform);
 
@@ -24,6 +26,7 @@ public:
 
 	const FVector& GetRelativeLocation() const;
 	const FVector& GetRelativeRotation() const;
+	const FQuat&   GetRelativeRotationQuat() const { return RelativeRotationQuat; }
 	const FVector& GetRelativeScale3D() const;
 
 	const FVector& GetWorldLocation() const;
@@ -41,6 +44,7 @@ private:
 	TArray<USceneComponent*> Children;
 	FVector RelativeLocation = FVector{ 0,0,0.f };
 	FVector RelativeRotation = FVector{ 0,0,0.f };
+	FQuat   RelativeRotationQuat = FQuat::Identity;
 	FVector RelativeScale3D = FVector{ 0.3f,0.3f,0.3f };
 	bool bIsUniformScale = false;
 	const float MinScale = 0.01f;
