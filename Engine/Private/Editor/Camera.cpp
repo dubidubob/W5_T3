@@ -60,7 +60,7 @@ void UCamera::Update()
 		// Yaw 래핑(값이 무한히 커지지 않도록)
 		if (RelativeRotation.Y > 180.0f)
 		{
-			RelativeRotation.Y = 360.0f;
+			RelativeRotation.Y -= 360.0f;
 		}
 		if (RelativeRotation.Y < -180.0f)
 		{
