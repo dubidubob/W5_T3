@@ -57,7 +57,10 @@ void ULevelManager::Shutdown()
  */
 void ULevelManager::CreateDefaultLevel()
 {
-	Levels["Default"] = new ULevel("Default");
+	ULevel* NewLevel = NewObject<ULevel>();
+	NewLevel->SetName("Default");
+
+	Levels["Default"] = NewLevel;
 	LoadLevel("Default");
 }
 
@@ -124,7 +127,8 @@ bool ULevelManager::LoadLevel(const FString& InLevelName, const FString& InFileP
 	UE_LOG("LevelManager: Loading Level '%s' From: %s", InLevelName.c_str(), InFilePath.c_str());
 
 	// Make New Level
-	ULevel* NewLevel = new ULevel(InLevelName);
+	ULevel* NewLevel = NewObject<ULevel>();
+	NewLevel->SetName(InLevelName);
 
 	// 직접 LevelSerializer를 사용하여 로드
 	try
@@ -227,7 +231,8 @@ bool ULevelManager::CreateNewLevel(const FString& InLevelName)
 	}
 
 	// 새 레벨 생성
-	ULevel* NewLevel = new ULevel(InLevelName);
+	ULevel* NewLevel = NewObject<ULevel>();
+	NewLevel->SetName(InLevelName);
 
 	// 레벨 등록 및 활성화
 	RegisterLevel(InLevelName, NewLevel);

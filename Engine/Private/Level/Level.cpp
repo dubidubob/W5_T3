@@ -8,11 +8,6 @@ IMPLEMENT_CLASS(ULevel, UObject)
 
 ULevel::ULevel() = default;
 
-ULevel::ULevel(const FString& InName)
-	: UObject(InName)
-{
-}
-
 ULevel::~ULevel()
 {
 	for (auto Actor : LevelActors)
