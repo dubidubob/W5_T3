@@ -374,7 +374,6 @@ void URenderer::Update(UEditor* Editor)
 	// jft
 	if (bIsWindowDivided)
 	{
-		InitializeViewports();
 		for (int i = 0; i < 4; i++)
 		{
 			GetDeviceContext()->RSSetViewports(1, &vp[i]);
@@ -425,25 +424,6 @@ void URenderer::RenderBegin()
 	// jft
 	// DeviceResources->UpdateViewport();
 }
-
-// jft
-void URenderer::InitializeViewports()
-{
-	float W = GetDeviceResources()->GetViewportInfo().Width;
-	float H = GetDeviceResources()->GetViewportInfo().Height;
-	float halfW = W * 0.5f, halfH = H * 0.5f;
-
-	// TL
-	vp[0] = { 0,      0,      halfW, halfH, 0.f, 1.f };
-	// TR
-	vp[1] = { halfW,  0,      halfW, halfH, 0.f, 1.f };
-	// BL
-	vp[2] = { 0,      halfH,  halfW, halfH, 0.f, 1.f };
-	// BR
-	vp[3] = { halfW,  halfH,  halfW, halfH, 0.f, 1.f };
-}
-
-
 
 /**
  * @brief Buffer에 데이터 입력 및 Draw

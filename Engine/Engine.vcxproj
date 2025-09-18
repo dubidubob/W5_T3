@@ -157,6 +157,7 @@
     <ClInclude Include="Global\NameTable.h" />
     <ClInclude Include="Global\Quat.h" />
     <ClInclude Include="Public\Core\ObjectIterator.h" />
+    <ClInclude Include="Public\Manager\Viewport\ViewportManager.h" />
     <ClInclude Include="Public\Math\AABB.h" />
     <ClInclude Include="Public\Mesh\TextComponent.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorDetailWidget.h" />
@@ -238,6 +239,7 @@
   <ItemGroup>
     <ClCompile Include="Global\Name.cpp" />
     <ClCompile Include="Global\NameTable.cpp" />
+    <ClCompile Include="Private\Manager\Viewport\ViewportManager.cpp" />
     <ClCompile Include="Private\Math\AABB.cpp" />
     <ClCompile Include="Private\Mesh\TextComponent.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ActorDetailWidget.cpp" />

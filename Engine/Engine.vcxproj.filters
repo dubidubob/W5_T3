@@ -86,6 +86,7 @@
     <ClCompile Include="Private\Math\AABB.cpp" />
     <ClCompile Include="Private\\Render\Renderer\\LineBatchRenderer.cpp" />
     <ClCompile Include="Global\Quat.cpp" />
+    <ClCompile Include="Private\Manager\Viewport\ViewportManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\\Core\\Object.h" />
@@ -183,6 +184,7 @@
     <ClInclude Include="Global\Quat.h" />
     <ClInclude Include="..\..\Week03\Engine\Public\Core\ObjectIterator.h" />
     <ClInclude Include="Public\Core\ObjectIterator.h" />
+    <ClInclude Include="Public\Manager\Viewport\ViewportManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />

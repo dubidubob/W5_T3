@@ -5,6 +5,7 @@
 #include "Editor/Axis.h"
 #include "Core/Object.h"
 #include "Editor/ObjectPicker.h"
+#include "Manager/Viewport/ViewportManager.h"
 
 struct FQuat;
 
@@ -39,6 +40,8 @@ private:
 
 	UCamera Camera;
 	UObjectPicker ObjectPicker;
+
+	UViewportManager ViewportManager;
 
 	const float MinScale = 0.01f;
 	UGizmo Gizmo;

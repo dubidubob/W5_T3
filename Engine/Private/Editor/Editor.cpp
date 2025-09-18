@@ -37,7 +37,9 @@ UEditor::~UEditor() = default;
 
 void UEditor::Update()
 {
+	// todo : no cacheing?
 	auto& Renderer = URenderer::GetInstance();
+	// jft : will be deprecated next day ㅋㅋ!
 	Camera.Update();
 
 	ProcessMouseInput(ULevelManager::GetInstance().GetCurrentLevel());
