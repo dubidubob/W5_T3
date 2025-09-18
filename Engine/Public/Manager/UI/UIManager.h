@@ -14,6 +14,7 @@ class UImGuiHelper;
  */
 class UUIManager : public UObject
 {
+	DECLARE_CLASS(UUIManager, UObject)
 	DECLARE_SINGLETON(UUIManager)
 
 public:

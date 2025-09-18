@@ -2,6 +2,7 @@
 #include "Mesh/SphereActor.h"
 #include "Mesh/TextComponent.h"
 
+IMPLEMENT_CLASS(ASphereActor, AActor)
 ASphereActor::ASphereActor()
 {
 	SphereComponent = CreateDefaultSubobject<USphereComponent>("SphereComponent");

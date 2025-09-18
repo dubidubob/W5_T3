@@ -4,7 +4,8 @@
 class UTextComponent;
 class ATriangleActor : public AActor
 {
-	using Super = AActor;
+	DECLARE_CLASS(ATriangleActor, AActor)
+
 public:
 	ATriangleActor();
 	virtual ~ATriangleActor() override {}

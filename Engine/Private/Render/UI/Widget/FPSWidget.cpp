@@ -5,8 +5,9 @@
 
 constexpr float REFRESH_INTERVAL = 0.1f;
 
+IMPLEMENT_CLASS(UFPSWidget, UWidget)
+
 UFPSWidget::UFPSWidget()
-	: UWidget("FPS Widget")
 {
 }
 

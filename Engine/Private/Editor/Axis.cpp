@@ -3,6 +3,8 @@
 #include "Render/Renderer/Renderer.h"
 #include "Render/Renderer/LineBatchRenderer.h"
 
+IMPLEMENT_CLASS(UAxis, UObject)
+
 UAxis::UAxis()
 {
 	URenderer& Renderer = URenderer::GetInstance();

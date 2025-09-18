@@ -10,9 +10,11 @@ struct FRay;
 
 class UObjectPicker : public UObject
 {
+	DECLARE_CLASS(UObjectPicker, UObject)
+
 public:
-	UObjectPicker(UCamera& InCamera);
-	void SetCamera(UCamera& Camera);
+	UObjectPicker();
+	void SetCamera(UCamera* Camera);
 	UPrimitiveComponent* PickPrimitive( const FRay& WorldRay, TArray<UPrimitiveComponent*> Candidate, float* Distance);
 	void PickGizmo(const FRay& WorldRay, UGizmo& Gizmo, FVector& CollisionPoint);
 	bool IsRayCollideWithPlane(const FRay& WorldRay, FVector PlanePoint, FVector Normal, FVector& PointOnPlane);
@@ -23,8 +25,5 @@ private:
 	bool IsRayTriangleCollided(const FRay& Ray, const FVector& Vertex1, const FVector& Vertex2, const FVector& Vertex3,
 		const FMatrix& ModelMatrix, float* Distance);
 
-	
-
-
-	UCamera& Camera;
+	UCamera* Camera;
 };

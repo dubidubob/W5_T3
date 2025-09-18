@@ -6,6 +6,8 @@
 
 class USceneComponent : public UActorComponent
 {
+	DECLARE_CLASS(USceneComponent, UActorComponent)
+
 public:
 	USceneComponent();
 
@@ -50,6 +52,8 @@ private:
 
 class UPrimitiveComponent : public USceneComponent
 {
+	DECLARE_CLASS(UPrimitiveComponent, USceneComponent)
+
 public:
 	UPrimitiveComponent();
 
@@ -99,6 +103,7 @@ protected:
 
 class UTriangleComponent : public UPrimitiveComponent
 {
+	DECLARE_CLASS(UTriangleComponent, UPrimitiveComponent)
 public:
 	UTriangleComponent();
 	virtual FAABB GetWorldBounds() const override;
@@ -106,6 +111,7 @@ public:
 
 class USquareComponent : public UPrimitiveComponent
 {
+	DECLARE_CLASS(USquareComponent, UPrimitiveComponent)
 public:
 	USquareComponent();
 	virtual FAABB GetWorldBounds() const override;
@@ -113,6 +119,7 @@ public:
 
 class UCubeComponent : public UPrimitiveComponent
 {
+	DECLARE_CLASS(UCubeComponent, UPrimitiveComponent)
 public:
 	UCubeComponent();
 	virtual FAABB GetWorldBounds() const override;
@@ -120,6 +127,7 @@ public:
 
 class USphereComponent : public UPrimitiveComponent
 {
+	DECLARE_CLASS(USphereComponent, UPrimitiveComponent)
 public:
 	USphereComponent();
 	virtual FAABB GetWorldBounds() const override;
@@ -127,6 +135,7 @@ public:
 
 class ULineComponent : public UPrimitiveComponent
 {
+	DECLARE_CLASS(ULineComponent, UPrimitiveComponent)
 public:
 	ULineComponent();
 	virtual FAABB GetWorldBounds() const override;
