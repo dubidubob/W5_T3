@@ -30,6 +30,13 @@ void UViewSettingsWidget::RenderWidget()
 	ImGui::TextUnformatted("View Settings");
 	ImGui::Spacing();
 
+	// 뷰 4분할 여부
+	bool bIsWindowDivided = Renderer->GetDividedWindow();
+	if (ImGui::Checkbox("4 분할 여부", &bIsWindowDivided))
+	{
+		Renderer->SetDividedWindow(bIsWindowDivided);
+	}
+
 	// 그리드 간격
 	float CurrentCellSize = Grid->GetCellSize();
 	if (ImGui::DragFloat("그리드 간격", &CurrentCellSize, 0.001f, 10.0f))
