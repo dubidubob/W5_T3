@@ -219,37 +219,37 @@ void USceneIOWidget::CreateNewLevel()
  */
 path USceneIOWidget::OpenSaveFileDialog()
 {
-   // OPENFILENAMEW ofn;
-   // wchar_t szFile[260] = {};
+    OPENFILENAMEW ofn;
+    wchar_t szFile[260] = {};
 
-   // // 기본 파일명 설정
-   // wcscpy_s(szFile, L"");
+    // 기본 파일명 설정
+    wcscpy_s(szFile, L"");
 
-   // // Initialize OPENFILENAME
-   // ZeroMemory(&ofn, sizeof(ofn));
-   // ofn.lStructSize = sizeof(ofn);
-   // ofn.hwndOwner = GetActiveWindow();  // 현재 활성 윈도우를 부모로 설정
-   // ofn.lpstrFile = szFile;
-   // ofn.nMaxFile = sizeof(szFile) / sizeof(wchar_t);
-   // ofn.lpstrFilter = L"JSON Files\0*.json\0All Files\0*.*\0";
-   // ofn.nFilterIndex = 1;
-   // ofn.lpstrFileTitle = nullptr;
-   // ofn.nMaxFileTitle = 0;
-   // ofn.lpstrInitialDir = nullptr;
-   // ofn.lpstrTitle = L"Save Level File";
-   // ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_EXPLORER | OFN_HIDEREADONLY;
-   // ofn.lpstrDefExt = L"json";
+    // Initialize OPENFILENAME
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = GetActiveWindow();  // 현재 활성 윈도우를 부모로 설정
+    ofn.lpstrFile = szFile;
+    ofn.nMaxFile = sizeof(szFile) / sizeof(wchar_t);
+    ofn.lpstrFilter = L"JSON Files\0*.json\0All Files\0*.*\0";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFileTitle = nullptr;
+    ofn.nMaxFileTitle = 0;
+    ofn.lpstrInitialDir = nullptr;
+    ofn.lpstrTitle = L"Save Level File";
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_EXPLORER | OFN_HIDEREADONLY;
+    ofn.lpstrDefExt = L"json";
 
-   // // Modal 다이얼로그 표시 - 이 함수가 리턴될 때까지 다른 입력 차단
-   // UE_LOG("SceneIO: Opening Save Dialog (Modal)...");
+    // Modal 다이얼로그 표시 - 이 함수가 리턴될 때까지 다른 입력 차단
+    UE_LOG("SceneIO: Opening Save Dialog (Modal)...");
 
-   // if (GetSaveFileNameW(&ofn) == TRUE)
-   // {
-   //     UE_LOG("SceneIO: Save Dialog Closed - 파일 선택됨");
-   //     return path(szFile);
-   // }
+    if (GetSaveFileNameW(&ofn) == TRUE)
+    {
+        UE_LOG("SceneIO: Save Dialog Closed - 파일 선택됨");
+        return path(szFile);
+    }
 
-   //UE_LOG("SceneIO: Save Dialog Closed - 취소됨");
+   UE_LOG("SceneIO: Save Dialog Closed - 취소됨");
     return L"";
 }
 

@@ -10,8 +10,7 @@ class UObject
 public:
 	// Special Member Function
 	UObject();
-	explicit UObject(const FString& InString);
-	virtual ~UObject() = default;
+	virtual ~UObject();
 
 	// Getter & Setter
 	FString GetName() const { return Name.ToString(); }

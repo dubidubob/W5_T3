@@ -15,7 +15,6 @@ class ULevel : public UObject
 	DECLARE_CLASS(ULevel, UObject)
 public:
 	ULevel();
-	ULevel(const FString& InName);
 	~ULevel() override;
 
 	virtual void Init();
