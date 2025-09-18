@@ -86,6 +86,9 @@
     <ClCompile Include="Private\Math\AABB.cpp" />
     <ClCompile Include="Private\\Render\Renderer\\LineBatchRenderer.cpp" />
     <ClCompile Include="Global\Quat.cpp" />
+    <ClCompile Include="Private\Mesh\StaticMesh.cpp" />
+    <ClCompile Include="Private\Mesh\MeshComponent.cpp" />
+    <ClCompile Include="Private\Mesh\StaticMeshComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\\Core\\Object.h" />
@@ -183,6 +186,9 @@
     <ClInclude Include="Global\Quat.h" />
     <ClInclude Include="..\..\Week03\Engine\Public\Core\ObjectIterator.h" />
     <ClInclude Include="Public\Core\ObjectIterator.h" />
+    <ClInclude Include="Public\Mesh\StaticMesh.h" />
+    <ClInclude Include="Public\Mesh\MeshComponent.h" />
+    <ClInclude Include="Public\Mesh\StaticMeshComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />

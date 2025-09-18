@@ -30,6 +30,13 @@ struct FVertex
     }
 };
 
+struct FStaticMesh
+{
+	std::string PathFileName;
+	TArray<FVertex> Vertices;
+	TArray<uint32> Indices;
+};
+
 namespace std
 {
 	template<>
