@@ -21,6 +21,7 @@ void UInputManager::InitializeKeyMapping()
 	VirtualKeyMap['D'] = EKeyInput::D;
 	VirtualKeyMap['Q'] = EKeyInput::Q;
 	VirtualKeyMap['E'] = EKeyInput::E;
+	VirtualKeyMap['C'] = EKeyInput::C;
 
 	// 화살표 키 매핑
 	VirtualKeyMap[VK_UP] = EKeyInput::Up;
@@ -312,6 +313,7 @@ const wchar_t* UInputManager::KeyInputToString(EKeyInput InKey)
 	case EKeyInput::D: return L"D";
 	case EKeyInput::Q: return L"Q";
 	case EKeyInput::E: return L"E";
+	case EKeyInput::C: return L"C";
 	case EKeyInput::Space: return L"Space";
 	case EKeyInput::Enter: return L"Enter";
 	case EKeyInput::Esc: return L"Esc";

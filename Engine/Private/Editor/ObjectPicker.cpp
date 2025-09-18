@@ -66,14 +66,17 @@ void UObjectPicker::PickGizmo( const FRay& WorldRay, UGizmo& Gizmo, FVector& Col
 	//이 t에 대한 방정식을 풀어서 근의공식 적용하면 됨.
 	
 	FVector GizmoLocation = Gizmo.GetGizmoLocation();
-	FVector GizmoAxises[3] = { {0, 0, 1}, {1, 0, 0}, {0, 1, 0} };
+    FVector GizmoAxises[3] = { {0, 0, 1}, {1, 0, 0}, {0, 1, 0} };
 
-	//로컬 기즈모, 쿼터니언 구현 후 사용
-	/*if (!Gizmo.IsWorld())	
-	{
-		for (int a = 0;a < 3;a++)
-			GizmoAxises[a] = FVector4(GizmoAxises[a].X, GizmoAxises[a].Y, GizmoAxises[a].Z, 0.0f) * FMatrix::RotationMatrix(FVector::GetDegreeToRadian(Gizmo.GetActorRotation()));
-	}*/
+    // 로컬 기즈모(또는 스케일 모드)는 항상 로컬 축으로 피킹
+    if (!Gizmo.IsWorld() || Gizmo.GetGizmoMode() == EGizmoMode::Scale)
+    {
+        const FQuat q = Gizmo.GetActorRotationQuat();
+        for (int a = 0; a < 3; ++a)
+        {
+            GizmoAxises[a] = q.RotateVector(GizmoAxises[a]);
+        }
+    }
 	FVector WorldRayOrigin{ WorldRay.Origin.X,WorldRay.Origin.Y ,WorldRay.Origin.Z };
 	FVector WorldRayDirection(WorldRay.Direction.X, WorldRay.Direction.Y, WorldRay.Direction.Z);
 	switch (Gizmo.GetGizmoMode())

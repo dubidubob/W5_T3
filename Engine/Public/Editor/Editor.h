@@ -6,25 +6,36 @@
 #include "Core/Object.h"
 #include "Editor/ObjectPicker.h"
 
+struct FQuat;
+
+class ULineBatchRenderer;
+
 class UEditor : public UObject
 {
-public:
+	DECLARE_CLASS(UEditor, UObject)
 
+public:
 	UEditor();
 	~UEditor();
 
-	
 	void Update();
-	void RenderEditor();
+
+	const FVector& GetCameraLocation();
+
+	/** 배칭 렌더링 버전 */
+	// void RenderEditor();
+	void RenderEditorBatched();
 
 private:
 
 	void ProcessMouseInput(ULevel* InLevel);
+	void ProcessKeyboardInput();
 	TArray<UPrimitiveComponent*> FindCandidatePrimitives(ULevel* InLevel);
 
-	FVector GetGizmoDragLocation(FRay& WorldRay);
-	FVector GetGizmoDragRotation(FRay& WorldRay);
-	FVector GetGizmoDragScale(FRay& WorldRay);
+	FVector GetGizmoDragLocation(const FRay& WorldRay);
+	FVector GetGizmoDragRotation(const FRay& WorldRay);
+	FQuat GetGizmoDragRotationQuat(const FRay& WorldRay);
+	FVector GetGizmoDragScale(const FRay& WorldRay);
 
 	UCamera Camera;
 	UObjectPicker ObjectPicker;

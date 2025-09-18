@@ -3,6 +3,7 @@
 
 #include "Render/UI/Widget/InputInformationWidget.h"
 
+IMPLEMENT_CLASS(UExperimentalFeatureWindow, UUIWindow)
 /**
  * @brief Window Constructor
  */
@@ -10,10 +11,10 @@ UExperimentalFeatureWindow::UExperimentalFeatureWindow()
 {
 	FUIWindowConfig Config;
 	Config.WindowTitle = "Experimental Feature";
-	Config.DefaultSize = ImVec2(350, 10);
-	Config.DefaultPosition = ImVec2(380, 10);
-	Config.MinSize = ImVec2(350, 10);
-	Config.DockDirection = EUIDockDirection::Right;
+	Config.DefaultSize = ImVec2(400, 200);
+	Config.DefaultPosition = ImVec2(10, 10); // 임시, 동적으로 계산됨
+	Config.MinSize = ImVec2(350, 150);
+	Config.DockDirection = EUIDockDirection::None;
 	Config.Priority = 5;
 	Config.bResizable = true;
 	Config.bMovable = true;

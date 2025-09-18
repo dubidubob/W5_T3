@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -117,11 +117,14 @@
       <AdditionalIncludeDirectories>$(ProjectDir)Private;$(ProjectDir)Public;$(ProjectDir);$(SolutionDir)External\Include</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)External\Include;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(ProjectDir)Asset" "$(OutDir)Asset" /E /I /Y</Command>
@@ -139,14 +142,27 @@
       <AdditionalIncludeDirectories>$(ProjectDir)Private;$(ProjectDir)Public;$(ProjectDir);$(SolutionDir)External\Include</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)External\Include;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Global\Name.h" />
+    <ClInclude Include="Global\NameTable.h" />
+    <ClInclude Include="Global\Quat.h" />
+    <ClInclude Include="Public\Math\AABB.h" />
+    <ClInclude Include="Public\Mesh\TextComponent.h" />
+    <ClInclude Include="Public\Render\UI\Widget\ActorDetailWidget.h" />
+    <ClInclude Include="Public\Render\UI\Widget\ActorListWidget.h" />
+    <ClInclude Include="Public\DirectXTK\DDSTextureLoader.h" />
+    <ClInclude Include="Public\DirectXTK\DirectXHelpers.h" />
+    <ClInclude Include="Public\Render\UI\Widget\ViewSettingsWidget.h" />
+    <ClInclude Include="Public\Render\UI\Window\DetailWindow.h" />
     <ClInclude Include="Public\\Core\\Class.h" />
     <ClInclude Include="Public\\Core\\Object.h" />
     <ClInclude Include="Public\\Editor\\Axis.h" />
@@ -164,7 +180,6 @@
     <ClInclude Include="Global\Matrix.h" />
     <ClInclude Include="Global\Memory.h" />
     <ClInclude Include="Global\Types.h" />
-    <ClInclude Include="Global\Struct.h" />
     <ClInclude Include="Global\Vector.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />
@@ -196,6 +211,7 @@
     <ClInclude Include="Public\\Core\\AppWindow.h" />
     <ClInclude Include="Public\\Core\\ClientApp.h" />
     <ClInclude Include="Public\\Render\Renderer\\DeviceResources.h" />
+    <ClInclude Include="Public\\Render\Renderer\\LineBatchRenderer.h" />
     <ClInclude Include="Public\\Render\Renderer\\Pipeline.h" />
     <ClInclude Include="Public\\Render\Renderer\\Renderer.h" />
     <ClInclude Include="Public\\Render\UI\Factory\\UIWindowFactory.h" />
@@ -218,6 +234,14 @@
     <ClInclude Include="Public\\Utility\\Metadata.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Global\Name.cpp" />
+    <ClCompile Include="Global\NameTable.cpp" />
+    <ClCompile Include="Private\Math\AABB.cpp" />
+    <ClCompile Include="Private\Mesh\TextComponent.cpp" />
+    <ClCompile Include="Private\Render\UI\Widget\ActorDetailWidget.cpp" />
+    <ClCompile Include="Private\Render\UI\Widget\ActorListWidget.cpp" />
+    <ClCompile Include="Private\Render\UI\Widget\ViewSettingsWidget.cpp" />
+    <ClCompile Include="Private\Render\UI\Window\DetailWindow.cpp" />
     <ClCompile Include="Private\\Core\\Class.cpp" />
     <ClCompile Include="Private\\Core\\Object.cpp" />
     <ClCompile Include="Private\\Editor\\Axis.cpp" />
@@ -227,6 +251,7 @@
     <ClCompile Include="Private\\Editor\\Grid.cpp" />
     <ClCompile Include="Private\\Editor\\ObjectPicker.cpp" />
     <ClCompile Include="Global\Matrix.cpp" />
+    <ClCompile Include="Global\Quat.cpp" />
     <ClCompile Include="Global\Memory.cpp" />
     <ClCompile Include="Global\Vector.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
@@ -258,6 +283,7 @@
     <ClCompile Include="Private\\Core\\AppWindow.cpp" />
     <ClCompile Include="Private\\Core\\ClientApp.cpp" />
     <ClCompile Include="Private\\Render\Renderer\\DeviceResources.cpp" />
+    <ClCompile Include="Private\\Render\Renderer\\LineBatchRenderer.cpp" />
     <ClCompile Include="Private\\Render\Renderer\\Pipeline.cpp" />
     <ClCompile Include="Private\\Render\Renderer\\Renderer.cpp" />
     <ClCompile Include="Private\\Render\UI\Factory\\UIWindowFactory.cpp" />
@@ -290,12 +316,23 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Asset\Shader\LineInstanced.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Asset\Shader\SampleShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Asset\Shader\TextShader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Asset\Font\Roboto-Medium.dds" />
   </ItemGroup>
 </Project>

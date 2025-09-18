@@ -9,6 +9,7 @@ enum class EKeyInput : uint8
 	D,
 	Q,
 	E,
+	C,
 
 	// 화살표 키
 	Up,

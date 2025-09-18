@@ -1,5 +1,4 @@
 #pragma once
-
 struct FMatrix;
 
 struct FVector
@@ -104,6 +103,11 @@ struct FVector
 		}
 	}
 
+	bool operator==(const FVector& vector) const
+	{
+		return (X == vector.X) && (Y == vector.Y) && (Z == vector.Z);
+	}
+
 	/**
 	 * @brief 각도를 라디안으로 변환한 값을 반환하는 함수
 	 */
@@ -116,6 +120,16 @@ struct FVector
 	 * @brief 라디안를 각도로 변환한 값을 반환하는 함수
 	 */
 	inline static float GetRadianToDegree(const float Radian) { return (Radian * 180.f) / Pi; }
+
+	/**
+	 * @brief 제로 벡터 (0, 0, 0) - 전역 참조 변수
+	 */
+	static const FVector ZeroVector;
+
+	/**
+	 * @brief 단위 벡터 (1, 1, 1) - 전역 참조 변수
+	 */
+	static const FVector OneVector;
 };
 
 
@@ -203,4 +217,19 @@ struct FVector4
 	{
 		return X * OtherVector.X + Y * OtherVector.Y + Z * OtherVector.Z;
 	}
+
+	bool operator==(const FVector4& color) const
+	{
+		return (X == color.X) && (Y == color.Y) && (Z == color.Z) && (W == color.W);
+	}
+
+	/**
+	 * @brief 제로 벡터 (0, 0, 0, 0) - 전역 참조 변수
+	 */
+	static const FVector4 ZeroVector;
+
+	/**
+	 * @brief 단위 벡터 (1, 1, 1, 1) - 전역 참조 변수
+	 */
+	static const FVector4 OneVector;
 };

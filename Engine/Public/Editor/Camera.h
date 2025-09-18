@@ -9,13 +9,18 @@ enum class ECameraType
 
 class UCamera : public UObject
 {
+	DECLARE_CLASS(UCamera, UObject)
+
 public:
-	UCamera() :
-		ViewProjConstants(FViewProjConstants()),
-		RelativeLocation(FVector(-5.f, 10.f, -5.f)), RelativeRotation(FVector(45, 45, 0)),
-		FovY(90.f), Aspect(float(Render::INIT_SCREEN_WIDTH) / Render::INIT_SCREEN_HEIGHT),
-		NearZ(0.1f), FarZ(100.f), CameraType(ECameraType::ECT_Perspective)
-	{
+    UCamera() :
+        ViewProjConstants(FViewProjConstants()),
+        // UE 기준(X-forward) 원점 바라보도록 -X로 초기 위치 설정
+        RelativeLocation(FVector(-10.0f, 0.0f, 0.0f)), RelativeRotation(FVector(0, 0, 0)),
+        FovY(90.f), Aspect(float(Render::INIT_SCREEN_WIDTH) / Render::INIT_SCREEN_HEIGHT),
+        NearZ(0.1f), FarZ(100.f), CameraType(ECameraType::ECT_Perspective),
+        CurrentMoveSpeed(DEFAULT_CAMERA_SPEED), CurrentMouseSensitivity(DEFAULT_MOUSE_SENSITIVITY)
+    {
+		LoadCameraSettings();
 	}
 	~UCamera() override {}
 
@@ -38,7 +43,7 @@ public:
 	 * @brief Getter
 	 */
 	const FViewProjConstants& GetFViewProjConstants() const { return ViewProjConstants; }
-	const FViewProjConstants GetFViewProjConstantsInverse() const;
+	FViewProjConstants GetFViewProjConstantsInverse() const;
 
 	FRay ConvertToWorldRay(float NdcX, float NdcY) const;
 
@@ -55,14 +60,29 @@ public:
 	const float GetFarZ() const { return FarZ; }
 	const ECameraType GetCameraType() const { return CameraType; }
 
-	// Camera Movement Speed Control
 	float GetMoveSpeed() const { return CurrentMoveSpeed; }
 	void SetMoveSpeed(float InSpeed)
 	{
 		CurrentMoveSpeed = max(InSpeed, MIN_CAMERA_SPEED);
 		CurrentMoveSpeed = min(InSpeed, MAX_CAMERA_SPEED);
+		SaveCameraSettings();
 	}
 	void AdjustMoveSpeed(float InDelta) { SetMoveSpeed(CurrentMoveSpeed + InDelta); }
+
+	float GetMouseSensitivity() const { return CurrentMouseSensitivity; }
+	void SetMouseSensitivity(float InSensitivity)
+	{
+		CurrentMouseSensitivity = max(InSensitivity, MIN_MOUSE_SENSITIVITY);
+		CurrentMouseSensitivity = min(InSensitivity, MAX_MOUSE_SENSITIVITY);
+		SaveCameraSettings();
+	}
+	void AdjustMouseSensitivity(float InDelta) { SetMouseSensitivity(CurrentMouseSensitivity + InDelta); }
+
+	/* *
+	 * @brief Camera Settings Save/Load
+	 */
+	void SaveCameraSettings() const;
+	void LoadCameraSettings();
 
 	/* *
 	 * @brief 행렬 형태로 저장된 좌표와 변환 행렬과의 연산한 결과를 반환합니다.
@@ -85,11 +105,17 @@ private:
 	static constexpr float DEFAULT_CAMERA_SPEED = 6.0f;
 	static constexpr float SPEED_ADJUST_STEP = 0.5f;
 
+	// Mouse Sensitivity Constants
+	static constexpr float MIN_MOUSE_SENSITIVITY = 0.001f;
+	static constexpr float MAX_MOUSE_SENSITIVITY = 0.5f;
+	static constexpr float DEFAULT_MOUSE_SENSITIVITY = 0.05f;
+
 private:
 	FViewProjConstants ViewProjConstants = {};
 	FVector RelativeLocation = {};
 	FVector RelativeRotation = {};
-	FVector Forward = { 0,0,1 };
+    // UE 기준: X-forward
+    FVector Forward = { 1,0,0 };
 	FVector Up = {};
 	FVector Right = {};
 	float FovY = {};
@@ -100,5 +126,8 @@ private:
 	ECameraType CameraType = {};
 
 	// Dynamic Movement Speed
-	float CurrentMoveSpeed = DEFAULT_CAMERA_SPEED;
+	float CurrentMoveSpeed;
+
+	// Dynamic Mouse Sensitivity
+	float CurrentMouseSensitivity;
 };

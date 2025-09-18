@@ -8,6 +8,7 @@ class AGizmo;
 class AGrid;
 class AActor;
 class UPrimitiveComponent;
+class UTextComponent;
 
 class ULevel :
 	public UObject
@@ -24,6 +25,7 @@ public:
 
 	TArray<AActor*> GetLevelActors() const { return LevelActors; }
 	TArray<UPrimitiveComponent*> GetLevelPrimitiveComponents() const { return LevelPrimitiveComponents; }
+	TArray<UTextComponent*> GetTextComponents() const { return TextComponents; }
 	//Deprecated : EditorPrimitive는 에디터에서 처리
 	//TArray<AActor*> GetEditorActors() const { return EditorActors; }
 	//TArray<UPrimitiveComponent*> GetEditorPrimitiveComponents() const { return EditorPrimitiveComponents; }
@@ -50,6 +52,7 @@ public:
 private:
 	TArray<AActor*> LevelActors;
 	TArray<UPrimitiveComponent*> LevelPrimitiveComponents;
+	TArray<UTextComponent*> TextComponents;
 
 	//Deprecated : EditorPrimitive는 에디터에서 처리
 	//TArray<AActor*> EditorActors;

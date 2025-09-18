@@ -6,6 +6,8 @@
 #include "Render/UI/Widget/PrimitiveSpawnWidget.h"
 #include "Render/UI/Widget/SceneIOWidget.h"
 
+IMPLEMENT_CLASS(UControlPanelWindow, UUIWindow)
+
 /**
  * @brief Control Panel Constructor
  * 적절한 사이즈의 윈도우 제공
@@ -16,8 +18,8 @@ UControlPanelWindow::UControlPanelWindow()
 	Config.WindowTitle = "Control Panel";
 	Config.DefaultSize = ImVec2(400, 620);
 	Config.DefaultPosition = ImVec2(10, 10);
-	Config.MinSize = ImVec2(400, 200);
-	Config.DockDirection = EUIDockDirection::Left;
+	Config.MinSize = ImVec2(350, 200);
+	Config.DockDirection = EUIDockDirection::None;
 	Config.Priority = 15;
 	Config.bResizable = true;
 	Config.bMovable = true;

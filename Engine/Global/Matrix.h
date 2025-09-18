@@ -25,15 +25,16 @@ struct FMatrix
 		float M30, float M31, float M32, float M33);
 
 	/**
-	* @brief 항등행렬
-	*/
-	static FMatrix Identity();
+	 * @brief 전치행렬
+	 */
+
+	static FMatrix Transpose(const FMatrix& InOtherMatrix);
 
 
 	/**
 	* @brief 두 행렬곱을 진행한 행렬을 반환하는 연산자 함수
 	*/
-	FMatrix operator*(const FMatrix& InOtherMatrix);
+	FMatrix operator*(const FMatrix& InOtherMatrix) const;
 	void operator*=(const FMatrix& InOtherMatrix);
 
 	/**
@@ -52,9 +53,17 @@ struct FMatrix
 	* @brief Rotation의 정보를 행렬로 변환하여 제공하는 함수
 	*/
 	static FMatrix RotationMatrix(const FVector& InOtherVector);
-
 	static FMatrix RotationMatrixInverse(const FVector& InOtherVector);
 
+	// Quaternion 기반 회전행렬 (row-major)
+	static FMatrix RotationMatrix(const struct FQuat& Q);
+	static FMatrix RotationMatrixInverse(const struct FQuat& Q);
+
+	/**
+	 * @brief Camera용 Rotation의 정보를 행렬로 변환하여 제공하는 함수
+	 */
+	static FMatrix RotationMatrixCamera(const FVector& InOtherVector);
+	static FMatrix RotationMatrixInverseCamera(const FVector& InOtherVector);
 	/**
 	* @brief X의 회전 정보를 행렬로 변환
 	*/
@@ -73,4 +82,25 @@ struct FMatrix
 	static FMatrix GetModelMatrix(const FVector& Location, const FVector& Rotation, const FVector& Scale);
 
 	static FMatrix GetModelMatrixInverse(const FVector& Location, const FVector& Rotation, const FVector& Scale);
+
+	// Quaternion 버전 TRS 조합 (row-major, row-vector: I * S * R * T)
+	static FMatrix GetModelMatrix(const FVector& Location, const struct FQuat& Rotation, const FVector& Scale);
+	static FMatrix GetModelMatrixInverse(const FVector& Location, const struct FQuat& Rotation, const FVector& Scale);
+
+	/**
+	 * @brief LHY+ -> UE(LHZ+, X-forward) 기준변환 행렬과 그 역행렬
+	 * (x,y,z) -> (z,x,y) 순열 전환. 직교행렬이므로 역행렬은 전치행렬과 동일.
+	 */
+	static FMatrix BasisLHYToUE();
+	static FMatrix BasisUEToLHY();
+
+	/**
+	* @brief 항등행렬
+	*/
+	static const FMatrix Identity;
+
+	/**
+	 * @brief 영행렬
+	 */
+	static const FMatrix Zero;
 };

@@ -2,7 +2,7 @@
 
 #include "Mesh/Actor.h"
 
-
+class UTextComponent;
 class ACubeActor : public AActor
 {
 public:
@@ -10,4 +10,5 @@ public:
 
 private:
 	UCubeComponent* CubeComponent = nullptr;
+	UTextComponent* TextComponent = nullptr;
 };

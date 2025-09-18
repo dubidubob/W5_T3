@@ -12,6 +12,10 @@
 
 #include "Render/UI/Window/ConsoleWindow.h"
 
+#include <chrono>
+
+#pragma comment(lib, "winmm.lib")
+
 
 FClientApp::FClientApp() = default;
 
@@ -102,7 +106,7 @@ int FClientApp::InitializeSystem()
 	ULevelManager::GetInstance().CreateDefaultLevel();
 
 	// Initialize Editor
-	Editor = new UEditor;
+	Editor = NewObject<UEditor>();
 
 	return S_OK;
 }
@@ -129,19 +133,32 @@ void FClientApp::UpdateSystem()
 /**
  * @brief Execute Main Message Loop
  * 윈도우 메시지 처리 및 게임 시스템 업데이트를 담당
+ * 60fps로 프레임 제한
  */
 void FClientApp::MainLoop()
 {
+	// 고정밀 타이머 설정 (1ms 해상도)
+	timeBeginPeriod(1);
+	
+	const double TargetFPS = 60.0;
+	const double TargetFrameTime = 1000.0 / TargetFPS; // 16.666... ms
+	
+	LARGE_INTEGER Frequency, LastTime, CurrentTime;
+	QueryPerformanceFrequency(&Frequency);
+	QueryPerformanceCounter(&LastTime);
+
 	while (true)
 	{
-		// Async Message Process
-		if (PeekMessage(&MainMessage, nullptr, 0, 0, PM_REMOVE))
+		// Process all pending messages
+		while (PeekMessage(&MainMessage, nullptr, 0, 0, PM_REMOVE))
 		{
 			// Process Termination
 			if (MainMessage.message == WM_QUIT)
 			{
-				break;
+				timeEndPeriod(1); // 타이머 해상도 복구
+				return;
 			}
+			
 			// Shortcut Key Processing
 			if (!TranslateAccelerator(MainMessage.hwnd, AcceleratorTable, &MainMessage))
 			{
@@ -149,10 +166,25 @@ void FClientApp::MainLoop()
 				DispatchMessage(&MainMessage);
 			}
 		}
-		// Game System Update
-		else
+		
+		QueryPerformanceCounter(&CurrentTime);
+		double ElapsedTime = ((CurrentTime.QuadPart - LastTime.QuadPart) * 1000.0) / Frequency.QuadPart;
+		
+		// 60fps 제한: 16.67ms마다 업데이트
+		if (ElapsedTime >= TargetFrameTime)
 		{
 			UpdateSystem();
+			LastTime = CurrentTime;
+		}
+		else
+		{
+			// 남은 시간만큼 정확하게 대기
+			double RemainingTime = TargetFrameTime - ElapsedTime;
+			if (RemainingTime > 2.0) // 2ms 이상 남았을 때만 Sleep
+			{
+				Sleep(static_cast<DWORD>(RemainingTime - 1.0));
+			}
+			// 나머지는 busy wait로 정밀하게 처리
 		}
 	}
 }

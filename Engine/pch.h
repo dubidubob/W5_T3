@@ -8,6 +8,7 @@
 // D3D Library
 #include <d3d11.h>
 #include <d3dcompiler.h>
+#include "DirectXTK/Inc/DDSTextureLoader.h"
 
 // Standard Library
 #include <cmath>
@@ -28,6 +29,7 @@
 #include "Global/Constant.h"
 #include "Global/Enum.h"
 #include "Global/Matrix.h"
+#include "Global/Quat.h"
 #include "Global/Vector.h"
 #include "Global/CoreTypes.h"
 #include "Global/Macro.h"
@@ -62,6 +64,13 @@ using filesystem::create_directories;
 #pragma comment(lib, "user32")
 #pragma comment(lib, "d3d11")
 #pragma comment(lib, "d3dcompiler")
+
+#ifdef _DEBUG
+#pragma comment(lib, "DirectXTK/Bin/Debug/DirectXTK.lib")
+#else
+#pragma comment(lib, "DirectXTK/Bin/Release/DirectXTK.lib")
+#endif
+
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "Render/UI/Window/ConsoleWindow.h"

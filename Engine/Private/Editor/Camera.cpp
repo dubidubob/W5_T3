@@ -2,15 +2,25 @@
 #include "Editor/Camera.h"
 #include "Manager/Input/InputManager.h"
 #include "Manager/Time/TimeManager.h"
+#include "Manager/Path/PathManager.h"
 #include "Render/Renderer/Renderer.h"
+#include <algorithm>
+
+IMPLEMENT_CLASS(UCamera, UObject)
 
 void UCamera::Update()
 {
 	const UInputManager& Input = UInputManager::GetInstance();
 
-	FVector4 Forward4 = FVector4(0, 0, 1, 1) * FMatrix::RotationMatrix(FVector::GetDegreeToRadian(RelativeRotation));
-	Forward = FVector(Forward4.X, Forward4.Y, Forward4.Z);
-	Up = FVector(0, 1, 0);
+	/*
+	 * QE 상하는 카메라가 보는 방향과 관계 없이 월드 기준으로 상하로 움직인다.
+	 */
+	// UE 기준(X-forward, Z-up)으로 Forward 기준축을 X로 변경
+	Forward = FVector4(1, 0, 0, 1) * FMatrix::RotationMatrixCamera(FVector::GetDegreeToRadian(RelativeRotation));
+	Forward.Normalize();
+	// UE 기준 Up 축: Z
+	Up = FVector(0, 0, 1);
+	// Right = Up.Cross(Forward);
 	Right = Forward.Cross(Up);
 
 	/**
@@ -21,7 +31,7 @@ void UCamera::Update()
 		/**
 		 * @brief W, A, S, D 는 각각 카메라의 상, 하, 좌, 우 이동을 담당합니다.
 		 */
-		FVector Direction = { 0,0,0 };
+		FVector Direction = {0, 0, 0};
 
 		if (Input.IsKeyDown(EKeyInput::A)) { Direction += -Right; }
 		if (Input.IsKeyDown(EKeyInput::D)) { Direction += Right; }
@@ -44,16 +54,22 @@ void UCamera::Update()
 		* @brief 마우스 위치 변화량을 감지하여 카메라의 회전을 담당합니다.
 		*/
 		const FVector MouseDelta = UInputManager::GetInstance().GetMouseDelta();
-		RelativeRotation.X += MouseDelta.Y * KeySensitivityDegPerPixel;
-		RelativeRotation.Y += MouseDelta.X * KeySensitivityDegPerPixel;
-
-		// Pitch 클램프(짐벌 플립 방지)
-		if (RelativeRotation.X > 89.0f) RelativeRotation.X = 89.0f;
-		if (RelativeRotation.X < -89.0f) RelativeRotation.X = -89.0f;
+		RelativeRotation.Y += MouseDelta.X * CurrentMouseSensitivity;
+		RelativeRotation.X += MouseDelta.Y * CurrentMouseSensitivity;
 
 		// Yaw 래핑(값이 무한히 커지지 않도록)
-		if (RelativeRotation.Y > 180.0f)  RelativeRotation.Y -= 360.0f;
-		if (RelativeRotation.Y < -180.0f) RelativeRotation.Y += 360.0f;
+		if (RelativeRotation.Y > 180.0f)
+		{
+			RelativeRotation.Y -= 360.0f;
+		}
+		if (RelativeRotation.Y < -180.0f)
+		{
+			RelativeRotation.Y += 360.0f;
+		}
+
+		// Pitch 클램프(짐벌 플립 방지)
+		RelativeRotation.X = std::min(RelativeRotation.X, 89.0f);
+		RelativeRotation.X = std::max(RelativeRotation.X, -89.0f);
 	}
 
 	if (URenderer::GetInstance().GetDeviceResources())
@@ -84,8 +100,9 @@ void UCamera::UpdateMatrixByPers()
 	 * @brief View 행렬 연산
 	 */
 	FMatrix T = FMatrix::TranslationMatrixInverse(RelativeLocation);
-	FMatrix R = FMatrix::RotationMatrixInverse(FVector::GetDegreeToRadian(RelativeRotation));
-	ViewProjConstants.View = T * R;
+	FMatrix R = FMatrix::RotationMatrixInverseCamera(FVector::GetDegreeToRadian(RelativeRotation));
+	// 좌표계 기준 변환(B)을 View에 접합(마지막에 적용): pos = pos * World * (View * B) * Proj
+	ViewProjConstants.View = T * (R * FMatrix::BasisLHYToUE());
 
 	/**
 	 * @brief Projection 행렬 연산
@@ -95,7 +112,7 @@ void UCamera::UpdateMatrixByPers()
 	const float RadianFovY = FVector::GetDegreeToRadian(FovY);
 	const float F = 1.0f / std::tanf(RadianFovY * 0.5f);
 
-	FMatrix P = FMatrix::Identity();
+	FMatrix P = FMatrix::Identity;
 	// | f/aspect   0        0         0 |
 	// |    0       f        0         0 |
 	// |    0       0   zf/(zf-zn)     1 |
@@ -116,8 +133,9 @@ void UCamera::UpdateMatrixByOrth()
 	 * @brief View 행렬 연산
 	 */
 	FMatrix T = FMatrix::TranslationMatrixInverse(RelativeLocation);
-	FMatrix R = FMatrix::RotationMatrixInverse(FVector::GetDegreeToRadian(RelativeRotation));
-	ViewProjConstants.View = T * R;
+	FMatrix R = FMatrix::RotationMatrixInverseCamera(FVector::GetDegreeToRadian(RelativeRotation));
+	// 좌표계 기준 변환(B)을 View에 접합(마지막에 적용)
+	ViewProjConstants.View = T * (R * FMatrix::BasisLHYToUE());
 
 	/**
 	 * @brief Projection 행렬 연산
@@ -125,48 +143,49 @@ void UCamera::UpdateMatrixByOrth()
 	OrthoWidth = 2.0f * std::tanf(FVector::GetDegreeToRadian(FovY) * 0.5f);
 	const float OrthoHeight = OrthoWidth / Aspect;
 	const float Left = -OrthoWidth * 0.5f;
-	const float Right = OrthoWidth * 0.5f;
+	const float Right1 = OrthoWidth * 0.5f;
 	const float Bottom = -OrthoHeight * 0.5f;
 	const float Top = OrthoHeight * 0.5f;
 
-	FMatrix P = FMatrix::Identity();
-	P.Data[0][0] = 2.0f / (Right - Left);
+	FMatrix P = FMatrix::Identity;
+	P.Data[0][0] = 2.0f / (Right1 - Left);
 	P.Data[1][1] = 2.0f / (Top - Bottom);
 	P.Data[2][2] = 1.0f / (FarZ - NearZ);
-	P.Data[3][0] = -(Right + Left) / (Right - Left);
+	P.Data[3][0] = -(Right1 + Left) / (Right1 - Left);
 	P.Data[3][1] = -(Top + Bottom) / (Top - Bottom);
 	P.Data[3][2] = -NearZ / (FarZ - NearZ);
 	P.Data[3][3] = 1.0f;
 	ViewProjConstants.Projection = P;
 }
 
-const FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
+FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
 {
 	/*
 	* @brief View^(-1) = R * T
 	*/
 	FViewProjConstants Result = {};
-	FMatrix R = FMatrix::RotationMatrix(FVector::GetDegreeToRadian(RelativeRotation));
+	FMatrix R = FMatrix::RotationMatrixCamera(FVector::GetDegreeToRadian(RelativeRotation));
 	FMatrix T = FMatrix::TranslationMatrix(RelativeLocation);
-	Result.View = R * T;
+	// (View * B)^-1 = B^-1 * View^-1
+	Result.View = (FMatrix::BasisUEToLHY() * R) * T;
 
 	if (CameraType == ECameraType::ECT_Orthographic)
 	{
 		const float OrthoHeight = OrthoWidth / Aspect;
 		const float Left = -OrthoWidth * 0.5f;
-		const float Right = OrthoWidth * 0.5f;
+		const float Right1 = OrthoWidth * 0.5f;
 		const float Bottom = -OrthoHeight * 0.5f;
 		const float Top = OrthoHeight * 0.5f;
 
-		FMatrix P = FMatrix::Identity();
+		FMatrix P = FMatrix::Identity;
 		// A^{-1} (대각)
-		P.Data[0][0] = (Right - Left) * 0.5f;  // (r-l)/2
+		P.Data[0][0] = (Right1 - Left) * 0.5f; // (r-l)/2
 		P.Data[1][1] = (Top - Bottom) * 0.5f; // (t-b)/2
-		P.Data[2][2] = (FarZ - NearZ);               // (zf-zn)
+		P.Data[2][2] = (FarZ - NearZ); // (zf-zn)
 		// -b A^{-1} (마지막 행의 x,y,z)
-		P.Data[3][0] = (Right + Left) * 0.5f;   // (r+l)/2
+		P.Data[3][0] = (Right1 + Left) * 0.5f; // (r+l)/2
 		P.Data[3][1] = (Top + Bottom) * 0.5f; // (t+b)/2
-		P.Data[3][2] = NearZ;                      // zn
+		P.Data[3][2] = NearZ; // zn
 		P.Data[3][3] = 1.0f;
 		Result.Projection = P;
 	}
@@ -174,7 +193,7 @@ const FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
 	{
 		const float FovRadian = FVector::GetDegreeToRadian(FovY);
 		const float F = 1.0f / std::tanf(FovRadian * 0.5f);
-		FMatrix P = FMatrix::Identity();
+		FMatrix P = FMatrix::Identity;
 		// | aspect/F   0      0         0 |
 		// |    0      1/F     0         0 |
 		// |    0       0      0   -(zf-zn)/(zn*zf) |
@@ -199,8 +218,8 @@ FRay UCamera::ConvertToWorldRay(float NdcX, float NdcY) const
 	 */
 	FRay Ray = {};
 
-	const FViewProjConstants& ViewProjMatrix = GetFViewProjConstantsInverse();
-
+	FViewProjConstants ViewProjMatrix = GetFViewProjConstantsInverse();
+	// ViewProjMatrix.View = ViewProjMatrix.View;
 
 	/* *
 	 * @brief NDC 좌표 정보를 행렬로 변환합니다.
@@ -249,6 +268,9 @@ FRay UCamera::ConvertToWorldRay(float NdcX, float NdcY) const
 		Ray.Direction = DirectionVector;
 	}
 
+	// 기준변환을 View에 흡수했으므로 별도 축 순열 변환 불필요
+	Ray.Direction.Normalize();
+
 	return Ray;
 }
 
@@ -256,7 +278,72 @@ FVector UCamera::CalculatePlaneNormal(const FVector4& Axis)
 {
 	return Forward.Cross(FVector(Axis.X, Axis.Y, Axis.Z));
 }
+
 FVector UCamera::CalculatePlaneNormal(const FVector& Axis)
 {
 	return Forward.Cross(FVector(Axis.X, Axis.Y, Axis.Z));
+}
+
+void UCamera::SaveCameraSettings() const
+{
+	const path ConfigFilePath = UPathManager::GetInstance().GetConfigPath() / "editor.ini";
+
+	WritePrivateProfileStringA(
+		"Camera",
+		"MoveSpeed",
+		std::to_string(CurrentMoveSpeed).c_str(),
+		ConfigFilePath.string().c_str()
+	);
+
+	WritePrivateProfileStringA(
+		"Camera",
+		"MouseSensitivity",
+		std::to_string(CurrentMouseSensitivity).c_str(),
+		ConfigFilePath.string().c_str()
+	);
+}
+
+void UCamera::LoadCameraSettings()
+{
+	const path ConfigFilePath = UPathManager::GetInstance().GetConfigPath() / "editor.ini";
+
+	// Check if config file exists
+	if (!std::filesystem::exists(ConfigFilePath))
+	{
+		// Create default config if it doesn't exist
+		SaveCameraSettings();
+		return;
+	}
+
+	char Buffer[32];
+
+	// Load Move Speed
+	GetPrivateProfileStringA(
+		"Camera",
+		"MoveSpeed",
+		std::to_string(DEFAULT_CAMERA_SPEED).c_str(),
+		Buffer,
+		sizeof(Buffer),
+		ConfigFilePath.string().c_str()
+	);
+
+	float LoadedSpeed = std::stof(Buffer);
+	// 로드한 값을 직접 설정 (SaveCameraSettings 호출하지 않음)
+	CurrentMoveSpeed = max(LoadedSpeed, MIN_CAMERA_SPEED);
+	CurrentMoveSpeed = min(CurrentMoveSpeed, MAX_CAMERA_SPEED);
+
+	// Load Mouse Sensitivity
+	GetPrivateProfileStringA(
+		"Camera",
+		"MouseSensitivity",
+		std::to_string(DEFAULT_MOUSE_SENSITIVITY).c_str(),
+		Buffer,
+		sizeof(Buffer),
+		ConfigFilePath.string().c_str()
+	);
+
+	float LoadedSensitivity = std::stof(Buffer);
+	// 로드한 값을 직접 설정 (SaveCameraSettings 호출하지 않음)
+	CurrentMouseSensitivity = max(LoadedSensitivity, MIN_MOUSE_SENSITIVITY);
+	CurrentMouseSensitivity = min(CurrentMouseSensitivity, MAX_MOUSE_SENSITIVITY);
 }

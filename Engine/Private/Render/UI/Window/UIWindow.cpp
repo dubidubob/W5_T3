@@ -199,44 +199,75 @@ void UUIWindow::Update() const
  */
 void UUIWindow::ApplyDockingSettings() const
 {
-	ImGuiIO& IO = ImGui::GetIO();
-	float ScreenWidth = IO.DisplaySize.x;
-	float ScreenHeight = IO.DisplaySize.y;
+	const ImGuiViewport* viewport = ImGui::GetMainViewport();
+	float ScreenWidth = viewport->WorkSize.x;
+	float ScreenHeight = viewport->WorkSize.y;
+
+	// 패널별 고정 위치 설정
+	const std::string windowTitle = Config.WindowTitle;
+
+	if (windowTitle == "Control Panel")
+	{
+		// 좌상단
+		ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x + 10, viewport->WorkPos.y + 10), ImGuiCond_Always);
+	}
+	else if (windowTitle == "Outliner")
+	{
+		// 우상단
+		ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x + ScreenWidth - Config.DefaultSize.x - 10, viewport->WorkPos.y + 10), ImGuiCond_Always);
+	}
+	else if (windowTitle == "Details")
+	{
+		// 우상단 (Outliner 아래)
+		float outlinerHeight = 420; // Outliner 예상 높이 + 여백
+		ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x + ScreenWidth - Config.DefaultSize.x - 10, viewport->WorkPos.y + outlinerHeight), ImGuiCond_Always);
+	}
+	else if (windowTitle == "GTL Console")
+	{
+		// 좌하단
+		ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x + 10, viewport->WorkPos.y + ScreenHeight - Config.DefaultSize.y - 10), ImGuiCond_Always);
+	}
+	else if (windowTitle == "Experimental Feature")
+	{
+		// Console 옆 공간 (Console 너비 + 여백 + 10)
+		float consoleWidth = 800; // Console 기본 너비
+		ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x + consoleWidth + 30, viewport->WorkPos.y + ScreenHeight - Config.DefaultSize.y - 10), ImGuiCond_Always);
+	}
 
 	switch (Config.DockDirection)
 	{
 	case EUIDockDirection::Left:
-		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+		ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x, viewport->WorkPos.y), ImGuiCond_Always);
 		ImGui::SetNextWindowSize(ImVec2(Config.DefaultSize.x, ScreenHeight), ImGuiCond_Always);
 		break;
 
 	case EUIDockDirection::Right:
-		ImGui::SetNextWindowPos(ImVec2(ScreenWidth - Config.DefaultSize.x, 0), ImGuiCond_Always);
+		ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x + ScreenWidth - Config.DefaultSize.x, viewport->WorkPos.y), ImGuiCond_Always);
 		ImGui::SetNextWindowSize(ImVec2(Config.DefaultSize.x, ScreenHeight), ImGuiCond_Always);
 		break;
 
 	case EUIDockDirection::Top:
-		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+		ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x, viewport->WorkPos.y), ImGuiCond_Always);
 		ImGui::SetNextWindowSize(ImVec2(ScreenWidth, Config.DefaultSize.y), ImGuiCond_Always);
 		break;
 
 	case EUIDockDirection::Bottom:
-		ImGui::SetNextWindowPos(ImVec2(0, ScreenHeight - Config.DefaultSize.y), ImGuiCond_Always);
+		ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x, viewport->WorkPos.y + ScreenHeight - Config.DefaultSize.y), ImGuiCond_Always);
 		ImGui::SetNextWindowSize(ImVec2(ScreenWidth, Config.DefaultSize.y), ImGuiCond_Always);
 		break;
 
 	case EUIDockDirection::Center:
 		{
 			ImVec2 Center = ImVec2(ScreenWidth * 0.5f, ScreenHeight * 0.5f);
-			ImVec2 WindowPosition = ImVec2(Center.x - Config.DefaultSize.x * 0.5f,
-			                               Center.y - Config.DefaultSize.y * 0.5f);
+			ImVec2 WindowPosition = ImVec2(viewport->WorkPos.x + Center.x - Config.DefaultSize.x * 0.5f,
+			                               viewport->WorkPos.y + Center.y - Config.DefaultSize.y * 0.5f);
 			ImGui::SetNextWindowPos(WindowPosition, ImGuiCond_Always);
 		}
 		break;
 
 	case EUIDockDirection::None:
 	default:
-		// 기본 위치 사용
+		// 패널별 고정 위치가 이미 설정됨
 		break;
 	}
 }

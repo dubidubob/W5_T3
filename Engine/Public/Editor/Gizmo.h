@@ -3,6 +3,7 @@
 #include "Core/Object.h"
 #include "Mesh/Actor.h"
 
+struct FQuat;
 class UObjectPicker;
 
 enum class EGizmoMode
@@ -37,8 +38,8 @@ struct FGizmoRotateCollisionConfig
 		: OuterRadius(1.0f), InnerRadius(0.9f), Scale(2.f) {
 	}
 
-	float OuterRadius = {1.0f};  // 링 큰 반지름 
-	float InnerRadius = {0.9f};  // 링 굵기 r  
+	float OuterRadius = {1.0f};  // 링 큰 반지름
+	float InnerRadius = {0.9f};  // 링 굵기 r
 	float Scale = {2.0f};
 };
 
@@ -56,12 +57,12 @@ public:
 	void SetLocation(const FVector& Location);
 	void SetGizmoDirection(EGizmoDirection Direction) { GizmoDirection = Direction; }
 	void SetActorRotation(const FVector& Rotation) { TargetActor->SetActorRotation(Rotation); }
+	void SetActorRotation(const FQuat& Rotation) { TargetActor->SetActorRotation(Rotation); }
 	void SetActorScale(const FVector& Scale) { TargetActor->SetActorScale3D(Scale); }
 
-	//로컬 기즈모, 쿼터니언 구현 후 사용
-	//void SetWorld() { bIsWorld = true; }
-	//void SetLocal() { bIsWorld = false; }
-	//////////////////
+	// 로컬 기즈모, 쿼터니언 구현 후 사용
+	void SetWorld() { bIsWorld = true; }
+	void SetLocal() { bIsWorld = false; }
 
 	/* *
 	* @brief Getter
@@ -69,10 +70,12 @@ public:
 	const EGizmoDirection GetGizmoDirection() { return GizmoDirection; }
 	const FVector& GetGizmoLocation() { return Primitives[(int)GizmoMode].Location; }
 	const FVector& GetActorRotation() { return TargetActor->GetActorRotation(); }
+	const FQuat& GetActorRotationQuat() { return TargetActor->GetActorRotationQuat(); }
 	const FVector& GetActorScale() { return TargetActor->GetActorScale3D(); }
 	const FVector& GetDragStartMouseLocation() { return DragStartMouseLocation; }
 	const FVector& GetDragStartActorLocation() { return DragStartActorLocation; }
 	const FVector& GetDragStartActorRotation() { return DragStartActorRotation; }
+	const FQuat& GetDragStartActorRotationQuat() { return DragStartActorRotationQuat; }
 	const FVector& GetDragStartActorScale() { return DragStartActorScale; }
 	const EGizmoMode GetGizmoMode() { return GizmoMode; }
 	const FVector GetGizmoAxis() {
@@ -92,9 +95,9 @@ public:
 	*/
 	void EndDrag() { bIsDragging = false; }
 	bool IsDragging() const { return bIsDragging; }
-	 
+
 	//로컬 기즈모, 쿼터니언 구현 후 사용
-	//bool IsWorld() const { return bIsWorld; }
+	bool IsWorld() const { return bIsWorld; }
 	void OnMouseHovering() {}
 	void OnMouseDragStart(FVector& CollisionPoint);
 	void OnMouseRelease(EGizmoDirection DirectionReleased) {}
@@ -113,7 +116,7 @@ private:
 
 	// 렌더 시 하이라이트 색상 계산(상태 오염 방지)
 	FVector4 ColorFor(EGizmoDirection InAxis) const;
-	
+
 
 	TArray<FEditorPrimitive> Primitives;
 	AActor* TargetActor = nullptr;
@@ -122,6 +125,7 @@ private:
 	FVector DragStartActorLocation;
 	FVector DragStartMouseLocation;
 	FVector DragStartActorRotation;
+	FQuat DragStartActorRotationQuat;
 	FVector DragStartActorScale;
 
 	FGizmoTranslationCollisionConfig TranslateCollisionConfig;
@@ -132,7 +136,7 @@ private:
 	bool bIsDragging = false;
 
 	//로컬 기즈모. 쿼터니언 구현 후 사용
-	//bool bIsWorld = true;
+	bool bIsWorld = true;
 
 	FRenderState RenderState;
 

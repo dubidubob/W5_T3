@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Mesh/Actor.h"
-
+class UTextComponent;
 class ATriangleActor : public AActor
 {
 	using Super = AActor;
@@ -12,4 +12,5 @@ public:
 
 private:
 	UTriangleComponent* TriangleComponent = nullptr;
+	UTextComponent* TextComponent = nullptr;
 };

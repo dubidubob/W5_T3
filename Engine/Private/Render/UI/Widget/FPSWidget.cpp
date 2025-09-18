@@ -70,6 +70,10 @@ void UFPSWidget::RenderWidget()
 
 	// Game Time 출력
 	ImGui::Text("Game Time: %.1f s", TotalGameTime);
+	ImGui::Text("Object Count: %s", to_string(TotalAllocationCount).c_str());
+	ImGui::Text("Memory Byte: %s", to_string(TotalAllocationBytes).c_str());
+	ImGui::Separator();
+
 	ImGui::Checkbox("Show Details", &bShowGraph);
 
 	// Details

@@ -1,7 +1,8 @@
 #include "pch.h"
-
 #include "Editor/Camera.h"
-# include "Render/UI/Widget/CameraControlWidget.h"
+#include "Render/UI/Widget/CameraControlWidget.h"
+
+IMPLEMENT_CLASS(UCameraControlWidget, UWidget)
 
 // Camera Mode
 static const char* CameraMode[] = {
@@ -10,7 +11,6 @@ static const char* CameraMode[] = {
 };
 
 UCameraControlWidget::UCameraControlWidget()
-	: UWidget("Camera Control Widget")
 {
 }
 
@@ -49,7 +49,18 @@ void UCameraControlWidget::RenderWidget()
 
 	// 카메라 이동속도 표시 및 조절
 	float CurrentSpeed = Camera->GetMoveSpeed();
-	ImGui::Text("이동속도: %.1f", CurrentSpeed);
+	if (ImGui::SliderFloat("이동속도", &CurrentSpeed, 0.5f, 50.0f, "%.1f"))
+	{
+		Camera->SetMoveSpeed(CurrentSpeed);
+	}
+
+	// 카메라 감도 표시 및 조절
+	float CurrentSensitivity = Camera->GetMouseSensitivity();
+	if (ImGui::SliderFloat("마우스 감도", &CurrentSensitivity, 0.001f, 0.5f, "%.3f"))
+	{
+		Camera->SetMouseSensitivity(CurrentSensitivity);
+	}
+
 	ImGui::Spacing();
 
 	if (ImGui::Combo("Mode", &CameraModeIndex, CameraMode, IM_ARRAYSIZE(CameraMode)))
@@ -73,15 +84,20 @@ void UCameraControlWidget::RenderWidget()
 		}
 	}
 
-	// 회전 입력 및 보정 (degree 단위)
-	bool RotationChanged = false;
-	RotationChanged |= ImGui::DragFloat3("Camera Rotation", &Rotation.X, 0.1f);
+    // 회전 입력 및 보정 (degree 단위)
+    bool RotationChanged = false;
+    float rotDisplay[3] = { Rotation.Z, Rotation.X, Rotation.Y }; // 현재 UI 표시 순서 유지
+    RotationChanged |= ImGui::DragFloat3("Camera Rotation", rotDisplay, 0.1f);
+    // UI -> 내부 순서 반영
+    Rotation.Z = rotDisplay[0];
+    Rotation.X = rotDisplay[1];
+    Rotation.Y = rotDisplay[2];
 
-	// Pitch / Yaw 간단 보정
-	Rotation.X = max(-89.0f, Rotation.X);
-	Rotation.X = min(89.0f, Rotation.X);
-	Rotation.Y = max(-180.0f, Rotation.Y);
-	Rotation.Y = min(180.0f, Rotation.Y);
+    // Pitch / Yaw 간단 보정
+    Rotation.X = max(-89.0f, Rotation.X);
+    Rotation.X = min(89.0f, Rotation.X);
+    Rotation.Y = max(-180.0f, Rotation.Y);
+    Rotation.Y = min(180.0f, Rotation.Y);
 
 	if (RotationChanged)
 	{
@@ -114,6 +130,8 @@ void UCameraControlWidget::RenderWidget()
 		UiFarZ = 1000.0f;
 		PushToCamera();
 	}
+
+	ImGui::Separator();
 }
 
 
