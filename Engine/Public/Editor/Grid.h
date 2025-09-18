@@ -7,6 +7,8 @@ class ULineBatchRenderer;
 
 class UGrid : public UObject
 {
+	DECLARE_CLASS(UGrid, UObject)
+
 public:
 	UGrid();
 	~UGrid() override;

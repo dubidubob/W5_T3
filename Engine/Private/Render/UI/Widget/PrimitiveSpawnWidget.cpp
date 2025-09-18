@@ -8,8 +8,9 @@
 #include "Mesh/SquareActor.h"
 #include "Mesh/TriangleActor.h"
 
+IMPLEMENT_CLASS(UPrimitiveSpawnWidget, UWidget)
+
 UPrimitiveSpawnWidget::UPrimitiveSpawnWidget()
-	: UWidget("Primitive Spawn Widget")
 {
 }
 

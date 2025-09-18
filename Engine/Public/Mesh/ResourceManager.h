@@ -2,7 +2,9 @@
 #include "Core/Object.h"
 class UResourceManager : public UObject
 {
+	DECLARE_CLASS(UResourceManager, UObject)
 	DECLARE_SINGLETON(UResourceManager)
+
 public:
 	void Initialize();
 

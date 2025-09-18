@@ -1,9 +1,9 @@
 #pragma once
 #include "Core/Object.h"
 
-class UPathManager :
-	public UObject
+class UPathManager : public UObject
 {
+	DECLARE_CLASS(UPathManager, UObject)
 	DECLARE_SINGLETON(UPathManager)
 
 public:

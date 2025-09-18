@@ -8,6 +8,7 @@
  */
 class AActor : public UObject
 {
+	DECLARE_CLASS(AActor, UObject)
 public:
 	AActor();
 	AActor(UObject* InOuter);
@@ -47,7 +48,7 @@ private:
 template <typename T>
 T* AActor::CreateDefaultSubobject(const FString& InName)
 {
-	T* NewComponent = new T();
+	T* NewComponent = NewObject<T>();
 
 	///////////////////////////////////////////
 	NewComponent->AddMemoryUsage(sizeof(T));

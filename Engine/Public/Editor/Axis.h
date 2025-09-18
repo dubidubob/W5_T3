@@ -7,6 +7,8 @@ class ULineBatchRenderer;
 
 class UAxis : public UObject
 {
+	DECLARE_CLASS(UAxis, UObject)
+
 public:
 	UAxis();
 	~UAxis() override;

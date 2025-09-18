@@ -7,21 +7,20 @@ TArray<UObject*> GUObjectArray;
 
 IMPLEMENT_CLASS_BASE(UObject)
 
-UObject::UObject()
-	: Outer(nullptr)
+UObject::UObject() : Outer(nullptr)
 {
 	UUID = UEngineStatics::GenUUID();
-	Name = "Object_" + to_string(UUID);
+	//Name = FNameTable::GetInstance().GetUniqueName("");
+	Name = FNameTable::GetInstance().GetUniqueName(GetClass()->GetName());
 
 	GUObjectArray.push_back(this);
 	InternalIndex = static_cast<uint32>(GUObjectArray.size()) - 1;
 }
 
-UObject::UObject(const FString& InString)
-	: Name(InString)
-	  , Outer(nullptr)
+UObject::UObject(const FString& InString) : Outer(nullptr)
 {
 	UUID = UEngineStatics::GenUUID();
+	Name = FNameTable::GetInstance().GetUniqueName(InString);
 
 	GUObjectArray.push_back(this);
 	InternalIndex = static_cast<uint32>(GUObjectArray.size()) - 1;
