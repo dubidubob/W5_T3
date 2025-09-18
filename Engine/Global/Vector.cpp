@@ -210,66 +210,66 @@ const FVector FVector::OneVector = FVector(1.0f, 1.0f, 1.0f);
 const FVector4 FVector4::ZeroVector = FVector4(0.0f, 0.0f, 0.0f, 0.0f);
 const FVector4 FVector4::OneVector = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
 
-// FVector2D static const 멤버 변수 정의
-const FVector2D FVector2D::ZeroVector = FVector2D(0.0f, 0.0f);
-const FVector2D FVector2D::OneVector = FVector2D(1.0f, 1.0f);
-const FVector2D FVector2D::UnitX = FVector2D(1.0f, 0.0f);
-const FVector2D FVector2D::UnitY = FVector2D(0.0f, 1.0f);
+// FVector2 static const 멤버 변수 정의
+const FVector2 FVector2::ZeroVector = FVector2(0.0f, 0.0f);
+const FVector2 FVector2::OneVector = FVector2(1.0f, 1.0f);
+const FVector2 FVector2::UnitX = FVector2(1.0f, 0.0f);
+const FVector2 FVector2::UnitY = FVector2(0.0f, 1.0f);
 
-FVector2D::FVector2D()
+FVector2::FVector2()
 {
 	X = 0.0f;
 	Y = 0.0f;
 }
 
-FVector2D::FVector2D(float InX, float InY)
+FVector2::FVector2(float InX, float InY)
 {
 	X = InX;
 	Y = InY;
 }
 
-FVector2D::FVector2D(const FVector2D& InOther)
+FVector2::FVector2(const FVector2& InOther)
 {
 	X = InOther.X;
 	Y = InOther.Y;
 }
 
-FVector2D::FVector2D(const FVector& InOther)
+FVector2::FVector2(const FVector& InOther)
 {
 	X = InOther.X;
 	Y = InOther.Y;
 }
 
-FVector2D FVector2D::operator+(const FVector2D& InOther) const
+FVector2 FVector2::operator+(const FVector2& InOther) const
 {
-	return FVector2D(X + InOther.X, Y + InOther.Y);
+	return FVector2(X + InOther.X, Y + InOther.Y);
 }
 
-FVector2D FVector2D::operator-(const FVector2D& InOther) const
+FVector2 FVector2::operator-(const FVector2& InOther) const
 {
-	return FVector2D(X - InOther.X, Y - InOther.Y);
+	return FVector2(X - InOther.X, Y - InOther.Y);
 }
 
-FVector2D FVector2D::operator*(const float Ratio) const
+FVector2 FVector2::operator*(const float Ratio) const
 {
-	return FVector2D(X * Ratio, Y * Ratio);
+	return FVector2(X * Ratio, Y * Ratio);
 }
 
-FVector2D& FVector2D::operator+=(const FVector2D& InOther)
+FVector2& FVector2::operator+=(const FVector2& InOther)
 {
 	X += InOther.X;
 	Y += InOther.Y;
 	return *this;
 }
 
-FVector2D& FVector2D::operator-=(const FVector2D& InOther)
+FVector2& FVector2::operator-=(const FVector2& InOther)
 {
 	X -= InOther.X;
 	Y -= InOther.Y;
 	return *this;
 }
 
-FVector2D& FVector2D::operator*=(const float Ratio)
+FVector2& FVector2::operator*=(const float Ratio)
 {
 	X *= Ratio;
 	Y *= Ratio;

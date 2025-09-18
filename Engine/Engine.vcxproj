@@ -152,12 +152,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Week03\Engine\Public\Core\ObjectIterator.h" />
     <ClInclude Include="Global\Name.h" />
     <ClInclude Include="Global\NameTable.h" />
     <ClInclude Include="Global\Quat.h" />
     <ClInclude Include="Public\Core\ObjectIterator.h" />
     <ClInclude Include="Public\Math\AABB.h" />
+    <ClInclude Include="Public\Mesh\StaticMesh\ObjImporter.h" />
+    <ClInclude Include="Public\Mesh\StaticMesh\ObjManager.h" />
+    <ClInclude Include="Public\Mesh\StaticMesh\StaticMesh.h" />
     <ClInclude Include="Public\Mesh\TextComponent.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorDetailWidget.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorListWidget.h" />
@@ -239,6 +241,9 @@
     <ClCompile Include="Global\Name.cpp" />
     <ClCompile Include="Global\NameTable.cpp" />
     <ClCompile Include="Private\Math\AABB.cpp" />
+    <ClCompile Include="Private\Mesh\StaticMesh\ObjImporter.cpp" />
+    <ClCompile Include="Private\Mesh\StaticMesh\ObjManager.cpp" />
+    <ClCompile Include="Private\Mesh\StaticMesh\StaticMesh.cpp" />
     <ClCompile Include="Private\Mesh\TextComponent.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ActorDetailWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ActorListWidget.cpp" />
