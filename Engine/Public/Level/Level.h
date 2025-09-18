@@ -10,9 +10,9 @@ class AActor;
 class UPrimitiveComponent;
 class UTextComponent;
 
-class ULevel : public UObject
+class ULevel :
+	public UObject
 {
-	DECLARE_CLASS(ULevel, UObject)
 public:
 	ULevel();
 	ULevel(const FString& InName);
@@ -77,7 +77,7 @@ private:
 template <typename T, typename ... Args>
 T* ULevel::SpawnActor(const FString& InName)
 {
-	T* NewActor = NewObject<T>();
+	T* NewActor = new T();
 
 	///////////////////////////////////////////
 	NewActor->AddMemoryUsage(sizeof(T));
@@ -86,10 +86,8 @@ T* ULevel::SpawnActor(const FString& InName)
 	//Outer 설정 시 Outer의 메모리 카운트에 자신의 메모리 합산 작업 수행
 
 	LevelActors.push_back(NewActor);
-	if (!InName.empty()) { NewActor->SetName(InName); }
+	NewActor->SetName(InName);
 	NewActor->BeginPlay();
-
-	UE_LOG("%s", NewActor->GetName().c_str());
 
 	return NewActor;
 }

@@ -5,8 +5,6 @@
 #include "Manager/Input/InputManager.h"
 #include "Mesh/Actor.h"
 
-IMPLEMENT_CLASS(UGizmo, UObject)
-
 UGizmo::UGizmo()
 {
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();

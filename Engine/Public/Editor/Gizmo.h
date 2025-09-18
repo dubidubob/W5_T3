@@ -45,8 +45,6 @@ struct FGizmoRotateCollisionConfig
 
 class UGizmo : public UObject
 {
-	DECLARE_CLASS(UGizmo, UObject)
-
 public:
 	UGizmo();
 	~UGizmo() override;

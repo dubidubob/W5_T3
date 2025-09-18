@@ -4,10 +4,9 @@
 /**
  * @brief Frame과 관련된 내용을 제공하는 UI Widget
  */
-class UFPSWidget : public UWidget
+class UFPSWidget :
+	public UWidget
 {
-	DECLARE_CLASS(UFPSWidget, UWidget)
-
 public:
 	void Initialize() override;
 	void Update() override;

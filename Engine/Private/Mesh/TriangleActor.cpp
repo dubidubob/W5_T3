@@ -2,8 +2,6 @@
 #include "Mesh/TriangleActor.h"
 #include "Mesh/TextComponent.h"
 
-IMPLEMENT_CLASS(ATriangleActor, AActor)
-
 ATriangleActor::ATriangleActor()
 {
 	TriangleComponent = CreateDefaultSubobject<UTriangleComponent>("TriangleComponent");

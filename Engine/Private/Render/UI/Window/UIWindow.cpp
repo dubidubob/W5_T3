@@ -5,11 +5,11 @@
 
 #include "Render/UI/Widget/Widget.h"
 
-IMPLEMENT_ABSTRACT_CLASS(UUIWindow, UObject);
-
 int UUIWindow::IssuedWindowID = 0;
 
-UUIWindow::UUIWindow(const FUIWindowConfig& InConfig) : Config(InConfig), CurrentState(InConfig.InitialState)
+UUIWindow::UUIWindow(const FUIWindowConfig& InConfig)
+	: Config(InConfig)
+	  , CurrentState(InConfig.InitialState)
 {
 	// 고유한 윈도우 ID 생성
 	WindowID = ++IssuedWindowID;

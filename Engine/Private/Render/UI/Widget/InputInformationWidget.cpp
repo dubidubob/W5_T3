@@ -5,9 +5,8 @@
 
 constexpr uint8 MaxKeyHistory = 10;
 
-IMPLEMENT_CLASS(UInputInformationWidget, UWidget)
-
 UInputInformationWidget::UInputInformationWidget()
+	: UWidget("Input Information Widget")
 {
 }
 

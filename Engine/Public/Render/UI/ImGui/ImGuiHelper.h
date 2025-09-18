@@ -5,10 +5,9 @@
  * @brief ImGui 초기화/렌더링/해제를 담당하는 Helper 클래스
  * UIManager에서 사용하는 유틸리티 클래스
  */
-class UImGuiHelper : public UObject
+class UImGuiHelper :
+	public UObject
 {
-	DECLARE_CLASS(UImGuiHelper, UObject);
-
 public:
 	UImGuiHelper();
 	~UImGuiHelper() override;

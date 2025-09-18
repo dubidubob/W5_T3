@@ -2,7 +2,6 @@
 #include "Manager/Input/InputManager.h"
 #include "Core/AppWindow.h"
 
-IMPLEMENT_CLASS(UInputManager, UObject)
 IMPLEMENT_SINGLETON(UInputManager)
 
 UInputManager::UInputManager()

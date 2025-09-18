@@ -2,8 +2,6 @@
 #include "Mesh/Actor.h"
 #include "Mesh/SceneComponent.h"
 
-IMPLEMENT_CLASS(AActor, UObject)
-
 AActor::AActor() = default;
 
 AActor::AActor(UObject* InOuter)

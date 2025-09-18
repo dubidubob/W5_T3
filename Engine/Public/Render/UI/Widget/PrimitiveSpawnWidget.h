@@ -1,9 +1,9 @@
 #pragma once
 #include "Widget.h"
 
-class UPrimitiveSpawnWidget	: public UWidget
+class UPrimitiveSpawnWidget
+	:public UWidget
 {
-	DECLARE_CLASS(UPrimitiveSpawnWidget, UWidget)
 public:
 	void Initialize() override;
 	void Update() override;

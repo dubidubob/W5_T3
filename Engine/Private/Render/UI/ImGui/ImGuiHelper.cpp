@@ -16,8 +16,6 @@
 #include "Editor/Camera.h"
 #include "Manager/Path/PathManager.h"
 
-IMPLEMENT_CLASS(UImGuiHelper, UObject);
-
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, uint32 msg, WPARAM wParam, LPARAM lParam);
 
 UImGuiHelper::UImGuiHelper() = default;
