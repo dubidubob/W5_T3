@@ -383,6 +383,7 @@ void URenderer::Update(UEditor* Editor)
 		{
 			GetDeviceContext()->RSSetViewports(1, &ViewportArray[i].Viewport);
 			UpdateConstant(ViewportArray[i].Camera->GetFViewProjConstants());
+			SetViewMode(ViewportArray[i].RenderMode);
 			DeviceResources->UpdateViewport();
 
 			RenderLevel();

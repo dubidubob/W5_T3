@@ -37,3 +37,12 @@ void UViewportManager::UpdateViewportRects(const POINT& WindowSize)
 	// BR
 	Viewports[3].Viewport = { halfW,  halfH,  halfW, halfH, 0.f, 1.f };
 }
+
+void UViewportManager::SetProjectionMode(int InIdx, ECameraViewType InViewType)
+{
+	// jft : no need to make viewtype cause it's alreay on camera
+	Viewports[InIdx].ViewType = InViewType;
+	Viewports[InIdx].Camera->SetCameraType(InViewType);
+	Viewports[InIdx].Camera->RefreshViewMatrices(); // 카메라/VP 갱신
+}
+

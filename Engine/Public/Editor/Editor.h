@@ -10,7 +10,7 @@
 struct FQuat;
 
 // class ULineBatchRenderer;
-
+class URenderer;
 class UEditor : public UObject
 {
 	DECLARE_CLASS(UEditor, UObject)

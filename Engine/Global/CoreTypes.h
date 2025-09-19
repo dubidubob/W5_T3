@@ -158,6 +158,12 @@ enum class EViewModeIndex : uint32
 	End
 };
 
+enum class ECameraViewType
+{
+	ECT_Perspective,
+	ECT_Orthographic
+};
+
 enum class ESamplerType
 {
 	Text,
