@@ -31,7 +31,7 @@ public:
 	void SetNearZ(const float InOtherNearZ) { NearZ = InOtherNearZ; }
 	void SetFarZ(const float InOtherFarZ) { FarZ = InOtherFarZ; }
 
-	void SetCameraType(const ECameraViewType InCameraType) { CameraViewType = InCameraType; }
+	void SetCameraType(const ECameraViewType InCameraType);
 
 	/**
 	 * @brief Getter
@@ -83,6 +83,7 @@ public:
 	// jft copy from main camera, only used for rendering
 	void CopyFrom(const UCamera& Other);
 	void RefreshViewMatrices();
+	float GetOrthoDistance() { return OrthoDistance; }
 
 	/* *
 	 * @brief 행렬 형태로 저장된 좌표와 변환 행렬과의 연산한 결과를 반환합니다.
@@ -124,6 +125,9 @@ private:
 	float FarZ = {};
 	float OrthoWidth = {};
 	ECameraViewType CameraViewType = {};
+
+	// Ortho Parameters
+	float OrthoDistance = 50.0f;
 
 	// Dynamic Movement Speed
 	float CurrentMoveSpeed;
