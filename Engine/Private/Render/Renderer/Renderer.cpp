@@ -532,7 +532,7 @@ void URenderer::RenderLevel()
 	const TArray<UPrimitiveComponent*>& PrimitiveComponents =
 		ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
 
-	// 여기서 랜더 
+	// 여기서 랜더  
 	for (UPrimitiveComponent* PrimitiveComponent : PrimitiveComponents)
 	{
 		UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(PrimitiveComponent);
@@ -581,8 +581,11 @@ void URenderer::RenderLevel()
 		}
 
 		UploadInstanceBufferData(Resource, Instances.data(), static_cast<uint32>(Instances.Num()));
-
+		// 여기 ?? 
 		Pipeline->UpdatePipeline(CreatePipelineInfo(Key.RenderState));
+		//shader, rasterizaer state, depth stencil state, input layout 설정
+		//FRenderState State = FRenderState{ ECullMode::Back, EFillMode::Solid };
+		//Pipeline->UpdatePipeline(CreateTextPipelineInfo(State));
 
 		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
 		UpdateConstant(FMatrix::Identity);
@@ -597,7 +600,6 @@ void URenderer::RenderLevel()
 		Pipeline->SetVertexBuffer(Key.VertexBuffer, StaticStride);
 		Pipeline->SetIndexBuffer(Key.IndexBuffer, DXGI_FORMAT_R32_UINT);
 		Pipeline->SetShaderResourceView(0, true, Resource.ShaderResourceView);
-
 		Pipeline->DrawIndexedInstanced(Key.IndexCount, static_cast<uint32>(Instances.Num()), 0, 0, 0);
 	}
 
@@ -1079,10 +1081,11 @@ FPipelineInfo URenderer::CreatePipelineInfo(const FRenderState& InRenderState)
 		break;
 	}
 
+	//ModifiedRenderState.CullMode = ECullMode::None;
 	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
 	return FPipelineInfo{
-		DefaultInputLayout, DefaultVertexShader,
-		RasterizerState, DefaultDepthStencilState, DefaultPixelShader, nullptr,
+		StaticInputLayout, StaticVertexShader,
+		RasterizerState, DefaultDepthStencilState, StaticPixelShader, nullptr,
 		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
 	};
 }
@@ -1238,6 +1241,7 @@ ID3D11RasterizerState* URenderer::GetRasterizerState(const FRenderState& InRende
 	RasterizerDesc.FillMode = FillMode;
 	RasterizerDesc.CullMode = CullMode;
 	RasterizerDesc.DepthClipEnable = TRUE; // ✅ 근/원거리 평면 클리핑 활성화 (핵심)
+	RasterizerDesc.FrontCounterClockwise = FALSE;
 
 	HRESULT Hr = GetDevice()->CreateRasterizerState(&RasterizerDesc, &RasterizerState);
 
