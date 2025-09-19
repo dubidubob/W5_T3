@@ -79,12 +79,12 @@ void UCamera::Update()
 		SetAspect(Width / Height);
 	}
 
-	switch (CameraType)
+	switch (CameraViewType)
 	{
-	case ECameraType::ECT_Perspective:
+	case ECameraViewType::ECT_Perspective:
 		UpdateMatrixByPers();
 		break;
-	case ECameraType::ECT_Orthographic:
+	case ECameraViewType::ECT_Orthographic:
 		UpdateMatrixByOrth();
 		break;
 	}
@@ -140,7 +140,9 @@ void UCamera::UpdateMatrixByOrth()
 	/**
 	 * @brief Projection 행렬 연산
 	 */
-	OrthoWidth = 2.0f * std::tanf(FVector::GetDegreeToRadian(FovY) * 0.5f);
+	// todo : zoom feature needed
+	const float BaseOrthoWidth = 50.0f;
+	OrthoWidth = BaseOrthoWidth; // 2.0f * std::tanf(FVector::GetDegreeToRadian(FovY) * 0.5f);
 	const float OrthoHeight = OrthoWidth / Aspect;
 	const float Left = -OrthoWidth * 0.5f;
 	const float Right1 = OrthoWidth * 0.5f;
@@ -169,7 +171,7 @@ FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
 	// (View * B)^-1 = B^-1 * View^-1
 	Result.View = (FMatrix::BasisUEToLHY() * R) * T;
 
-	if (CameraType == ECameraType::ECT_Orthographic)
+	if (CameraViewType == ECameraViewType::ECT_Orthographic)
 	{
 		const float OrthoHeight = OrthoWidth / Aspect;
 		const float Left = -OrthoWidth * 0.5f;
@@ -189,7 +191,7 @@ FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
 		P.Data[3][3] = 1.0f;
 		Result.Projection = P;
 	}
-	else if ((CameraType == ECameraType::ECT_Perspective))
+	else if ((CameraViewType == ECameraViewType::ECT_Perspective))
 	{
 		const float FovRadian = FVector::GetDegreeToRadian(FovY);
 		const float F = 1.0f / std::tanf(FovRadian * 0.5f);
@@ -251,7 +253,7 @@ FRay UCamera::ConvertToWorldRay(float NdcX, float NdcY) const
 		ViewProjMatrix.View.Data[3][2],
 		ViewProjMatrix.View.Data[3][3]);
 
-	if (CameraType == ECameraType::ECT_Perspective)
+	if (CameraViewType == ECameraViewType::ECT_Perspective)
 	{
 		FVector4 DirectionVector = WorldFar - CameraPosition;
 		DirectionVector.Normalize();
@@ -259,7 +261,7 @@ FRay UCamera::ConvertToWorldRay(float NdcX, float NdcY) const
 		Ray.Origin = CameraPosition;
 		Ray.Direction = DirectionVector;
 	}
-	else if (CameraType == ECameraType::ECT_Orthographic)
+	else if (CameraViewType == ECameraViewType::ECT_Orthographic)
 	{
 		FVector4 DirectionVector = WorldFar - WorldNear;
 		DirectionVector.Normalize();
@@ -346,4 +348,36 @@ void UCamera::LoadCameraSettings()
 	// 로드한 값을 직접 설정 (SaveCameraSettings 호출하지 않음)
 	CurrentMouseSensitivity = max(LoadedSensitivity, MIN_MOUSE_SENSITIVITY);
 	CurrentMouseSensitivity = min(CurrentMouseSensitivity, MAX_MOUSE_SENSITIVITY);
+}
+
+void UCamera::CopyFrom(const UCamera& Other)
+{
+	SetLocation(Other.GetLocation());
+	SetRotation(Other.GetRotation());
+	FovY = Other.GetFovY();
+	Aspect = Other.GetAspect();
+	NearZ = Other.GetNearZ();
+	FarZ = Other.GetFarZ();
+	CurrentMoveSpeed = Other.GetMoveSpeed();
+	CurrentMouseSensitivity = Other.GetMouseSensitivity();
+
+	RefreshViewMatrices();
+}
+
+void UCamera::RefreshViewMatrices()
+{
+	Forward = FVector4(1, 0, 0, 1) * FMatrix::RotationMatrixCamera(FVector::GetDegreeToRadian(RelativeRotation));
+	Forward.Normalize();
+	Up = FVector(0, 0, 1);
+	Right = Forward.Cross(Up);
+
+	switch (CameraViewType)
+	{
+		case ECameraViewType::ECT_Perspective:
+			UpdateMatrixByPers();
+			break;
+		case ECameraViewType::ECT_Orthographic:
+			UpdateMatrixByOrth();
+			break;
+	}
 }

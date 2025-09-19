@@ -1,12 +1,5 @@
 #pragma once
 #include "Core/Object.h"
-
-enum class ECameraType
-{
-	ECT_Orthographic,
-	ECT_Perspective
-};
-
 class UCamera : public UObject
 {
 	DECLARE_CLASS(UCamera, UObject)
@@ -17,7 +10,7 @@ public:
         // UE 기준(X-forward) 원점 바라보도록 -X로 초기 위치 설정
         RelativeLocation(FVector(-10.0f, 0.0f, 0.0f)), RelativeRotation(FVector(0, 0, 0)),
         FovY(90.f), Aspect(float(Render::INIT_SCREEN_WIDTH) / Render::INIT_SCREEN_HEIGHT),
-        NearZ(0.1f), FarZ(100.f), CameraType(ECameraType::ECT_Perspective),
+        NearZ(0.1f), FarZ(100.f), CameraViewType(ECameraViewType::ECT_Perspective),
         CurrentMoveSpeed(DEFAULT_CAMERA_SPEED), CurrentMouseSensitivity(DEFAULT_MOUSE_SENSITIVITY)
     {
 		LoadCameraSettings();
@@ -37,7 +30,8 @@ public:
 	void SetAspect(const float InOtherAspect) { Aspect = InOtherAspect; }
 	void SetNearZ(const float InOtherNearZ) { NearZ = InOtherNearZ; }
 	void SetFarZ(const float InOtherFarZ) { FarZ = InOtherFarZ; }
-	void SetCameraType(const ECameraType InCameraType) { CameraType = InCameraType; }
+
+	void SetCameraType(const ECameraViewType InCameraType) { CameraViewType = InCameraType; }
 
 	/**
 	 * @brief Getter
@@ -49,7 +43,9 @@ public:
 
 	FVector CalculatePlaneNormal(const FVector4& Axis);
 	FVector CalculatePlaneNormal(const FVector& Axis);
+	const FVector& GetLocation() const { return RelativeLocation; }
 	FVector& GetLocation() { return RelativeLocation; }
+	const FVector& GetRotation() const { return RelativeRotation; }
 	FVector& GetRotation() { return RelativeRotation; }
 	const FVector& GetForward() const { return Forward; }
 	const FVector& GetUp() const { return Up; }
@@ -58,7 +54,7 @@ public:
 	const float GetAspect() const { return Aspect; }
 	const float GetNearZ() const { return NearZ; }
 	const float GetFarZ() const { return FarZ; }
-	const ECameraType GetCameraType() const { return CameraType; }
+	const ECameraViewType GetCameraType() const { return CameraViewType; }
 
 	float GetMoveSpeed() const { return CurrentMoveSpeed; }
 	void SetMoveSpeed(float InSpeed)
@@ -83,6 +79,10 @@ public:
 	 */
 	void SaveCameraSettings() const;
 	void LoadCameraSettings();
+
+	// jft copy from main camera, only used for rendering
+	void CopyFrom(const UCamera& Other);
+	void RefreshViewMatrices();
 
 	/* *
 	 * @brief 행렬 형태로 저장된 좌표와 변환 행렬과의 연산한 결과를 반환합니다.
@@ -123,7 +123,7 @@ private:
 	float NearZ = {};
 	float FarZ = {};
 	float OrthoWidth = {};
-	ECameraType CameraType = {};
+	ECameraViewType CameraViewType = {};
 
 	// Dynamic Movement Speed
 	float CurrentMoveSpeed;

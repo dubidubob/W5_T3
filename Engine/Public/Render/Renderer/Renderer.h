@@ -3,6 +3,8 @@
 #include "Core/Object.h"
 #include "Mesh/SceneComponent.h"
 #include "Editor/EditorPrimitive.h"
+// jft
+#include "Editor/Camera.h"
 
 class UPipeline;
 class UDeviceResources;
@@ -36,6 +38,7 @@ struct FPipelineInfo;
  * @param vertexBufferSphere
  * @param numVerticesSphere
  */
+
 class URenderer : public UObject
 {
 	DECLARE_CLASS(URenderer, UObject)
@@ -130,6 +133,12 @@ public:
 	void ToggleShowFlag(EEngineShowFlags InFlag) { CurrentShowFlags = CurrentShowFlags ^ InFlag; }
 	bool IsShowFlagEnabled(EEngineShowFlags InFlag) const { return HasFlag(CurrentShowFlags, InFlag); }
 
+	// jtf
+	/** Divided Window Settings */
+	bool GetDividedWindow() { return bIsWindowDivided; }
+	void SetDividedWindow(bool InWindowDivided) { bIsWindowDivided = InWindowDivided; }
+
+	/** Device Settings */
 	ID3D11Device* GetDevice() const { return DeviceResources->GetDevice(); }
 	ID3D11DeviceContext* GetDeviceContext() const { return DeviceResources->GetDeviceContext(); }
 	IDXGISwapChain* GetSwapChain() const { return DeviceResources->GetSwapChain();}
@@ -272,7 +281,8 @@ private:
 	void ReleasePrimitiveInstanceBuffers();
 
 	bool bIsResizing = false;
-
+	// jft
+	bool bIsWindowDivided = false;
 	///////////////////////////////////////////
 	// 카메라 VP Matrix 값 전달 받는 용도
 	// (차후 리팩터링이 필요합니다)

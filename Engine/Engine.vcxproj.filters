@@ -85,6 +85,11 @@
     <ClCompile Include="Private\Render\UI\Window\DetailWindow.cpp" />
     <ClCompile Include="Private\Math\AABB.cpp" />
     <ClCompile Include="Private\\Render\Renderer\\LineBatchRenderer.cpp" />
+    <ClCompile Include="Global\Quat.cpp" />
+    <ClCompile Include="Private\Manager\Viewport\ViewportManager.cpp" />
+    <ClCompile Include="Private\Mesh\StaticMesh\ObjImporter.cpp" />
+    <ClCompile Include="Private\Mesh\StaticMesh\ObjManager.cpp" />
+    <ClCompile Include="Private\Mesh\StaticMesh\StaticMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\\Core\\Object.h" />
@@ -179,6 +184,12 @@
     <ClInclude Include="Public\Render\UI\Window\DetailWindow.h" />
     <ClInclude Include="Public\Math\AABB.h" />
     <ClInclude Include="Public\\Render\Renderer\\LineBatchRenderer.h" />
+    <ClInclude Include="Global\Quat.h" />
+    <ClInclude Include="Public\Core\ObjectIterator.h" />
+    <ClInclude Include="Public\Manager\Viewport\ViewportManager.h" />
+    <ClInclude Include="Public\Mesh\StaticMesh\ObjImporter.h" />
+    <ClInclude Include="Public\Mesh\StaticMesh\ObjManager.h" />
+    <ClInclude Include="Public\Mesh\StaticMesh\StaticMesh.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />

@@ -10,20 +10,20 @@ IMPLEMENT_CLASS_BASE(UObject)
 UObject::UObject() : Outer(nullptr)
 {
 	UUID = UEngineStatics::GenUUID();
-	//Name = FNameTable::GetInstance().GetUniqueName("");
 	Name = FNameTable::GetInstance().GetUniqueName(GetClass()->GetName());
 
 	GUObjectArray.push_back(this);
 	InternalIndex = static_cast<uint32>(GUObjectArray.size()) - 1;
 }
 
-UObject::UObject(const FString& InString) : Outer(nullptr)
+UObject::~UObject()
 {
-	UUID = UEngineStatics::GenUUID();
-	Name = FNameTable::GetInstance().GetUniqueName(InString);
-
-	GUObjectArray.push_back(this);
-	InternalIndex = static_cast<uint32>(GUObjectArray.size()) - 1;
+	if (!GUObjectArray.empty() && InternalIndex < GUObjectArray.size())
+	{
+		std::swap(GUObjectArray[InternalIndex], GUObjectArray.back());
+		GUObjectArray[InternalIndex]->InternalIndex = InternalIndex;
+		GUObjectArray.pop_back();
+	}
 }
 
 void UObject::SetOuter(UObject* InObject)
