@@ -7,7 +7,8 @@
 #include "Mesh/SphereActor.h"
 #include "Mesh/SquareActor.h"
 #include "Mesh/TriangleActor.h"
-
+#include "Mesh/StaticMeshActor.h"
+#include "Mesh/StaticMeshComponent.h"
 IMPLEMENT_CLASS(UPrimitiveSpawnWidget, UWidget)
 
 UPrimitiveSpawnWidget::UPrimitiveSpawnWidget()
@@ -90,25 +91,27 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 	// 지정된 개수만큼 액터 생성
 	for (int32 i = 0; i < NumberOfSpawn; i++)
 	{
-		AActor* NewActor = nullptr;
+		AStaticMeshActor* NewActor = nullptr;
 
 		// 타입에 따라 액터 생성
 		if (SelectedPrimitiveType == 0) // Cube
 		{
-			NewActor = CurrentLevel->SpawnActor<ACubeActor>();
+			NewActor = CurrentLevel->SpawnActor<AStaticMeshActor>();
+			//TODO : FName 으로 변경 
+			NewActor->GetStaticMeshCompoent()->SetStaticMesh("Cube.obj");
 		}
-		else if (SelectedPrimitiveType == 1) // Sphere
-		{
-			NewActor = CurrentLevel->SpawnActor<ASphereActor>();
-		}
-		else if (SelectedPrimitiveType == 2)
-		{
-			NewActor = CurrentLevel->SpawnActor<ATriangleActor>();
-		}
-		else if (SelectedPrimitiveType == 3)
-		{
-			NewActor = CurrentLevel->SpawnActor<ASquareActor>();
-		}
+		//else if (SelectedPrimitiveType == 1) // Sphere
+		//{
+		//	NewActor = CurrentLevel->SpawnActor<ASphereActor>();
+		//}
+		//else if (SelectedPrimitiveType == 2)
+		//{
+		//	NewActor = CurrentLevel->SpawnActor<ATriangleActor>();
+		//}
+		//else if (SelectedPrimitiveType == 3)
+		//{
+		//	NewActor = CurrentLevel->SpawnActor<ASquareActor>();
+		//}
 
 		if (NewActor)
 		{

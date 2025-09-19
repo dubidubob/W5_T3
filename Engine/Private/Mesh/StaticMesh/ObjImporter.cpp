@@ -126,6 +126,7 @@ bool FObjImporter::ParseObjFile(const FString& FileName, FObjInfo& OutObjInfo)
 				OutObjInfo.PositionIndices.Add(PosIndex - 1);
 				OutObjInfo.UVIndices.Add(UVIndex > 0 ? UVIndex - 1 : 0);
 				OutObjInfo.NormalIndices.Add(NormalIndex > 0 ? NormalIndex - 1 : 0);
+				int a = 0;
 			}
 			FaceCount++;
 		}
@@ -259,6 +260,10 @@ void FObjImporter::ConvertObjToStaticMesh(const FObjInfo& ObjInfo, FStaticMesh& 
 			if (NormalIndex < ObjInfo.Normals.size()) { Vertex.Normal = ObjInfo.Normals[NormalIndex]; }
 			else { Vertex.Normal = FVector(0.0f, 0.0f, 1.0f); }
 
+			Vertex.Color = { static_cast<float>(rand()) / RAND_MAX ,
+				static_cast<float>(rand()) / RAND_MAX ,
+				static_cast<float>(rand()) / RAND_MAX ,
+				1.0f };
 			VertexIndex = OutStaticMesh.Vertices.size();
 			OutStaticMesh.Vertices.Add(Vertex);
 			VertexMap[VertexKey] = VertexIndex;

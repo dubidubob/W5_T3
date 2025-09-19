@@ -14,7 +14,7 @@ public:
 	* @return Obj 파일의 정보를 담은 FStaticMesh 포인터
 	*/
 	FStaticMesh* LoadObjStaticMeshAsset(const FString& PathFileName);
-
+	void Initialize(ID3D11Device* InDevice);
 	/**
 	* @brief Load UStaticMesh
 	* @param PathFileName Obj 파일 경로
@@ -22,7 +22,11 @@ public:
 	*/
 	UStaticMesh* LoadObjStaticMesh(const FString& PathFileName);
 
+	void CreateVertexBuffer(FStaticMesh* OutStaticMesh);
+	void CreateIndexBuffer(FStaticMesh* OutStaticMesh);
+
 private:
 	TMap<FString, FStaticMesh*> StaticMeshAssetMap;
 	TMap<FString, UStaticMesh*> StaticMeshMap;
+	ID3D11Device* Device = nullptr;
 };

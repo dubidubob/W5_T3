@@ -42,6 +42,10 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 	}
 
 	FStaticMesh* NewStaticMesh = FObjImporter::ParseAndConvert(PathFileName);
+	
+	CreateVertexBuffer(NewStaticMesh);
+	CreateIndexBuffer(NewStaticMesh);
+
 	if (NewStaticMesh)
 	{
 		StaticMeshAssetMap[PathFileName] = NewStaticMesh;
@@ -55,6 +59,11 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 	}
 
 	return NewStaticMesh;
+}
+
+void FObjManager::Initialize(ID3D11Device* InDevice)
+{
+	Device = InDevice;
 }
 
 UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
@@ -90,4 +99,48 @@ UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 	}
 
 	return NewStaticMesh;
+}
+
+
+void FObjManager::CreateVertexBuffer(FStaticMesh* OutStaticMesh)
+{
+	if (OutStaticMesh->Vertices.empty()) return;
+
+	D3D11_BUFFER_DESC vbd = {};
+	vbd.Usage = D3D11_USAGE_DEFAULT;
+	vbd.ByteWidth = static_cast<UINT>(sizeof(FNormalVertex) * OutStaticMesh->Vertices.size());
+	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vbd.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA vinitData = {};
+	vinitData.pSysMem = OutStaticMesh->Vertices.data();
+
+	HRESULT hr = Device->CreateBuffer(&vbd, &vinitData, &OutStaticMesh->VertexBuffer);
+
+	OutStaticMesh->VertexCount = static_cast<uint32>(OutStaticMesh->Vertices.size());
+	OutStaticMesh->ByteWidth = vbd.ByteWidth;
+}
+
+
+void FObjManager::CreateIndexBuffer(FStaticMesh* OutStaticMesh)
+{
+	if (OutStaticMesh->Indices.empty()) return;
+
+
+	D3D11_BUFFER_DESC ibd = {};
+	ibd.Usage = D3D11_USAGE_DEFAULT;
+	ibd.ByteWidth = static_cast<UINT>(sizeof(uint32) * OutStaticMesh->Indices.size());
+	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	ibd.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA iinitData = {};
+	iinitData.pSysMem = OutStaticMesh->Indices.data();
+
+	HRESULT hr = Device->CreateBuffer(&ibd, &iinitData, &OutStaticMesh->IndexBuffer);
+	if (FAILED(hr))
+	{
+		return;
+	}
+
+	OutStaticMesh->IndexCount = static_cast<uint32>(OutStaticMesh->Indices.size());
 }

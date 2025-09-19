@@ -30,6 +30,13 @@ struct FVertex
     }
 };
 
+//struct FStaticMesh
+//{
+//	std::string PathFileName;
+//	TArray<FVertex> Vertices;
+//	TArray<uint32> Indices;
+//};
+
 namespace std
 {
 	template<>
@@ -161,7 +168,12 @@ enum class EViewModeIndex : uint32
 enum class ECameraViewType
 {
 	ECT_Perspective,
-	ECT_Orthographic
+	ECT_Ortho_Front,
+	ECT_Ortho_Back,
+	ECT_Ortho_Top,
+	ECT_Ortho_Bottom,
+	ECT_Ortho_Left,
+	ECT_Ortho_Right
 };
 
 enum class ESamplerType

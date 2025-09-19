@@ -20,8 +20,7 @@ void UCamera::Update()
 	Forward.Normalize();
 	// UE 기준 Up 축: Z
 	Up = FVector(0, 0, 1);
-	// Right = Up.Cross(Forward);
-	Right = Forward.Cross(Up);
+	Right = Up.Cross(Forward);
 
 	/**
 	 * @brief 마우스 우클릭을 하고 있는 동안 카메라 제어가 가능합니다.
@@ -33,8 +32,8 @@ void UCamera::Update()
 		 */
 		FVector Direction = {0, 0, 0};
 
-		if (Input.IsKeyDown(EKeyInput::A)) { Direction += -Right; }
-		if (Input.IsKeyDown(EKeyInput::D)) { Direction += Right; }
+		if (Input.IsKeyDown(EKeyInput::A)) { Direction += Right; }
+		if (Input.IsKeyDown(EKeyInput::D)) { Direction += -Right; }
 		if (Input.IsKeyDown(EKeyInput::W)) { Direction += Forward; }
 		if (Input.IsKeyDown(EKeyInput::S)) { Direction += -Forward; }
 		if (Input.IsKeyDown(EKeyInput::Q)) { Direction += -Up; }
@@ -54,17 +53,17 @@ void UCamera::Update()
 		* @brief 마우스 위치 변화량을 감지하여 카메라의 회전을 담당합니다.
 		*/
 		const FVector MouseDelta = UInputManager::GetInstance().GetMouseDelta();
-		RelativeRotation.Y += MouseDelta.X * CurrentMouseSensitivity;
-		RelativeRotation.X += MouseDelta.Y * CurrentMouseSensitivity;
+		RelativeRotation.Y += MouseDelta.Y * CurrentMouseSensitivity;
+		RelativeRotation.Z += MouseDelta.X * CurrentMouseSensitivity;
 
 		// Yaw 래핑(값이 무한히 커지지 않도록)
-		if (RelativeRotation.Y > 180.0f)
+		if (RelativeRotation.Z > 180.0f)
 		{
-			RelativeRotation.Y -= 360.0f;
+			RelativeRotation.Z -= 360.0f;
 		}
-		if (RelativeRotation.Y < -180.0f)
+		if (RelativeRotation.Z < -180.0f)
 		{
-			RelativeRotation.Y += 360.0f;
+			RelativeRotation.Z += 360.0f;
 		}
 
 		// Pitch 클램프(짐벌 플립 방지)
@@ -84,7 +83,7 @@ void UCamera::Update()
 	case ECameraViewType::ECT_Perspective:
 		UpdateMatrixByPers();
 		break;
-	case ECameraViewType::ECT_Orthographic:
+	case ECameraViewType::ECT_Ortho_Front:
 		UpdateMatrixByOrth();
 		break;
 	}
@@ -140,24 +139,58 @@ void UCamera::UpdateMatrixByOrth()
 	/**
 	 * @brief Projection 행렬 연산
 	 */
-	// todo : zoom feature needed
-	const float BaseOrthoWidth = 50.0f;
-	OrthoWidth = BaseOrthoWidth; // 2.0f * std::tanf(FVector::GetDegreeToRadian(FovY) * 0.5f);
+	OrthoWidth = OrthoDistance; // 2.0f * std::tanf(FVector::GetDegreeToRadian(FovY) * 0.5f);
 	const float OrthoHeight = OrthoWidth / Aspect;
 	const float Left = -OrthoWidth * 0.5f;
-	const float Right1 = OrthoWidth * 0.5f;
+	const float Right = OrthoWidth * 0.5f;
 	const float Bottom = -OrthoHeight * 0.5f;
 	const float Top = OrthoHeight * 0.5f;
 
 	FMatrix P = FMatrix::Identity;
-	P.Data[0][0] = 2.0f / (Right1 - Left);
+	P.Data[0][0] = 2.0f / (Right - Left);
 	P.Data[1][1] = 2.0f / (Top - Bottom);
 	P.Data[2][2] = 1.0f / (FarZ - NearZ);
-	P.Data[3][0] = -(Right1 + Left) / (Right1 - Left);
+	P.Data[3][0] = -(Right + Left) / (Right - Left);
 	P.Data[3][1] = -(Top + Bottom) / (Top - Bottom);
 	P.Data[3][2] = -NearZ / (FarZ - NearZ);
 	P.Data[3][3] = 1.0f;
 	ViewProjConstants.Projection = P;
+}
+
+void UCamera::SetCameraType(const ECameraViewType InCameraType)
+{
+	CameraViewType = InCameraType;
+
+	if (InCameraType != ECameraViewType::ECT_Perspective)
+	{ // orthographic setting
+		FVector MoveAxis; // z u, x f, y r
+		switch (InCameraType)
+		{
+		case ECameraViewType::ECT_Ortho_Back :
+			MoveAxis = FVector(-1.0f* OrthoDistance, 0, 0);
+			SetLocation(MoveAxis);
+			SetRotation(FVector(0.0f, 0.0f, 0.0f));
+			break;
+
+		case ECameraViewType::ECT_Ortho_Front:
+			MoveAxis = FVector(1.0f * OrthoDistance, 0, 0);
+			SetLocation(MoveAxis);
+			SetRotation(FVector(0.0f, 0.0f, 0.0f));
+			break;
+
+		case ECameraViewType::ECT_Ortho_Top:
+			MoveAxis = FVector(0, 0, 1.0f * OrthoDistance);
+			SetLocation(MoveAxis);
+			SetRotation(FVector(0.0f, 0.0f, 0.0f));
+			break;
+
+		case ECameraViewType::ECT_Ortho_Bottom:
+			MoveAxis = FVector(0, 0, -1.0f * OrthoDistance);
+			SetLocation(MoveAxis);
+			SetRotation(FVector(0.0f, 0.0f, 0.0f));
+			break;
+		}
+	}
 }
 
 FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
@@ -171,7 +204,7 @@ FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
 	// (View * B)^-1 = B^-1 * View^-1
 	Result.View = (FMatrix::BasisUEToLHY() * R) * T;
 
-	if (CameraViewType == ECameraViewType::ECT_Orthographic)
+	if (CameraViewType != ECameraViewType::ECT_Perspective)
 	{
 		const float OrthoHeight = OrthoWidth / Aspect;
 		const float Left = -OrthoWidth * 0.5f;
@@ -261,7 +294,7 @@ FRay UCamera::ConvertToWorldRay(float NdcX, float NdcY) const
 		Ray.Origin = CameraPosition;
 		Ray.Direction = DirectionVector;
 	}
-	else if (CameraViewType == ECameraViewType::ECT_Orthographic)
+	else if (CameraViewType == ECameraViewType::ECT_Ortho_Front)
 	{
 		FVector4 DirectionVector = WorldFar - WorldNear;
 		DirectionVector.Normalize();
@@ -376,7 +409,7 @@ void UCamera::RefreshViewMatrices()
 		case ECameraViewType::ECT_Perspective:
 			UpdateMatrixByPers();
 			break;
-		case ECameraViewType::ECT_Orthographic:
+		case ECameraViewType::ECT_Ortho_Front:
 			UpdateMatrixByOrth();
 			break;
 	}

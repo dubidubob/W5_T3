@@ -10,6 +10,8 @@
 #include "Render/Renderer/LineBatchRenderer.h"
 #include "Editor/Editor.h"
 #include "Mesh/TextComponent.h"
+#include "Mesh/StaticMesh/StaticMesh.h"
+#include "Mesh/StaticMeshComponent.h"
 #include "Manager/Viewport/ViewportManager.h"
 
 namespace
@@ -45,11 +47,11 @@ void URenderer::Init(HWND InWindowHandle)
 	CreateRasterizerState();
 	CreateDepthStencilState();
 	CreateBlendState();
+	CreateStaticMeshShader();
 	CreateDefaultShader();
 	CreateTextShader();
 	CreateLineInstancedShader();
 	CreateInstanceBuffer();
-
 	CreateConstantBuffer();
 
 	/** LineBatchRenderer 초기화 */
@@ -63,6 +65,7 @@ void URenderer::Release()
 
 	ReleaseConstantBuffer();
 	ReleaseDefaultShader();
+	ReleaseStaticMeshShader();
 	ReleaseResource();
 	ReleaseTextShader();
 	ReleaseLineInstancedShader();
@@ -231,6 +234,52 @@ void URenderer::CreateDefaultShader()
 	PixelShaderCSO->Release();
 }
 
+
+void URenderer::CreateStaticMeshShader()
+{
+	ID3DBlob* VertexShaderCSO;
+	ID3DBlob* PixelShaderCSO;
+
+	D3DCompileFromFile(L"Data/Shader/StaticMeshShader.hlsl", nullptr, nullptr, "MainVS", "vs_5_0", 0, 0,
+		&VertexShaderCSO, nullptr);
+
+	GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), nullptr, &StaticVertexShader);
+
+	D3DCompileFromFile(L"Data/Shader/StaticMeshShader.hlsl", nullptr, nullptr, "MainPS", "ps_5_0", 0, 0,
+		&PixelShaderCSO, nullptr);
+
+	GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
+		PixelShaderCSO->GetBufferSize(), nullptr, &StaticPixelShader);
+
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		// POSITION : float3, offset 0
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
+		  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+
+		  // NORMAL : float3, offset 12
+		  { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12,
+			D3D11_INPUT_PER_VERTEX_DATA, 0 },
+
+			// COLOR : float4, offset 24
+			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 24,
+			  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+
+			  // TEXCOORD : float2, offset 40
+			  { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 40,
+				D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), &StaticInputLayout);
+
+	StaticStride = sizeof(FNormalVertex);
+
+	VertexShaderCSO->Release();
+	PixelShaderCSO->Release();
+}
+
 void URenderer::CreateTextShader()
 {
 	ID3DBlob* VertexShaderCSO;
@@ -320,6 +369,27 @@ void URenderer::ReleaseDefaultShader()
 	{
 		DefaultVertexShader->Release();
 		DefaultVertexShader = nullptr;
+	}
+}
+
+void URenderer::ReleaseStaticMeshShader()
+{
+	if (StaticInputLayout)
+	{
+		StaticInputLayout->Release();
+		StaticInputLayout = nullptr;
+	}
+
+	if (StaticPixelShader)
+	{
+		StaticPixelShader->Release();
+		StaticPixelShader = nullptr;
+	}
+
+	if (StaticVertexShader)
+	{
+		StaticVertexShader->Release();
+		StaticVertexShader = nullptr;
 	}
 }
 
@@ -452,17 +522,20 @@ void URenderer::RenderLevel()
 	const TArray<UPrimitiveComponent*>& PrimitiveComponents =
 		ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
 
+	// 여기서 랜더  
 	for (UPrimitiveComponent* PrimitiveComponent : PrimitiveComponents)
 	{
-		if (!PrimitiveComponent) { continue; }
-		if (!PrimitiveComponent->IsVisible()) { continue; }
+		UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(PrimitiveComponent);
+		StaticMeshComponent->GetStaticMesh();
 
+		if (!StaticMeshComponent) { continue; }
+		if (!StaticMeshComponent->IsVisible()) { continue; }
+		FStaticMesh* MeshData = StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset();
 		FPrimitiveBatchKey Key;
-		Key.VertexBuffer = PrimitiveComponent->GetReducedVertexBuffer();
-		Key.IndexBuffer = PrimitiveComponent->GetIndexBuffer();
-		Key.IndexCount = PrimitiveComponent->GetIndexNum();
-		Key.RenderState = PrimitiveComponent->GetRenderState();
-
+		Key.VertexBuffer = MeshData->VertexBuffer;
+		Key.IndexBuffer = MeshData->IndexBuffer;
+		Key.IndexCount = MeshData->IndexCount;
+		Key.RenderState = StaticMeshComponent->GetRenderState();
 
 		if (!Key.VertexBuffer || !Key.IndexBuffer || Key.IndexCount == 0)
 		{
@@ -498,8 +571,11 @@ void URenderer::RenderLevel()
 		}
 
 		UploadInstanceBufferData(Resource, Instances.data(), static_cast<uint32>(Instances.Num()));
-
+		// 여기 ?? 
 		Pipeline->UpdatePipeline(CreatePipelineInfo(Key.RenderState));
+		//shader, rasterizaer state, depth stencil state, input layout 설정
+		//FRenderState State = FRenderState{ ECullMode::Back, EFillMode::Solid };
+		//Pipeline->UpdatePipeline(CreateTextPipelineInfo(State));
 
 		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
 		UpdateConstant(FMatrix::Identity);
@@ -510,10 +586,10 @@ void URenderer::RenderLevel()
 		Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
 		UpdateInstanceDrawConstants(true, 0, static_cast<uint32>(Instances.Num()));
 
-		Pipeline->SetVertexBuffer(Key.VertexBuffer, Stride);
+		//TODO 수정
+		Pipeline->SetVertexBuffer(Key.VertexBuffer, StaticStride);
 		Pipeline->SetIndexBuffer(Key.IndexBuffer, DXGI_FORMAT_R32_UINT);
 		Pipeline->SetShaderResourceView(0, true, Resource.ShaderResourceView);
-
 		Pipeline->DrawIndexedInstanced(Key.IndexCount, static_cast<uint32>(Instances.Num()), 0, 0, 0);
 	}
 
@@ -995,10 +1071,11 @@ FPipelineInfo URenderer::CreatePipelineInfo(const FRenderState& InRenderState)
 		break;
 	}
 
+	//ModifiedRenderState.CullMode = ECullMode::None;
 	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
 	return FPipelineInfo{
-		DefaultInputLayout, DefaultVertexShader,
-		RasterizerState, DefaultDepthStencilState, DefaultPixelShader, nullptr,
+		StaticInputLayout, StaticVertexShader,
+		RasterizerState, DefaultDepthStencilState, StaticPixelShader, nullptr,
 		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
 	};
 }
@@ -1154,6 +1231,7 @@ ID3D11RasterizerState* URenderer::GetRasterizerState(const FRenderState& InRende
 	RasterizerDesc.FillMode = FillMode;
 	RasterizerDesc.CullMode = CullMode;
 	RasterizerDesc.DepthClipEnable = TRUE; // ✅ 근/원거리 평면 클리핑 활성화 (핵심)
+	RasterizerDesc.FrontCounterClockwise = FALSE;
 
 	HRESULT Hr = GetDevice()->CreateRasterizerState(&RasterizerDesc, &RasterizerState);
 
