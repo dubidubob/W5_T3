@@ -1,14 +1,9 @@
 #include "pch.h"
 #include "Editor/Camera.h"
+#include "ViewportTypes.h"
 #include "Render/UI/Widget/CameraControlWidget.h"
 
 IMPLEMENT_CLASS(UCameraControlWidget, UWidget)
-
-// Camera Mode
-static const char* CameraMode[] = {
-	"Perspective",
-	"Orthographic"
-};
 
 UCameraControlWidget::UCameraControlWidget()
 {
@@ -63,7 +58,11 @@ void UCameraControlWidget::RenderWidget()
 
 	ImGui::Spacing();
 
-	if (ImGui::Combo("Mode", &CameraModeIndex, CameraMode, IM_ARRAYSIZE(CameraMode)))
+	if (ImGui::Combo(
+		"Mode",
+		&CameraModeIndex,
+		ViewportUI::ViewTypeLabels.data(),
+		 (ViewportUI::ViewTypeLabels.size())))
 	{
 		PushToCamera();
 	}
@@ -86,18 +85,18 @@ void UCameraControlWidget::RenderWidget()
 
     // 회전 입력 및 보정 (degree 단위)
     bool RotationChanged = false;
-    float rotDisplay[3] = { Rotation.Z, Rotation.X, Rotation.Y }; // 현재 UI 표시 순서 유지
+    float rotDisplay[3] = { Rotation.X, Rotation.Y, Rotation.Z }; // 현재 UI 표시 순서 유지
     RotationChanged |= ImGui::DragFloat3("Camera Rotation", rotDisplay, 0.1f);
     // UI -> 내부 순서 반영
-    Rotation.Z = rotDisplay[0];
-    Rotation.X = rotDisplay[1];
-    Rotation.Y = rotDisplay[2];
+    Rotation.X = rotDisplay[0]; // roll // x
+    Rotation.Y = rotDisplay[1]; // pitch // y
+    Rotation.Z = rotDisplay[2]; // yaw // z
 
     // Pitch / Yaw 간단 보정
-    Rotation.X = max(-89.0f, Rotation.X);
-    Rotation.X = min(89.0f, Rotation.X);
-    Rotation.Y = max(-180.0f, Rotation.Y);
-    Rotation.Y = min(180.0f, Rotation.Y);
+    Rotation.Y = max(-89.0f, Rotation.Y);
+    Rotation.Y = min(89.0f, Rotation.Y);
+    Rotation.Z = max(-180.0f, Rotation.Z);
+    Rotation.Z = min(180.0f, Rotation.Z);
 
 	if (RotationChanged)
 	{
@@ -154,7 +153,7 @@ void UCameraControlWidget::PushToCamera()
 	 */
 	Camera->SetCameraType(CameraModeIndex == 0
 		                      ? ECameraViewType::ECT_Perspective
-		                      : ECameraViewType::ECT_Orthographic);
+		                      : ECameraViewType::ECT_Ortho_Back);
 
 	/*
 	 * @brief 카메라 파라미터 설정

@@ -196,6 +196,7 @@
     <ClInclude Include="Public\Mesh\StaticMesh\ObjImporter.h" />
     <ClInclude Include="Public\Mesh\StaticMesh\ObjManager.h" />
     <ClInclude Include="Public\Mesh\StaticMesh\StaticMesh.h" />
+    <ClInclude Include="ViewportTypes.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />

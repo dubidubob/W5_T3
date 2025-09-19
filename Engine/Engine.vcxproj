@@ -240,6 +240,7 @@
     <ClInclude Include="Public\\Render\UI\Window\\UIWindow.h" />
     <ClInclude Include="Public\\Utility\\LevelSerializer.h" />
     <ClInclude Include="Public\\Utility\\Metadata.h" />
+    <ClInclude Include="ViewportTypes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Global\Name.cpp" />

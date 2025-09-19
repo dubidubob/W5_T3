@@ -138,13 +138,13 @@ FMatrix FMatrix::RotationMatrixCamera(const FVector& InOtherVector)
 {
 	// UE 기준: Pitch(X) around Y-axis, Yaw(Y) around Z-axis, Roll(Z) around X-axis
 	// 적용 순서(행벡터): Yaw -> Pitch -> Roll
-	return RotationX(InOtherVector.Z) * RotationY(InOtherVector.X) * RotationZ(InOtherVector.Y);
+	return RotationZ(InOtherVector.Z) * RotationY(InOtherVector.Y) * RotationX(InOtherVector.X);
 }
 
 FMatrix FMatrix::RotationMatrixInverseCamera(const FVector& InOtherVector)
 {
 	// (Yaw*Pitch*Roll)^-1 = Roll^-1 * Pitch^-1 * Yaw^-1
-	return RotationZ(-InOtherVector.Y) * RotationY(-InOtherVector.X) * RotationX(-InOtherVector.Z);
+	return RotationZ(-InOtherVector.Z) * RotationY(-InOtherVector.Y) * RotationX(-InOtherVector.X);
 }
 
 /**
