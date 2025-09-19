@@ -15,5 +15,5 @@ public:
 	~UActorTerminationWidget() override;
 
 private:
-	AActor* SelectedActor;
+	class AActor* SelectedActor;
 };

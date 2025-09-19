@@ -48,11 +48,6 @@ public:
 	void Init(HWND InWindowHandle);
 	void Release();
 
-	// jft---------
-	void InitializeViewports();
-	D3D11_VIEWPORT vp[4];
-	//---------
-
 	void CreateRasterizerState();
 	void CreateDepthStencilState();
 	void CreateBlendState();
@@ -302,6 +297,7 @@ private:
 	void ReleasePrimitiveInstanceBuffers();
 
 	bool bIsResizing = false;
+	// jft
 	bool bIsWindowDivided = false;
 	///////////////////////////////////////////
 	// 카메라 VP Matrix 값 전달 받는 용도

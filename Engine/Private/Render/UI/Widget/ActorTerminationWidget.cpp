@@ -3,6 +3,7 @@
 #include "Level/Level.h"
 #include "Manager/Input/InputManager.h"
 #include "Manager/Level/LevelManager.h"
+#include "Mesh/Actor.h"
 
 IMPLEMENT_CLASS(UActorTerminationWidget, UWidget)
 
