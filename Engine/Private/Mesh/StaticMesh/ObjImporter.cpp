@@ -260,6 +260,10 @@ void FObjImporter::ConvertObjToStaticMesh(const FObjInfo& ObjInfo, FStaticMesh& 
 			if (NormalIndex < ObjInfo.Normals.size()) { Vertex.Normal = ObjInfo.Normals[NormalIndex]; }
 			else { Vertex.Normal = FVector(0.0f, 0.0f, 1.0f); }
 
+			Vertex.Color = { static_cast<float>(rand()) / RAND_MAX ,
+				static_cast<float>(rand()) / RAND_MAX ,
+				static_cast<float>(rand()) / RAND_MAX ,
+				1.0f };
 			VertexIndex = OutStaticMesh.Vertices.size();
 			OutStaticMesh.Vertices.Add(Vertex);
 			VertexMap[VertexKey] = VertexIndex;
