@@ -47,6 +47,19 @@ struct FStaticMesh
 	TArray<FStaticMeshSection> Sections;
 
 	FStaticMesh() = default;
+	~FStaticMesh()
+	{
+		if (VertexBuffer)
+		{
+			VertexBuffer->Release();
+			VertexBuffer = nullptr;
+		}
+		if (IndexBuffer)
+		{
+			IndexBuffer->Release();
+			IndexBuffer = nullptr;
+		}
+	}
 };
 
 class UStaticMesh : public UObject
