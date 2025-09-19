@@ -32,8 +32,12 @@ void UViewSettingsWidget::RenderWidget()
 
 	// 뷰 4분할 여부
 	bool bIsWindowDivided = Renderer->GetDividedWindow();
-	if (ImGui::Checkbox("4 분할 여부", &bIsWindowDivided))
+	if (ImGui::Checkbox("Viewport 분할", &bIsWindowDivided))
 	{
+		for (int i = 0; i < 4; i++)
+		{
+
+		}
 		Renderer->SetDividedWindow(bIsWindowDivided);
 	}
 

@@ -39,6 +39,7 @@ UEditor::~UEditor() = default;
 void UEditor::Update()
 {	
 	Camera.Update();
+	ViewportManager.UpdateSubCamera(&Camera);
 
 	ProcessMouseInput(ULevelManager::GetInstance().GetCurrentLevel());
 	ProcessKeyboardInput();
