@@ -10,7 +10,8 @@
 #include "Render/Renderer/LineBatchRenderer.h"
 #include "Editor/Editor.h"
 #include "Mesh/TextComponent.h"
-
+#include "Mesh/StaticMesh/StaticMesh.h"
+#include "Mesh/StaticMeshComponent.h"
 namespace
 {
 	struct FInstanceGPUData
@@ -463,17 +464,20 @@ void URenderer::RenderLevel()
 	const TArray<UPrimitiveComponent*>& PrimitiveComponents =
 		ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
 
+	// 여기서 랜더 
 	for (UPrimitiveComponent* PrimitiveComponent : PrimitiveComponents)
 	{
-		if (!PrimitiveComponent) { continue; }
-		if (!PrimitiveComponent->IsVisible()) { continue; }
+		UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(PrimitiveComponent);
+		StaticMeshComponent->GetStaticMesh();
 
+		if (!StaticMeshComponent) { continue; }
+		if (!StaticMeshComponent->IsVisible()) { continue; }
+		FStaticMesh* MeshData = StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset();
 		FPrimitiveBatchKey Key;
-		Key.VertexBuffer = PrimitiveComponent->GetReducedVertexBuffer();
-		Key.IndexBuffer = PrimitiveComponent->GetIndexBuffer();
-		Key.IndexCount = PrimitiveComponent->GetIndexNum();
-		Key.RenderState = PrimitiveComponent->GetRenderState();
-
+		Key.VertexBuffer = MeshData->VertexBuffer;
+		Key.IndexBuffer = MeshData->IndexBuffer;
+		Key.IndexCount = MeshData->IndexCount;
+		Key.RenderState = StaticMeshComponent->GetRenderState();
 
 		if (!Key.VertexBuffer || !Key.IndexBuffer || Key.IndexCount == 0)
 		{

@@ -126,6 +126,7 @@ bool FObjImporter::ParseObjFile(const FString& FileName, FObjInfo& OutObjInfo)
 				OutObjInfo.PositionIndices.Add(PosIndex - 1);
 				OutObjInfo.UVIndices.Add(UVIndex > 0 ? UVIndex - 1 : 0);
 				OutObjInfo.NormalIndices.Add(NormalIndex > 0 ? NormalIndex - 1 : 0);
+				int a = 0;
 			}
 			FaceCount++;
 		}

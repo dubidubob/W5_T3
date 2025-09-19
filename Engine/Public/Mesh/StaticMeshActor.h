@@ -10,7 +10,7 @@ class AStaticMeshActor : public AActor
 
 public:
 	AStaticMeshActor();
-
+	UStaticMeshComponent* GetStaticMeshCompoent() { return StaticMeshComponent; }
 private:
 	UStaticMeshComponent* StaticMeshComponent;
 	UTextComponent* TextComponent = nullptr;

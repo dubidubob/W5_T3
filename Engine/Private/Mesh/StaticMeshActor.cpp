@@ -13,8 +13,6 @@ AStaticMeshActor::AStaticMeshActor()
 {
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("StaticMeshComponent");
 	StaticMeshComponent->SetOwner(this);
-	// StaticMeshComponent 세팅 .
-
 
 	TextComponent = CreateDefaultSubobject<UTextComponent>("TextComponent");
 	TextComponent->SetOwner(this);
