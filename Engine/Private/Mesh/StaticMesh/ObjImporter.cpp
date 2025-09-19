@@ -230,41 +230,68 @@ bool FObjImporter::ParseMtlFile(const path& FilePath, TArray<FObjMaterialInfo>& 
 
 void FObjImporter::ConvertObjToStaticMesh(const FObjInfo& ObjInfo, FStaticMesh& OutStaticMesh)
 {
+	std::unordered_map<FString, uint32> VertexMap;
+
 	for (size_t Idx = 0; Idx < ObjInfo.PositionIndices.size(); ++Idx)
 	{
 		uint32 PosIndex = ObjInfo.PositionIndices[Idx];
 		uint32 UVIndex = ObjInfo.UVIndices[Idx];
 		uint32 NormalIndex = ObjInfo.NormalIndices[Idx];
 
-		// FNormalVertex 생성
-		FNormalVertex Vertex;
-		Vertex.Pos = ObjInfo.Positions[PosIndex];
-		Vertex.Tex = ObjInfo.UVs[UVIndex];
-		Vertex.Normal = ObjInfo.Normals[NormalIndex];
-		// OutStaticMesh에 추가
-		OutStaticMesh.Vertices.Add(Vertex);
-		OutStaticMesh.Indices.Add(Idx);
+		FString VertexKey = std::format("{}_{}_{}", PosIndex, UVIndex, NormalIndex);
+
+		uint32 VertexIndex;
+		auto It = VertexMap.find(VertexKey);
+
+		if (It != VertexMap.end())
+		{
+			// Already Vertex Exists
+			VertexIndex = It->second;
+		}
+		else
+		{
+			FNormalVertex Vertex;
+			Vertex.Pos = ObjInfo.Positions[PosIndex];
+
+			if (UVIndex < ObjInfo.UVs.size()) { Vertex.Tex = ObjInfo.UVs[UVIndex]; }
+			else { Vertex.Tex = FVector2(0.0f, 0.0f); }
+
+			if (NormalIndex < ObjInfo.Normals.size()) { Vertex.Normal = ObjInfo.Normals[NormalIndex]; }
+			else { Vertex.Normal = FVector(0.0f, 0.0f, 1.0f); }
+
+			VertexIndex = OutStaticMesh.Vertices.size();
+			OutStaticMesh.Vertices.Add(Vertex);
+			VertexMap[VertexKey] = VertexIndex;
+		}
+
+		// 실제 의미있는 인덱스 추가
+		OutStaticMesh.Indices.Add(VertexIndex);
 	}
 
+	// Material Section 처리 (기존과 동일하지만 주석 추가)
 	for (int32 Idx = 0; Idx < ObjInfo.MaterialGroups.Num(); ++Idx)
 	{
 		const auto& Group = ObjInfo.MaterialGroups[Idx];
 		FStaticMeshSection NewSection;
 		NewSection.MaterialIndex = Group.MaterialIndex;
-		NewSection.FirstIndex = Group.FirstFaceIndex * 3; // 1개 면 = 3개 정점
+		NewSection.FirstIndex = Group.FirstFaceIndex * 3; // 1개 면 = 3개 인덱스
 
 		if (Idx + 1 < ObjInfo.MaterialGroups.Num())
 		{
+			// 다음 그룹까지의 면 개수 * 3
 			NewSection.NumIndices = (ObjInfo.MaterialGroups[Idx + 1].FirstFaceIndex - Group.FirstFaceIndex) * 3;
 		}
 		else
 		{
-			NewSection.NumIndices = (ObjInfo.PositionIndices.Num() / 3 - Group.FirstFaceIndex) * 3;
+			// 마지막 그룹 - 끝까지의 면 개수 * 3
+			uint32 TotalFaces = ObjInfo.PositionIndices.size() / 3;
+			NewSection.NumIndices = (TotalFaces - Group.FirstFaceIndex) * 3;
 		}
 
 		OutStaticMesh.Sections.Add(NewSection);
 	}
 
+	// Material 정보 복사 (기존과 동일)
 	for (const FObjMaterialInfo& ObjMat : ObjInfo.Materials)
 	{
 		FStaticMaterial StaticMat;
@@ -285,4 +312,6 @@ void FObjImporter::ConvertObjToStaticMesh(const FObjInfo& ObjInfo, FStaticMesh& 
 
 		OutStaticMesh.Materials.Add(StaticMat);
 	}
+
+	UE_LOG("Vertex optimization: %d indices -> %d unique vertices",	ObjInfo.PositionIndices.size(), OutStaticMesh.Vertices.size());
 }
