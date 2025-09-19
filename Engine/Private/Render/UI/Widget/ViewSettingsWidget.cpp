@@ -1,13 +1,20 @@
 #include "pch.h"
 #include "Render/UI/Widget/ViewSettingsWidget.h"
 #include "Render/Renderer/Renderer.h"
+#include "Manager/Viewport/ViewportManager.h"
 
+
+// Viewport Mode, Must Sync with ViewportManager Enum Classes
+static const char* GViewTypeLabels[] = {
+	"Perspective", "OrthoGraphic"
+};
 // Camera Mode
 static const char* CameraMode[] = {
 	"Lit",
 	"Unlit",
 	"WireFrame",
 };
+
 
 IMPLEMENT_CLASS(UViewSettingsWidget, UWidget)
 
@@ -32,9 +39,36 @@ void UViewSettingsWidget::RenderWidget()
 
 	// 뷰 4분할 여부
 	bool bIsWindowDivided = Renderer->GetDividedWindow();
-	if (ImGui::Checkbox("4 분할 여부", &bIsWindowDivided))
+	if (ImGui::Checkbox("Viewport 분할", &bIsWindowDivided))
 	{
 		Renderer->SetDividedWindow(bIsWindowDivided);
+	}
+	if (bIsWindowDivided)
+	{
+		FViewportContext* ViewportArray = ViewportManager->GetViewports();
+
+		for (int i = 0; i < 4; i++)
+		{
+			ImGui::PushID(i);
+			ImGui::Text("Viewport %d", i);
+			int viewTypeIdx = static_cast<int>(ViewportArray[i].ViewType);
+			int renderModeIdx = static_cast<int>(ViewportArray[i].RenderMode);
+
+			if (ImGui::Combo("Projection", &viewTypeIdx, GViewTypeLabels, IM_ARRAYSIZE(GViewTypeLabels)))
+			{
+				auto NewType = static_cast<ECameraViewType>(viewTypeIdx);
+				ViewportManager->SetProjectionMode(i, NewType);
+			}
+
+			if (ImGui::Combo("Render Mode", &renderModeIdx, CameraMode, IM_ARRAYSIZE(CameraMode)))
+			{
+				auto NewMode = static_cast<EViewModeIndex>(renderModeIdx);
+				ViewportManager->SetViewMode(i, NewMode);
+			}
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::PopID();
+		}
 	}
 
 	// 그리드 간격

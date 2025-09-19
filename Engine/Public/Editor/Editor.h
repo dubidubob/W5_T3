@@ -5,11 +5,12 @@
 #include "Editor/Axis.h"
 #include "Core/Object.h"
 #include "Editor/ObjectPicker.h"
+#include "Manager/Viewport/ViewportManager.h"
 
 struct FQuat;
 
-class ULineBatchRenderer;
-
+// class ULineBatchRenderer;
+class URenderer;
 class UEditor : public UObject
 {
 	DECLARE_CLASS(UEditor, UObject)
@@ -26,6 +27,9 @@ public:
 	// void RenderEditor();
 	void RenderEditorBatched();
 
+	/** jft, ViewportManager Getter*/
+	UViewportManager* GetViewportManager() { return &ViewportManager; }
+
 private:
 
 	void ProcessMouseInput(ULevel* InLevel);
@@ -39,6 +43,8 @@ private:
 
 	UCamera Camera;
 	UObjectPicker ObjectPicker;
+
+	UViewportManager ViewportManager;
 
 	const float MinScale = 0.01f;
 	UGizmo Gizmo;

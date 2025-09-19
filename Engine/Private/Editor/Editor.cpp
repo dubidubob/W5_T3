@@ -21,28 +21,33 @@ IMPLEMENT_CLASS(UEditor, UObject)
 UEditor::UEditor()
 {
 	ObjectPicker.SetCamera(&Camera);
+	ViewportManager.SetSubCamera(&Camera);
 
 	// Set Camera to Control Panel
 	auto& UIManager = UUIManager::GetInstance();
+	
 	UCameraControlWidget* CameraControlWidget =
 		Cast<UCameraControlWidget>(UIManager.FindWidget("UCameraControlWidget"));
 	CameraControlWidget->SetCamera(&Camera);
+
 	UViewSettingsWidget* ViewSettingsWidget =
 		Cast<UViewSettingsWidget>(UIManager.FindWidget("UViewSettingsWidget"));
 	ViewSettingsWidget->SetGrid(&Grid);
 	ViewSettingsWidget->SetRenderer(&URenderer::GetInstance());
+	ViewSettingsWidget->SetViewportManager(&ViewportManager);
 };
 
 UEditor::~UEditor() = default;
 
 void UEditor::Update()
-{
-	auto& Renderer = URenderer::GetInstance();
+{	
 	Camera.Update();
+	ViewportManager.UpdateSubCamera(&Camera);
 
 	ProcessMouseInput(ULevelManager::GetInstance().GetCurrentLevel());
 	ProcessKeyboardInput();
 
+	auto& Renderer = URenderer::GetInstance();
 	Renderer.UpdateConstant(Camera.GetFViewProjConstants());
 }
 

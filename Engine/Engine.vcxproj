@@ -156,6 +156,7 @@
     <ClInclude Include="Global\NameTable.h" />
     <ClInclude Include="Global\Quat.h" />
     <ClInclude Include="Public\Core\ObjectIterator.h" />
+    <ClInclude Include="Public\Manager\Viewport\ViewportManager.h" />
     <ClInclude Include="Public\Math\AABB.h" />
     <ClInclude Include="Public\Mesh\StaticMesh\ObjImporter.h" />
     <ClInclude Include="Public\Mesh\StaticMesh\ObjManager.h" />
@@ -240,6 +241,7 @@
   <ItemGroup>
     <ClCompile Include="Global\Name.cpp" />
     <ClCompile Include="Global\NameTable.cpp" />
+    <ClCompile Include="Private\Manager\Viewport\ViewportManager.cpp" />
     <ClCompile Include="Private\Math\AABB.cpp" />
     <ClCompile Include="Private\Mesh\StaticMesh\ObjImporter.cpp" />
     <ClCompile Include="Private\Mesh\StaticMesh\ObjManager.cpp" />
