@@ -31,9 +31,10 @@ public:
 	UViewportManager* GetViewportManager() { return ViewportManager; }
 
 private:
-
-	void ProcessMouseInput(ULevel* InLevel);
 	void ProcessKeyboardInput();
+	void ProcessMouseInput(ULevel* InLevel);
+
+	void HandleGizmo(ULevel* InLevel, FRay InWorldRay);
 	TArray<class UPrimitiveComponent*> FindCandidatePrimitives(ULevel* InLevel);
 
 	FVector GetGizmoDragLocation(const FRay& WorldRay);

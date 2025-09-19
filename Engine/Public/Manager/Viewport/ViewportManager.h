@@ -12,7 +12,13 @@ class UViewportManager : public UObject
 	DECLARE_CLASS(UViewportManager, UObject)
 
 public:
-	UViewportManager() = default;
+	UViewportManager()
+	{
+		// jft
+		ViewportRatio.X = 0.5f;
+		ViewportRatio.Y = 0.5f;
+	}
+
 	~UViewportManager();
 
 	void SetSubCamera(UCamera* InCamera);
@@ -24,7 +30,14 @@ public:
 
 	FViewportContext* GetViewports() { return Viewports; }
 
+	FVector GetSelectedViewportMousePositionNdc(const POINT& WindowSize, const POINT& InMouse);
+	UCamera* GetSelectedViewportCamera() { return Viewports[SelectedViewportIdx].Camera; }
+
+	FVector GetViewportRatio() { return ViewportRatio; }
+
 private:
 	FViewportContext Viewports[4];
+	FVector ViewportRatio;
+	int SelectedViewportIdx;
 };
 
