@@ -80,10 +80,10 @@ void UCamera::Update()
 
 	switch (CameraViewType)
 	{
-	case ECameraViewType::ECT_Perspective:
+	case EViewportViewType::Perspective:
 		UpdateMatrixByPers();
 		break;
-	case ECameraViewType::ECT_Ortho_Front:
+	default : /* Orthographic Mode */
 		UpdateMatrixByOrth();
 		break;
 	}
@@ -157,40 +157,56 @@ void UCamera::UpdateMatrixByOrth()
 	ViewProjConstants.Projection = P;
 }
 
-void UCamera::SetCameraType(const ECameraViewType InCameraType)
+// jft : magic number
+void UCamera::SetCameraType(const EViewportViewType InCameraType)
 {
 	CameraViewType = InCameraType;
 
-	if (InCameraType != ECameraViewType::ECT_Perspective)
-	{ // orthographic setting
-		FVector MoveAxis; // z u, x f, y r
-		switch (InCameraType)
-		{
-		case ECameraViewType::ECT_Ortho_Back :
-			MoveAxis = FVector(-1.0f* OrthoDistance, 0, 0);
-			SetLocation(MoveAxis);
-			SetRotation(FVector(0.0f, 0.0f, 0.0f));
-			break;
-
-		case ECameraViewType::ECT_Ortho_Front:
-			MoveAxis = FVector(1.0f * OrthoDistance, 0, 0);
-			SetLocation(MoveAxis);
-			SetRotation(FVector(0.0f, 0.0f, 0.0f));
-			break;
-
-		case ECameraViewType::ECT_Ortho_Top:
-			MoveAxis = FVector(0, 0, 1.0f * OrthoDistance);
-			SetLocation(MoveAxis);
-			SetRotation(FVector(0.0f, 0.0f, 0.0f));
-			break;
-
-		case ECameraViewType::ECT_Ortho_Bottom:
-			MoveAxis = FVector(0, 0, -1.0f * OrthoDistance);
-			SetLocation(MoveAxis);
-			SetRotation(FVector(0.0f, 0.0f, 0.0f));
-			break;
-		}
+	if (InCameraType == EViewportViewType::Perspective)
+	{
+		// Perspective camera logic (if any)
+		return;
 	}
+
+	FVector MoveAxis = FVector::ZeroVector;
+	FVector CameraRotation = FVector::ZeroVector;
+
+	const float RotateStep = 90.0f;
+	switch (InCameraType)
+	{
+	case EViewportViewType::Front:
+		MoveAxis = FVector(OrthoDistance, 0.0f, 0.0f);
+		CameraRotation = FVector(0.0f, 0.0f, -RotateStep * 2);
+		break;
+
+	case EViewportViewType::Back:
+		MoveAxis = FVector(-OrthoDistance, 0.0f, 0.0f);
+		CameraRotation = FVector(0.0f, 0.0f, 0.0f);
+		break;
+
+	case EViewportViewType::Top:
+		MoveAxis = FVector(0.0f, 0.0f, OrthoDistance);
+		CameraRotation = FVector(0.0f, RotateStep, 0.0f);
+		break;
+
+	case EViewportViewType::Bottom:
+		MoveAxis = FVector(0.0f, 0.0f, -OrthoDistance);
+		CameraRotation = FVector(0.0f, -RotateStep, 0.0f);
+		break;
+
+	case EViewportViewType::Left:
+		MoveAxis = FVector(0.0f, -OrthoDistance, 0.0f);
+		CameraRotation = FVector(0.0f, 0.0f, RotateStep);
+		break;
+
+	case EViewportViewType::Right:
+		MoveAxis = FVector(0.0f, OrthoDistance, 0.0f);
+		CameraRotation = FVector(0.0f, 0.0f, -RotateStep);
+		break;
+	}
+
+	SetLocation(MoveAxis);
+	SetRotation(CameraRotation);
 }
 
 FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
@@ -204,7 +220,8 @@ FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
 	// (View * B)^-1 = B^-1 * View^-1
 	Result.View = (FMatrix::BasisUEToLHY() * R) * T;
 
-	if (CameraViewType != ECameraViewType::ECT_Perspective)
+	/*Ortho Matrix*/
+	if (CameraViewType != EViewportViewType::Perspective) 
 	{
 		const float OrthoHeight = OrthoWidth / Aspect;
 		const float Left = -OrthoWidth * 0.5f;
@@ -224,7 +241,7 @@ FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
 		P.Data[3][3] = 1.0f;
 		Result.Projection = P;
 	}
-	else if ((CameraViewType == ECameraViewType::ECT_Perspective))
+	else if ((CameraViewType == EViewportViewType::Perspective))
 	{
 		const float FovRadian = FVector::GetDegreeToRadian(FovY);
 		const float F = 1.0f / std::tanf(FovRadian * 0.5f);
@@ -286,7 +303,7 @@ FRay UCamera::ConvertToWorldRay(float NdcX, float NdcY) const
 		ViewProjMatrix.View.Data[3][2],
 		ViewProjMatrix.View.Data[3][3]);
 
-	if (CameraViewType == ECameraViewType::ECT_Perspective)
+	if (CameraViewType == EViewportViewType::Perspective)
 	{
 		FVector4 DirectionVector = WorldFar - CameraPosition;
 		DirectionVector.Normalize();
@@ -294,7 +311,7 @@ FRay UCamera::ConvertToWorldRay(float NdcX, float NdcY) const
 		Ray.Origin = CameraPosition;
 		Ray.Direction = DirectionVector;
 	}
-	else if (CameraViewType == ECameraViewType::ECT_Ortho_Front)
+	else if (CameraViewType != EViewportViewType::Perspective)
 	{
 		FVector4 DirectionVector = WorldFar - WorldNear;
 		DirectionVector.Normalize();
@@ -406,10 +423,10 @@ void UCamera::RefreshViewMatrices()
 
 	switch (CameraViewType)
 	{
-		case ECameraViewType::ECT_Perspective:
+		case EViewportViewType::Perspective:
 			UpdateMatrixByPers();
 			break;
-		case ECameraViewType::ECT_Ortho_Front:
+		default : /* Orthographic */
 			UpdateMatrixByOrth();
 			break;
 	}

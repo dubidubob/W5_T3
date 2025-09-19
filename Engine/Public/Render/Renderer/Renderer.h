@@ -5,6 +5,7 @@
 #include "Editor/EditorPrimitive.h"
 // jft
 #include "Editor/Camera.h"
+#include "ViewportTypes.h"
 
 class UPipeline;
 class UDeviceResources;
@@ -126,8 +127,8 @@ public:
 	void UpdateInstance(const TArray<FTextInstance>* Instance);
 	void UpdateInstanceDrawConstants(bool bUseInstancing, uint32 BaseInstanceOffset, uint32 InstanceCount) const;
 
-	void SetViewMode(EViewModeIndex InViewMode) { CurrentViewMode = InViewMode; }
-	EViewModeIndex GetViewMode(EViewModeIndex InViewMode) const { return CurrentViewMode; }
+	void SetViewMode(EViewportRenderMode InViewMode) { CurrentRenderMode = InViewMode; }
+	EViewportRenderMode GetViewMode(EViewportRenderMode InViewMode) const { return CurrentRenderMode; }
 
 	/** Show Flags management */
 	void SetShowFlags(EEngineShowFlags InShowFlags) { CurrentShowFlags = InShowFlags; }
@@ -169,7 +170,7 @@ public:
 private:
 	UPipeline* Pipeline = nullptr;
 	UDeviceResources* DeviceResources = nullptr;
-	EViewModeIndex CurrentViewMode = EViewModeIndex::Lit;
+	EViewportRenderMode CurrentRenderMode = EViewportRenderMode::Lit;
 	EEngineShowFlags CurrentShowFlags = EEngineShowFlags::SF_Default;
 	TArray<UPrimitiveComponent*> PrimitiveComponents;
 
