@@ -27,10 +27,12 @@ void USceneIOWidget::RenderWidget()
 
 	if (ImGui::Button("Save Scene", ImVec2(90, 20)))
 	{
+		// Create Dialog Modal
 		path FilePath = OpenSaveFileDialog();
-			UE_LOG("Save Scene 호출됨");
+		UE_LOG("Save Scene 호출됨"); // TODO:지우세요
 		if (!FilePath.empty())
 		{
+			// Call LevelManager::SaveCurrentLevel()
 			SaveLevel(FilePath.string());
 		}
 	}
@@ -49,6 +51,7 @@ void USceneIOWidget::RenderWidget()
 		path FilePath = OpenLoadFileDialog();
 		if (!FilePath.empty())
 		{
+			// Call LevelManager::LoadLevel()
 			LoadLevel(FilePath.string());
 		}
 	}
@@ -232,14 +235,16 @@ path USceneIOWidget::OpenSaveFileDialog()
     ofn.hwndOwner = GetActiveWindow();  // 현재 활성 윈도우를 부모로 설정
     ofn.lpstrFile = szFile;
     ofn.nMaxFile = sizeof(szFile) / sizeof(wchar_t);
-    ofn.lpstrFilter = L"JSON Files\0*.json\0All Files\0*.*\0";
+    //ofn.lpstrFilter = L"JSON Files\0*.json\0All Files\0*.*\0";
+    ofn.lpstrFilter = L"Scene Files\0*.Scene\0All Files\0*.*\0";
     ofn.nFilterIndex = 1;
     ofn.lpstrFileTitle = nullptr;
     ofn.nMaxFileTitle = 0;
     ofn.lpstrInitialDir = nullptr;
     ofn.lpstrTitle = L"Save Level File";
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_EXPLORER | OFN_HIDEREADONLY;
-    ofn.lpstrDefExt = L"json";
+    //ofn.lpstrDefExt = L"json";
+    ofn.lpstrDefExt = L"Scene";
 
     // Modal 다이얼로그 표시 - 이 함수가 리턴될 때까지 다른 입력 차단
     UE_LOG("SceneIO: Opening Save Dialog (Modal)...");
@@ -269,7 +274,7 @@ path USceneIOWidget::OpenLoadFileDialog()
     ofn.hwndOwner = GetActiveWindow();  // 현재 활성 윈도우를 부모로 설정
     ofn.lpstrFile = szFile;
     ofn.nMaxFile = sizeof(szFile) / sizeof(wchar_t);
-    ofn.lpstrFilter = L"JSON Files\0*.json\0All Files\0*.*\0";
+    ofn.lpstrFilter = L"Scene Files\0*.Scene\0All Files\0*.*\0";
     ofn.nFilterIndex = 1;
     ofn.lpstrFileTitle = nullptr;
     ofn.nMaxFileTitle = 0;
