@@ -1,6 +1,6 @@
 #pragma once
 
-class FStaticMesh;
+struct FStaticMesh;
 class UStaticMesh;
 
 class FObjManager

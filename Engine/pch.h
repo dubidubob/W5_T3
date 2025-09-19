@@ -9,6 +9,7 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include "DirectXTK/Inc/DDSTextureLoader.h"
+#include "DirectXTK/Inc/WICTextureLoader.h"
 
 // Standard Library
 #include <cmath>

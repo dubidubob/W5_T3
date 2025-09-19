@@ -3,6 +3,19 @@
 struct FNormalVertex;
 struct FStaticMesh;
 
+struct FObjMaterialInfo
+{
+	FString Name;
+	FVector AmbientColor;   // Ka
+	FVector DiffuseColor;   // Kd
+	FVector SpecularColor;  // Ks
+	float SpecularExponent; // Ns
+	float Alpha; // d or Tr
+
+	FString DiffuseTexturePath; // map_Kd
+	FString NormalTexturePath;  // map_bump or norm
+};
+
 struct FObjInfo
 {
 	TArray<FVector> Positions;
@@ -11,6 +24,16 @@ struct FObjInfo
 	TArray<uint32> PositionIndices;
 	TArray<uint32> UVIndices;
 	TArray<uint32> NormalIndices;
+
+	// OBJ의 Material/Group 정보를 저장하는 구조체
+	struct FMaterialGroup
+	{
+		int32 MaterialIndex = -1; // Materials 배열의 인덱스
+		uint32 FirstFaceIndex;
+	};
+
+	TArray<FMaterialGroup> MaterialGroups;
+	TArray<FObjMaterialInfo> Materials;
 };
 
 class FObjImporter
@@ -28,6 +51,10 @@ private:
 	* @brief Parsing Obj File, To FObjInfo
 	*/
 	static bool ParseObjFile(const FString& FileName, FObjInfo& OutObjInfo);
+	/**
+	* @brief Parsing Obj File, To FObjInfo
+	*/
+	static bool ParseMtlFile(const path& FilePath, TArray<FObjMaterialInfo>& OutMaterials);
 	/**
 	* @brief FObjInfo To FStaticMesh
 	*/

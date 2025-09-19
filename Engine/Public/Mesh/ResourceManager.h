@@ -28,7 +28,6 @@ public:
 	/////////////////////////////////////////
 
 	void CreateTextSampler();
-	ID3D11ShaderResourceView* LoadTexture(const FString& Path);
 	ID3D11ShaderResourceView* GetTexture(const FString& Path);
 
 	ID3D11SamplerState* GetSamplerState(ESamplerType Type);
@@ -37,6 +36,9 @@ public:
 	const TArray<FCharacterInfo>& GetCharInfos();
 
 private:
+	ID3D11ShaderResourceView* LoadDDSTexture(const FString& Path);
+	ID3D11ShaderResourceView* LoadWICImage(const FString& Path);
+
 	void LoadCharInfoMap();
 
 	TMap<EPrimitiveType, TArray<FVertex>*> VertexData;
