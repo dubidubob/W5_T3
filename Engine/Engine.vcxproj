@@ -158,6 +158,9 @@
     <ClInclude Include="Public\Core\ObjectIterator.h" />
     <ClInclude Include="Public\Manager\Viewport\ViewportManager.h" />
     <ClInclude Include="Public\Math\AABB.h" />
+    <ClInclude Include="Public\Mesh\MeshComponent.h" />
+    <ClInclude Include="Public\Mesh\StaticMeshActor.h" />
+    <ClInclude Include="Public\Mesh\StaticMeshComponent.h" />
     <ClInclude Include="Public\Mesh\StaticMesh\ObjImporter.h" />
     <ClInclude Include="Public\Mesh\StaticMesh\ObjManager.h" />
     <ClInclude Include="Public\Mesh\StaticMesh\StaticMesh.h" />
@@ -244,6 +247,9 @@
     <ClCompile Include="Global\NameTable.cpp" />
     <ClCompile Include="Private\Manager\Viewport\ViewportManager.cpp" />
     <ClCompile Include="Private\Math\AABB.cpp" />
+    <ClCompile Include="Private\Mesh\MeshComponent.cpp" />
+    <ClCompile Include="Private\Mesh\StaticMeshActor.cpp" />
+    <ClCompile Include="Private\Mesh\StaticMeshComponent.cpp" />
     <ClCompile Include="Private\Mesh\StaticMesh\ObjImporter.cpp" />
     <ClCompile Include="Private\Mesh\StaticMesh\ObjManager.cpp" />
     <ClCompile Include="Private\Mesh\StaticMesh\StaticMesh.cpp" />
@@ -337,6 +343,9 @@
     <FxCompile Include="Asset\Shader\TextShader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Data\Shader\StaticMeshShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

@@ -37,10 +37,29 @@ struct FStaticMesh
 	TArray<FNormalVertex> Vertices;
 	TArray<uint32> Indices;
 
+	ID3D11Buffer* VertexBuffer = nullptr; 
+	ID3D11Buffer* IndexBuffer = nullptr;
+
+	uint32 VertexCount = 0;
+	uint32 IndexCount = 0;
+	uint32 ByteWidth = 0;
 	TArray<FStaticMaterial> Materials;
 	TArray<FStaticMeshSection> Sections;
 
 	FStaticMesh() = default;
+	~FStaticMesh()
+	{
+		if (VertexBuffer)
+		{
+			VertexBuffer->Release();
+			VertexBuffer = nullptr;
+		}
+		if (IndexBuffer)
+		{
+			IndexBuffer->Release();
+			IndexBuffer = nullptr;
+		}
+	}
 };
 
 class UStaticMesh : public UObject
@@ -58,3 +77,6 @@ public:
 private:
 	FStaticMesh* StaticMeshAsset;
 };
+
+
+

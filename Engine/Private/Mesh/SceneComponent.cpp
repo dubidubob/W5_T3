@@ -205,7 +205,7 @@ FAABB UPrimitiveComponent::GetWorldBounds() const
 //{
 //	return GetLocalBounds();
 //}
-
+//
 //void UPrimitiveComponent::Render(const URenderer& Renderer) const
 //{
 //	Renderer.RenderPrimitive(Vertexbuffer, NumVertices);

@@ -14,6 +14,7 @@
 #include "Level/Level.h"
 #include "Render/UI/Widget/CameraControlWidget.h"
 #include "Render/UI/Widget/ViewSettingsWidget.h"
+#include "Mesh/StaticMeshComponent.h"
 #include "Manager/Viewport/ViewportManager.h"
 
 IMPLEMENT_CLASS(UEditor, UObject)
@@ -102,9 +103,15 @@ void UEditor::RenderEditorBatched()
 				for (UPrimitiveComponent* Prim : Primitives)
 				{
 					if (!Prim) { continue; }
-					FAABB Bounds = Prim->GetWorldBounds();
-					if (!Bounds.IsValid()) { continue; }
-					LineBatch.AddAABB(Bounds.Min, Bounds.Max, FVector4(0, 1, 0, 1));
+					UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Prim);
+					if (StaticMeshComponent)
+					{
+						FAABB Bounds = StaticMeshComponent->GetWorldBounds();
+						//FAABB Bounds = Prim->GetWorldBounds();
+						if (!Bounds.IsValid()) { continue; }
+						LineBatch.AddAABB(Bounds.Min, Bounds.Max, FVector4(0, 1, 0, 1));
+
+					}
 				}
 			}
 		}

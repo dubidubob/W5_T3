@@ -16,19 +16,27 @@ UPipeline::~UPipeline()
 /// @brief 파이프라인 상태를 업데이트
 void UPipeline::UpdatePipeline(FPipelineInfo Info)
 {
-	DeviceContext->IASetPrimitiveTopology(Info.Topology);
-	if (Info.InputLayout)
-		DeviceContext->IASetInputLayout(Info.InputLayout);
-	if (Info.VertexShader)
-		DeviceContext->VSSetShader(Info.VertexShader, nullptr, 0);
-	if (Info.RasterizerState)
-		DeviceContext->RSSetState(Info.RasterizerState);
-	if (Info.DepthStencilState)
-		DeviceContext->OMSetDepthStencilState(Info.DepthStencilState, 0);
-	if (Info.PixelShader)
-		DeviceContext->PSSetShader(Info.PixelShader, nullptr, 0);
-	if (Info.BlendState)
-		DeviceContext->OMSetBlendState(Info.BlendState, nullptr, 0xffffffff);
+    DeviceContext->IASetPrimitiveTopology(Info.Topology);
+    if (Info.InputLayout)
+        DeviceContext->IASetInputLayout(Info.InputLayout);
+    if (Info.VertexShader)
+        DeviceContext->VSSetShader(Info.VertexShader, nullptr, 0);
+    if (Info.RasterizerState)
+        DeviceContext->RSSetState(Info.RasterizerState);
+    if (Info.DepthStencilState)
+        DeviceContext->OMSetDepthStencilState(Info.DepthStencilState, 0);
+    if (Info.PixelShader)
+        DeviceContext->PSSetShader(Info.PixelShader, nullptr, 0);
+    // Always set a valid blend state to avoid state leakage between passes.
+    // If Info.BlendState is null, explicitly disable blending.
+    if (Info.BlendState)
+    {
+        DeviceContext->OMSetBlendState(Info.BlendState, nullptr, 0xffffffff);
+    }
+    else
+    {
+        DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+    }
 }
 
 /// @brief 정점 버퍼를 바인딩
