@@ -7,19 +7,13 @@
 
 IMPLEMENT_CLASS(UViewSettingsWidget, UWidget)
 
-UViewSettingsWidget::UViewSettingsWidget() : Grid(nullptr)
-{
-}
+UViewSettingsWidget::UViewSettingsWidget() : Grid(nullptr) {}
 
 UViewSettingsWidget::~UViewSettingsWidget() = default;
 
-void UViewSettingsWidget::Initialize()
-{
-}
+void UViewSettingsWidget::Initialize() {}
 
-void UViewSettingsWidget::Update()
-{
-}
+void UViewSettingsWidget::Update() {}
 
 void UViewSettingsWidget::RenderWidget()
 {

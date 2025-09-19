@@ -21,6 +21,7 @@ void UViewportManager::SetSubCamera(UCamera* InCamera)
 	int CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
 	for (int i = 0; i < CameraCnt; i++)
 	{
+		if (Viewports[i].ViewType != EViewportViewType::Perspective) continue;
 		Viewports[i].Camera = NewObject<UCamera>();
 		Viewports[i].Camera->CopyFrom(*InCamera);
 	}
@@ -31,6 +32,7 @@ void UViewportManager::UpdateSubCamera(UCamera* InCamera)
 	int CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
 	for (int i = 0; i < CameraCnt; i++)
 	{
+		if (Viewports[i].ViewType != EViewportViewType::Perspective) continue;
 		Viewports[i].Camera->CopyFrom(*InCamera);
 	}
 }
