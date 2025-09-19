@@ -2,7 +2,7 @@
 #include "Render/UI/Widget/ViewSettingsWidget.h"
 #include "Render/Renderer/Renderer.h"
 #include "Manager/Viewport/ViewportManager.h"
-
+#include "Editor/Grid.h"
 
 // Viewport Mode, Must Sync with ViewportManager Enum Classes
 static const char* GViewTypeLabels[] = {

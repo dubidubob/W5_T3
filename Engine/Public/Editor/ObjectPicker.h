@@ -16,7 +16,7 @@ public:
 	UObjectPicker();
 	void SetCamera(UCamera* Camera);
 	UPrimitiveComponent* PickPrimitive( const FRay& WorldRay, TArray<UPrimitiveComponent*> Candidate, float* Distance);
-	void PickGizmo(const FRay& WorldRay, UGizmo& Gizmo, FVector& CollisionPoint);
+	void PickGizmo(const FRay& WorldRay, UGizmo* Gizmo, FVector& CollisionPoint);
 	bool IsRayCollideWithPlane(const FRay& WorldRay, FVector PlanePoint, FVector Normal, FVector& PointOnPlane);
 
 private:

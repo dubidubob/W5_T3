@@ -1,16 +1,16 @@
 #pragma once
 #include "Editor/Camera.h"
-#include "Editor/Gizmo.h"
-#include "Editor/Grid.h"
-#include "Editor/Axis.h"
 #include "Core/Object.h"
-#include "Editor/ObjectPicker.h"
-#include "Manager/Viewport/ViewportManager.h"
 
 struct FQuat;
-
-// class ULineBatchRenderer;
 class URenderer;
+class UObjectPicker;
+class UViewportManager;
+class UGizmo;
+class UAxis;
+class UGrid;
+class ULevel;
+
 class UEditor : public UObject
 {
 	DECLARE_CLASS(UEditor, UObject)
@@ -28,26 +28,25 @@ public:
 	void RenderEditorBatched();
 
 	/** jft, ViewportManager Getter*/
-	UViewportManager* GetViewportManager() { return &ViewportManager; }
+	UViewportManager* GetViewportManager() { return ViewportManager; }
 
 private:
 
 	void ProcessMouseInput(ULevel* InLevel);
 	void ProcessKeyboardInput();
-	TArray<UPrimitiveComponent*> FindCandidatePrimitives(ULevel* InLevel);
+	TArray<class UPrimitiveComponent*> FindCandidatePrimitives(ULevel* InLevel);
 
 	FVector GetGizmoDragLocation(const FRay& WorldRay);
 	FVector GetGizmoDragRotation(const FRay& WorldRay);
 	FQuat GetGizmoDragRotationQuat(const FRay& WorldRay);
 	FVector GetGizmoDragScale(const FRay& WorldRay);
 
-	UCamera Camera;
-	UObjectPicker ObjectPicker;
-
-	UViewportManager ViewportManager;
+	UCamera* Camera;
+	UObjectPicker* ObjectPicker;
+	UViewportManager* ViewportManager;
 
 	const float MinScale = 0.01f;
-	UGizmo Gizmo;
-	UAxis Axis;
-	UGrid Grid;
+	UGizmo* Gizmo;
+	UAxis* Axis;
+	UGrid* Grid;
 };

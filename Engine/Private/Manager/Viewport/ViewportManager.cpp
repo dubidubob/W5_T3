@@ -2,12 +2,26 @@
 #include "Manager/Viewport/ViewportManager.h"
 #include "Editor/Camera.h"
 
+IMPLEMENT_CLASS(UViewportManager, UObject)
+
+UViewportManager::~UViewportManager()
+{
+	int CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
+	for (int i = 0; i < CameraCnt; i++)
+	{
+		if (Viewports[i].Camera)
+		{
+			delete Viewports[i].Camera;
+		}
+	}
+}
+
 void UViewportManager::SetSubCamera(UCamera* InCamera)
 {
 	int CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
 	for (int i = 0; i < CameraCnt; i++)
 	{
-		Viewports[i].Camera = new UCamera();
+		Viewports[i].Camera = NewObject<UCamera>();
 		Viewports[i].Camera->CopyFrom(*InCamera);
 	}
 }

@@ -10,6 +10,7 @@
 #include "Render/Renderer/LineBatchRenderer.h"
 #include "Editor/Editor.h"
 #include "Mesh/TextComponent.h"
+#include "Manager/Viewport/ViewportManager.h"
 
 namespace
 {

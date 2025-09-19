@@ -7,9 +7,14 @@ struct FViewportContext {
 	EViewModeIndex RenderMode;
 };
 
-class UViewportManager
+class UViewportManager : public UObject
 {
+	DECLARE_CLASS(UViewportManager, UObject)
+
 public:
+	UViewportManager() = default;
+	~UViewportManager();
+
 	void SetSubCamera(UCamera* InCamera);
 	void UpdateSubCamera(UCamera* InCamera);
 	void UpdateViewportRects(const POINT& WindowSize);
