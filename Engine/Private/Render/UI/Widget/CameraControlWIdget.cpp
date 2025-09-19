@@ -5,19 +5,13 @@
 
 IMPLEMENT_CLASS(UCameraControlWidget, UWidget)
 
-UCameraControlWidget::UCameraControlWidget()
-{
-}
+UCameraControlWidget::UCameraControlWidget() {}
 
 UCameraControlWidget::~UCameraControlWidget() = default;
 
-void UCameraControlWidget::Initialize()
-{
-}
+void UCameraControlWidget::Initialize() {}
 
-void UCameraControlWidget::Update()
-{
-}
+void UCameraControlWidget::Update() {}
 
 void UCameraControlWidget::RenderWidget()
 {
@@ -58,8 +52,9 @@ void UCameraControlWidget::RenderWidget()
 
 	ImGui::Spacing();
 
+	CameraModeIndex = static_cast<int>(Camera->GetCameraType());
 	if (ImGui::Combo(
-		"Mode",
+		"##Camera View Mode",
 		&CameraModeIndex,
 		ViewportUI::ViewTypeLabels.data(),
 		 (ViewportUI::ViewTypeLabels.size())))
@@ -67,41 +62,30 @@ void UCameraControlWidget::RenderWidget()
 		PushToCamera();
 	}
 
+	ImGui::Spacing();
+
 	auto& Location = Camera->GetLocation();
 	auto& Rotation = Camera->GetRotation();
 
-	if (ImGui::DragFloat3("Camera Location", &Location.X, 0.05f))
-	{
-		// 위치 바뀌면 바로 뷰 갱신
-		if (CameraModeIndex == 0)
-		{
-			Camera->UpdateMatrixByPers();
-		}
-		else
-		{
-			Camera->UpdateMatrixByOrth();
-		}
-	}
+	ImGui::DragFloat3("Camera Location", &Location.X, 0.05f);
 
     // 회전 입력 및 보정 (degree 단위)
     bool RotationChanged = false;
     float rotDisplay[3] = { Rotation.X, Rotation.Y, Rotation.Z }; // 현재 UI 표시 순서 유지
     RotationChanged |= ImGui::DragFloat3("Camera Rotation", rotDisplay, 0.1f);
-    // UI -> 내부 순서 반영
-    Rotation.X = rotDisplay[0]; // roll // x
-    Rotation.Y = rotDisplay[1]; // pitch // y
-    Rotation.Z = rotDisplay[2]; // yaw // z
-
-    // Pitch / Yaw 간단 보정
-    Rotation.Y = max(-89.0f, Rotation.Y);
-    Rotation.Y = min(89.0f, Rotation.Y);
-    Rotation.Z = max(-180.0f, Rotation.Z);
-    Rotation.Z = min(180.0f, Rotation.Z);
 
 	if (RotationChanged)
 	{
-		if (CameraModeIndex == 0) Camera->UpdateMatrixByPers();
-		else Camera->UpdateMatrixByOrth();
+		// UI -> 내부 순서 반영
+		Rotation.X = rotDisplay[0]; // roll 
+		Rotation.Y = rotDisplay[1]; // pitch
+		Rotation.Z = rotDisplay[2]; // yaw
+
+		// Pitch / Yaw 간단 보정
+		Rotation.Y = max(-89.0f, Rotation.Y);
+		Rotation.Y = min(89.0f, Rotation.Y);
+		Rotation.Z = max(-180.0f, Rotation.Z);
+		Rotation.Z = min(180.0f, Rotation.Z);
 	}
 
 	ImGui::TextUnformatted("Camera Optics");
@@ -138,7 +122,7 @@ void UCameraControlWidget::SyncFromCamera()
 {
 	if (!Camera) { return; }
 
-	CameraModeIndex = (Camera->GetCameraType() == ECameraViewType::ECT_Perspective) ? 0 : 1;
+	CameraModeIndex = static_cast<int>(EViewportViewType::Perspective);
 	UiFovY = Camera->GetFovY();
 	UiNearZ = Camera->GetNearZ();
 	UiFarZ = Camera->GetFarZ();
@@ -151,9 +135,7 @@ void UCameraControlWidget::PushToCamera()
 	/*
 	 * @brief 카메라 모드 설정
 	 */
-	Camera->SetCameraType(CameraModeIndex == 0
-		                      ? ECameraViewType::ECT_Perspective
-		                      : ECameraViewType::ECT_Ortho_Back);
+	Camera->SetCameraType(static_cast<EViewportViewType>(CameraModeIndex));
 
 	/*
 	 * @brief 카메라 파라미터 설정
@@ -165,16 +147,4 @@ void UCameraControlWidget::PushToCamera()
 	Camera->SetNearZ(UiNearZ);
 	Camera->SetFarZ(UiFarZ);
 	Camera->SetFovY(UiFovY);
-
-	/*
-	 * @brief 카메라 업데이트
-	 */
-	if (CameraModeIndex == 0)
-	{
-		Camera->UpdateMatrixByPers();
-	}
-	else
-	{
-		Camera->UpdateMatrixByOrth();
-	}
 }

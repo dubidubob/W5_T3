@@ -1,10 +1,11 @@
 #pragma once
+#include "ViewportTypes.h"
 class UCamera;
 struct FViewportContext {
 	UCamera* Camera;
 	D3D11_VIEWPORT Viewport;
-	ECameraViewType ViewType;
-	EViewModeIndex RenderMode;
+	EViewportViewType ViewType;
+	EViewportRenderMode RenderMode;
 };
 
 class UViewportManager : public UObject
@@ -25,8 +26,8 @@ public:
 	void UpdateSubCamera(UCamera* InCamera);
 	void UpdateViewportRects(const POINT& WindowSize);
 
-	void SetProjectionMode(int InIdx, ECameraViewType InViewType);
-	void SetViewMode(int InIdx, EViewModeIndex InRenderType) { Viewports[InIdx].RenderMode = InRenderType; }
+	void SetProjectionMode(int InIdx, EViewportViewType InViewType);
+	void SetViewMode(int InIdx, EViewportRenderMode InRenderType) { Viewports[InIdx].RenderMode = InRenderType; }
 
 	FViewportContext* GetViewports() { return Viewports; }
 

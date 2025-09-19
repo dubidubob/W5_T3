@@ -21,6 +21,7 @@ void UViewportManager::SetSubCamera(UCamera* InCamera)
 	int CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
 	for (int i = 0; i < CameraCnt; i++)
 	{
+		if (Viewports[i].ViewType != EViewportViewType::Perspective) continue;
 		Viewports[i].Camera = NewObject<UCamera>();
 		Viewports[i].Camera->CopyFrom(*InCamera);
 	}
@@ -31,6 +32,7 @@ void UViewportManager::UpdateSubCamera(UCamera* InCamera)
 	int CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
 	for (int i = 0; i < CameraCnt; i++)
 	{
+		if (Viewports[i].ViewType != EViewportViewType::Perspective) continue;
 		Viewports[i].Camera->CopyFrom(*InCamera);
 	}
 }
@@ -52,7 +54,7 @@ void UViewportManager::UpdateViewportRects(const POINT& WindowSize)
 	Viewports[3].Viewport = { halfW,  halfH,  halfW, halfH, 0.f, 1.f };
 }
 
-void UViewportManager::SetProjectionMode(int InIdx, ECameraViewType InViewType)
+void UViewportManager::SetProjectionMode(int InIdx, EViewportViewType InViewType)
 {
 	// jft : no need to make viewtype cause it's alreay on camera
 	Viewports[InIdx].ViewType = InViewType;

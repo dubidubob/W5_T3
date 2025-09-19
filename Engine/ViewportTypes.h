@@ -11,7 +11,8 @@ enum class EViewportViewType : uint8_t
 	Bottom,
 	Left,
 	Right,
-	Count
+
+	End
 };
 
 enum class EViewportRenderMode : uint8_t
@@ -19,16 +20,18 @@ enum class EViewportRenderMode : uint8_t
 	Lit = 0,
 	Unlit,
 	Wireframe,
-	Count
+	Count,
+
+	End
 };
 
 namespace ViewportUI
 {
-	inline constexpr std::array<const char*, static_cast<size_t>(EViewportViewType::Count)> ViewTypeLabels = {
+	inline constexpr std::array<const char*, static_cast<size_t>(EViewportViewType::End)> ViewTypeLabels = {
 		"Perspective", "Front", "Back", "Top", "Bottom", "Left", "Right"
 	};
 
-	inline constexpr std::array<const char*, static_cast<size_t>(EViewportRenderMode::Count)> RenderModeLabels = {
+	inline constexpr std::array<const char*, static_cast<size_t>(EViewportRenderMode::End)> RenderModeLabels = {
 		"Lit", "Unlit", "Wireframe"
 	};
 }
