@@ -30,10 +30,14 @@ public:
 
 	FViewportContext* GetViewports() { return Viewports; }
 
+	FVector GetSelectedViewportMousePositionNdc(const POINT& WindowSize, const POINT& InMouse);
+	UCamera* GetSelectedViewportCamera() { return Viewports[SelectedViewportIdx].Camera; }
+
 	FVector GetViewportRatio() { return ViewportRatio; }
 
 private:
 	FViewportContext Viewports[4];
 	FVector ViewportRatio;
+	int SelectedViewportIdx;
 };
 

@@ -162,68 +162,41 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 	const UInputManager& InputManager = UInputManager::GetInstance();
 	FVector MousePositionNdc = InputManager.GetMouseNDCPosition();
 
-	static EGizmoDirection PreviousGizmoDirection = EGizmoDirection::None;
-	AActor* ActorPicked = InLevel->GetSelectedActor();
-	float ActorDistance = -1;
-
 	// 월드 레이 먼저 계산 (릴리즈 커밋에 사용)
 	FRay WorldRay = Camera->ConvertToWorldRay(MousePositionNdc.X, MousePositionNdc.Y);
 
-	// jft, In Multi Viewport Mode, adjust MousePosition
+	// Multi Viewport Mode -> Adjust MousePosition & FRay & Cam
 	auto& Renderer = URenderer::GetInstance();
 	if (Renderer.GetDividedWindow())
 	{
 		FVector MouseInput = InputManager.GetMousePosition();
-		FVector Ratio = ViewportManager->GetViewportRatio();
 
 		const float W = static_cast<float>(URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width);
 		const float H = static_cast<float>(URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Height);
 
-		const float boundaryW = W * Ratio.X;
-		const float boundaryH = H * Ratio.Y;
+		MousePositionNdc = ViewportManager->GetSelectedViewportMousePositionNdc(POINT(W, H), POINT(MouseInput.X, MouseInput.Y));
+		UCamera* cam = ViewportManager->GetSelectedViewportCamera();
 
-		int selected = 0;
-
-		// Define Rect
-		struct FRect { float x, y, w, h; };
-		FRect rects[4] = {
-			{ 0.0f,        0.0f,        boundaryW,           boundaryH           }, // 0: LT
-			{ boundaryW,   0.0f,        (W - boundaryW),     boundaryH           }, // 1: RT
-			{ 0.0f,        boundaryH,   boundaryW,           (H - boundaryH)     }, // 2: LB
-			{ boundaryW,   boundaryH,   (W - boundaryW),     (H - boundaryH)     }  // 3: RB
-		};
-
-		// Select Viewport
-		auto hitRect = [&](const FRect& r)->bool {
-			return (MouseInput.X >= r.x && MouseInput.X < r.x + r.w &&
-				MouseInput.Y >= r.y && MouseInput.Y < r.y + r.h);
-			};
-		if (hitRect(rects[0])) selected = 0;
-		else if (hitRect(rects[1])) selected = 1;
-		else if (hitRect(rects[2])) selected = 2;
-		else                        selected = 3;
-
-		const FRect& R = rects[selected];
-
-		// Change to Default Viewport MouseInput
-		const float u = (MouseInput.X - R.x) / R.w;
-		const float v = (MouseInput.Y - R.y) / R.h;
-
-		// NDC (-1,-1) ~ (1, 1)
-		MousePositionNdc.X = 2.0f * u - 1.0f;
-		MousePositionNdc.Y = 1.0f - 2.0f * v;
-
-		FViewportContext* VPs = ViewportManager->GetViewports();
-		UCamera* cam = VPs[selected].Camera;
 		WorldRay = cam->ConvertToWorldRay(MousePositionNdc.X, MousePositionNdc.Y);
 	}
 
+	HandleGizmo(InLevel, WorldRay);
+}
+
+void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
+{
+	static EGizmoDirection PreviousGizmoDirection = EGizmoDirection::None;
+	AActor* ActorPicked = InLevel->GetSelectedActor();
+
+	float ActorDistance = -1;
+
+	const UInputManager& InputManager = UInputManager::GetInstance();
 	if (InputManager.IsKeyReleased(EKeyInput::MouseLeft))
 	{
 		// 회전 모드에서 릴리즈 시 마지막 각도 커밋 (로컬/월드 동일)
 		if (Gizmo->IsDragging() && Gizmo->GetSelectedActor() && Gizmo->GetGizmoMode() == EGizmoMode::Rotate)
 		{
-			FQuat FinalQuat = GetGizmoDragRotationQuat(WorldRay);
+			FQuat FinalQuat = GetGizmoDragRotationQuat(InWorldRay);
 			Gizmo->SetActorRotation(FinalQuat);
 		}
 		Gizmo->EndDrag();
@@ -234,22 +207,22 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 		switch (Gizmo->GetGizmoMode())
 		{
 		case EGizmoMode::Translate:
-			{
-				FVector GizmoDragLocation = GetGizmoDragLocation(WorldRay);
-				Gizmo->SetLocation(GizmoDragLocation);
-				break;
-			}
+		{
+			FVector GizmoDragLocation = GetGizmoDragLocation(InWorldRay);
+			Gizmo->SetLocation(GizmoDragLocation);
+			break;
+		}
 		case EGizmoMode::Rotate:
-			{
-				FQuat GizmoDragRotation = GetGizmoDragRotationQuat(WorldRay);
-				Gizmo->SetActorRotation(GizmoDragRotation);
-				break;
-			}
+		{
+			FQuat GizmoDragRotation = GetGizmoDragRotationQuat(InWorldRay);
+			Gizmo->SetActorRotation(GizmoDragRotation);
+			break;
+		}
 		case EGizmoMode::Scale:
-			{
-				FVector GizmoDragScale = GetGizmoDragScale(WorldRay);
-				Gizmo->SetActorScale(GizmoDragScale);
-			}
+		{
+			FVector GizmoDragScale = GetGizmoDragScale(InWorldRay);
+			Gizmo->SetActorScale(GizmoDragScale);
+		}
 		}
 	}
 	else
@@ -258,7 +231,7 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 		/** 기즈모가 출력되고있음. 레이캐스팅을 계속 해야함. */
 		if (InLevel->GetSelectedActor())
 		{
-			ObjectPicker->PickGizmo(WorldRay, Gizmo, CollisionPoint);
+			ObjectPicker->PickGizmo(InWorldRay, Gizmo, CollisionPoint);
 		}
 		else
 		{
@@ -268,7 +241,7 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 		{
 			TArray<UPrimitiveComponent*> Candidate = FindCandidatePrimitives(InLevel);
 
-			UPrimitiveComponent* PrimitiveCollided = ObjectPicker->PickPrimitive(WorldRay, Candidate, &ActorDistance);
+			UPrimitiveComponent* PrimitiveCollided = ObjectPicker->PickPrimitive(InWorldRay, Candidate, &ActorDistance);
 
 			if (PrimitiveCollided)
 			{
