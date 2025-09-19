@@ -50,7 +50,7 @@ UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 	FStaticMesh* StaticMeshAsset = LoadObjStaticMeshAsset(PathFileName);
 	if (!StaticMeshAsset)
 	{
-		UE_LOG("Failed to generate UStaticMesh for '%s' due to failed asset loading.", PathFileName);
+		UE_LOG("Failed to generate UStaticMesh for '%s' due to failed asset loading.", PathFileName.c_str());
 		return nullptr;
 	}
 
