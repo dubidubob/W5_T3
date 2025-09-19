@@ -311,6 +311,9 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 		{
 			PrimitiveMeta.Type = EPrimitiveType::Square;
 		}
+		// TODO: 액터에서 얻어온게 StaticMeshComp이면
+		//       PrimitiveMeta.Type = EPrimitiveType::StaticMeshComp
+		//       PrimitiveMeat.ObjStaticMeshAsset  = StaticMeshComp->GetAssetPathFileName(); // 직접 구현
 		else
 		{
 			UE_LOG("LevelManager: Unknown Actor Type, Skipping...");
@@ -320,6 +323,19 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 
 		Metadata.Primitives[PrimitiveMeta.ID] = PrimitiveMeta;
 	}
+	// FLevelMetaData에 FCameraMetaData를 저장
+	UCamera* CameraPtr = InLevel->GetCamera();
+	FCameraMetadata CameraMetadata;
+	if (CameraPtr)
+	{
+		CameraMetadata.Location = CameraPtr->GetLocation();
+		CameraMetadata.Rotation = CameraPtr->GetRotation();
+		CameraMetadata.FOV = CameraPtr->GetFovY();
+		CameraMetadata.NearClip = CameraPtr->GetNearZ();
+		CameraMetadata.FarClip = CameraPtr->GetFarZ();
+		UE_LOG("LevelManager: ULevel에서 UCamera 정보를 이용해 CameraMetadata 생성");
+	}
+	Metadata.PerspectiveCamera = CameraMetadata;
 
 	Metadata.NextUUID = CurrentID;
 
@@ -328,7 +344,7 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 }
 
 /**
- * @brief FLevelMetadata로부터 ULevel에 Actor Load
+ * @brief FLevelMetadata로부터 ULevel에 Actor 및 UCamera Load
  */
 bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata& InMetadata)
 {
@@ -364,6 +380,8 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 		// case EPrimitiveType::Triangle:
 		// 	NewActor = InLevel->SpawnActor<ATriangleActor>();
 		// 	break;
+
+		// TODO: StaticMeshComp type이면 StaticMeshComp용 액터 생성
 		default:
 			UE_LOG("LevelManager: Unknown Primitive Type: %d", static_cast<int32>(PrimitiveMeta.Type));
 			assert(!"고려하지 않은 Actor 타입");
@@ -386,7 +404,17 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 			UE_LOG("LevelManager: Actor 생성에 실패했습니다 (Primitive ID: %d)", ID);
 		}
 	}
-
+	// InLevel의 UCamera에 카메라 정보 적용
+	UCamera* CameraPtr = InLevel->GetCamera();
+	if (CameraPtr)
+	{
+		CameraPtr->SetLocation(InMetadata.PerspectiveCamera.Location);
+		CameraPtr->SetRotation(InMetadata.PerspectiveCamera.Rotation);
+		CameraPtr->SetFovY(InMetadata.PerspectiveCamera.FOV);
+		CameraPtr->SetNearZ(InMetadata.PerspectiveCamera.NearClip);
+		CameraPtr->SetFarZ(InMetadata.PerspectiveCamera.FarClip);
+	}
+	InLevel->SetCamera(CameraPtr);
 	UE_LOG("LevelManager: 레벨이 메타데이터로부터 성공적으로 로드되었습니다");
 	return true;
 }

@@ -65,7 +65,7 @@ struct FLevelMetadata
 	uint32 Version;
 	uint32 NextUUID;
 	TMap<uint32, FPrimitiveMetadata> Primitives;
-	FCameraMetaData PerspectiveCamera;
+	FCameraMetadata PerspectiveCamera;
 	/**
 	 * @brief 기본 생성자
 	 */
@@ -123,14 +123,14 @@ struct FLevelMetadata
 };
 
 /**
- * @brief Perspective Camera Meta Data Struct
+ * @brief Perspective Camera Metadata Struct
  * @param Location 카메라 위치
  * @param Rotation 카메라 회전
  * @param FOV 카메라 fov
  * @param NearClip 카메라 near
  * @param FarClip 카메라 far
  */
-struct FCameraMetaData
+struct FCameraMetadata
 {
 	FVector Location;
 	FVector Rotation;
@@ -138,7 +138,7 @@ struct FCameraMetaData
 	float NearClip;
 	float FarClip;
 
-	FCameraMetaData()
+	FCameraMetadata()
 		: Location(0.0f, 2.0f, -5.0f),
 		Rotation(0.0f, 0.0f, 0.0f),
 		FOV(60.0f),
