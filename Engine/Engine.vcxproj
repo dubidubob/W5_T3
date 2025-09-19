@@ -168,6 +168,11 @@
     <ClInclude Include="Public\DirectXTK\DirectXHelpers.h" />
     <ClInclude Include="Public\Render\UI\Widget\ViewSettingsWidget.h" />
     <ClInclude Include="Public\Render\UI\Window\DetailWindow.h" />
+    <ClInclude Include="Public\Slate\Panel.h" />
+    <ClInclude Include="Public\Slate\Splitter.h" />
+    <ClInclude Include="Public\Slate\SplitterH.h" />
+    <ClInclude Include="Public\Slate\SplitterV.h" />
+    <ClInclude Include="Public\Slate\Window.h" />
     <ClInclude Include="Public\\Core\\Class.h" />
     <ClInclude Include="Public\\Core\\Object.h" />
     <ClInclude Include="Public\\Editor\\Axis.h" />
@@ -237,6 +242,7 @@
     <ClInclude Include="Public\\Render\UI\Window\\UIWindow.h" />
     <ClInclude Include="Public\\Utility\\LevelSerializer.h" />
     <ClInclude Include="Public\\Utility\\Metadata.h" />
+    <ClInclude Include="Global\Rect.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Global\Name.cpp" />
@@ -251,6 +257,11 @@
     <ClCompile Include="Private\Render\UI\Widget\ActorListWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ViewSettingsWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Window\DetailWindow.cpp" />
+    <ClCompile Include="Private\Slate\Panel.cpp" />
+    <ClCompile Include="Private\Slate\Splitter.cpp" />
+    <ClCompile Include="Private\Slate\SplitterH.cpp" />
+    <ClCompile Include="Private\Slate\SplitterV.cpp" />
+    <ClCompile Include="Private\Slate\Window.cpp" />
     <ClCompile Include="Private\\Core\\Class.cpp" />
     <ClCompile Include="Private\\Core\\Object.cpp" />
     <ClCompile Include="Private\\Editor\\Axis.cpp" />
@@ -312,6 +323,7 @@
     <ClCompile Include="Private\\Render\UI\Window\\OutlinerWindow.cpp" />
     <ClCompile Include="Private\\Render\UI\Window\\UIWindow.cpp" />
     <ClCompile Include="Private\\Utility\\LevelSerializer.cpp" />
+    <ClCompile Include="Global\Rect.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
