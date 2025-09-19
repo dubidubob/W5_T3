@@ -56,16 +56,6 @@ void UCamera::Update()
 		RelativeRotation.Y += MouseDelta.Y * CurrentMouseSensitivity;
 		RelativeRotation.Z += MouseDelta.X * CurrentMouseSensitivity;
 
-		// Yaw 래핑(값이 무한히 커지지 않도록)
-		if (RelativeRotation.Z > 180.0f)
-		{
-			RelativeRotation.Z -= 360.0f;
-		}
-		if (RelativeRotation.Z < -180.0f)
-		{
-			RelativeRotation.Z += 360.0f;
-		}
-
 		// Pitch 클램프(짐벌 플립 방지)
 		RelativeRotation.X = std::min(RelativeRotation.X, 89.0f);
 		RelativeRotation.X = std::max(RelativeRotation.X, -89.0f);
@@ -155,58 +145,6 @@ void UCamera::UpdateMatrixByOrth()
 	P.Data[3][2] = -NearZ / (FarZ - NearZ);
 	P.Data[3][3] = 1.0f;
 	ViewProjConstants.Projection = P;
-}
-
-// jft : magic number
-void UCamera::SetCameraType(const EViewportViewType InCameraType)
-{
-	CameraViewType = InCameraType;
-
-	if (InCameraType == EViewportViewType::Perspective)
-	{
-		// Perspective camera logic (if any)
-		return;
-	}
-
-	FVector MoveAxis = FVector::ZeroVector;
-	FVector CameraRotation = FVector::ZeroVector;
-
-	const float RotateStep = 90.0f;
-	switch (InCameraType)
-	{
-	case EViewportViewType::Front:
-		MoveAxis = FVector(OrthoDistance, 0.0f, 0.0f);
-		CameraRotation = FVector(0.0f, 0.0f, -RotateStep * 2);
-		break;
-
-	case EViewportViewType::Back:
-		MoveAxis = FVector(-OrthoDistance, 0.0f, 0.0f);
-		CameraRotation = FVector(0.0f, 0.0f, 0.0f);
-		break;
-
-	case EViewportViewType::Top:
-		MoveAxis = FVector(0.0f, 0.0f, OrthoDistance);
-		CameraRotation = FVector(0.0f, RotateStep, 0.0f);
-		break;
-
-	case EViewportViewType::Bottom:
-		MoveAxis = FVector(0.0f, 0.0f, -OrthoDistance);
-		CameraRotation = FVector(0.0f, -RotateStep, 0.0f);
-		break;
-
-	case EViewportViewType::Left:
-		MoveAxis = FVector(0.0f, -OrthoDistance, 0.0f);
-		CameraRotation = FVector(0.0f, 0.0f, RotateStep);
-		break;
-
-	case EViewportViewType::Right:
-		MoveAxis = FVector(0.0f, OrthoDistance, 0.0f);
-		CameraRotation = FVector(0.0f, 0.0f, -RotateStep);
-		break;
-	}
-
-	SetLocation(MoveAxis);
-	SetRotation(CameraRotation);
 }
 
 FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
@@ -398,6 +336,58 @@ void UCamera::LoadCameraSettings()
 	// 로드한 값을 직접 설정 (SaveCameraSettings 호출하지 않음)
 	CurrentMouseSensitivity = max(LoadedSensitivity, MIN_MOUSE_SENSITIVITY);
 	CurrentMouseSensitivity = min(CurrentMouseSensitivity, MAX_MOUSE_SENSITIVITY);
+}
+
+// jft : magic number
+void UCamera::SetCameraType(const EViewportViewType InCameraType)
+{
+	CameraViewType = InCameraType;
+
+	if (InCameraType == EViewportViewType::Perspective)
+	{
+		// Perspective camera logic (if any)
+		return;
+	}
+
+	FVector MoveAxis = FVector::ZeroVector;
+	FVector CameraRotation = FVector::ZeroVector;
+
+	const float RotateStep = 90.0f;
+	switch (InCameraType)
+	{
+	case EViewportViewType::Front:
+		MoveAxis = FVector(OrthoDistance, 0.0f, 0.0f);
+		CameraRotation = FVector(0.0f, 0.0f, -RotateStep * 2);
+		break;
+
+	case EViewportViewType::Back:
+		MoveAxis = FVector(-OrthoDistance, 0.0f, 0.0f);
+		CameraRotation = FVector(0.0f, 0.0f, 0.0f);
+		break;
+
+	case EViewportViewType::Top:
+		MoveAxis = FVector(0.0f, 0.0f, OrthoDistance);
+		CameraRotation = FVector(0.0f, RotateStep, 0.0f);
+		break;
+
+	case EViewportViewType::Bottom:
+		MoveAxis = FVector(0.0f, 0.0f, -OrthoDistance);
+		CameraRotation = FVector(0.0f, -RotateStep, 0.0f);
+		break;
+
+	case EViewportViewType::Left:
+		MoveAxis = FVector(0.0f, -OrthoDistance, 0.0f);
+		CameraRotation = FVector(0.0f, 0.0f, RotateStep);
+		break;
+
+	case EViewportViewType::Right:
+		MoveAxis = FVector(0.0f, OrthoDistance, 0.0f);
+		CameraRotation = FVector(0.0f, 0.0f, -RotateStep);
+		break;
+	}
+
+	SetLocation(MoveAxis);
+	SetRotation(CameraRotation);
 }
 
 void UCamera::CopyFrom(const UCamera& Other)
