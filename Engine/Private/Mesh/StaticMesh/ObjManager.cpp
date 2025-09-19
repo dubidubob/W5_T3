@@ -7,12 +7,34 @@
 IMPLEMENT_SINGLETON(FObjManager)
 
 FObjManager::FObjManager() = default;
-FObjManager::~FObjManager() = default;
+FObjManager::~FObjManager()
+{
+	for (auto& Pair : StaticMeshAssetMap)
+	{
+		if (Pair.second)
+		{
+			delete Pair.second;
+			Pair.second = nullptr;
+		}
+	}
+	StaticMeshAssetMap.Empty();
+
+	for (auto& Pair : StaticMeshMap)
+	{
+		if (Pair.second)
+		{
+			delete Pair.second;
+			Pair.second = nullptr;
+		}
+	}
+	StaticMeshMap.Empty();
+
+}
 
 FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 {
-	auto It = ObjStaticMeshMap.find(PathFileName);
-	if (It != ObjStaticMeshMap.end())
+	auto It = StaticMeshAssetMap.find(PathFileName);
+	if (It != StaticMeshAssetMap.end())
 	{
 		// Already Cached
 		UE_LOG("FStaticMesh asset '%s' found in cache.", PathFileName.c_str());
@@ -22,7 +44,7 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 	FStaticMesh* NewStaticMesh = FObjImporter::ParseAndConvert(PathFileName);
 	if (NewStaticMesh)
 	{
-		ObjStaticMeshMap[PathFileName] = NewStaticMesh;
+		StaticMeshAssetMap[PathFileName] = NewStaticMesh;
 		UE_LOG("Successfully loaded FStaticMesh asset: %s", PathFileName.c_str());
 		UE_LOG(" - Vertices: %d, Indices: %d", NewStaticMesh->Vertices.Num(), NewStaticMesh->Indices.Num() / 3);
 		UE_LOG(" - Materials: %d, Sections: %d", NewStaticMesh->Materials.Num(), NewStaticMesh->Sections.Num());
@@ -37,14 +59,15 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 
 UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 {
-	for (TObjectIterator<UStaticMesh> It; It; ++It)
+	if (StaticMeshMap.Contains(PathFileName))
 	{
-		UStaticMesh* StaticMesh = *It;
-		if (StaticMesh && StaticMesh->GetAssetPathFileName() == PathFileName)
+		UStaticMesh* CachedMesh = StaticMeshMap[PathFileName];
+		if (CachedMesh)
 		{
 			UE_LOG("UStaticMesh object '%s' found in cache.", PathFileName.c_str());
-			return StaticMesh;
+			return CachedMesh;
 		}
+		StaticMeshMap.Remove(PathFileName);
 	}
 
 	FStaticMesh* StaticMeshAsset = LoadObjStaticMeshAsset(PathFileName);

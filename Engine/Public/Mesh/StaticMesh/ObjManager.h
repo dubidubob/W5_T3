@@ -23,5 +23,6 @@ public:
 	UStaticMesh* LoadObjStaticMesh(const FString& PathFileName);
 
 private:
-	TMap<FString, FStaticMesh*> ObjStaticMeshMap;
+	TMap<FString, FStaticMesh*> StaticMeshAssetMap;
+	TMap<FString, UStaticMesh*> StaticMeshMap;
 };

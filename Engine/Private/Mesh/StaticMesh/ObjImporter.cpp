@@ -91,27 +91,52 @@ bool FObjImporter::ParseObjFile(const FString& FileName, FObjInfo& OutObjInfo)
 			FString FaceData;
 			while (Stream >> FaceData)
 			{
-				std::replace(FaceData.begin(), FaceData.end(), '/', ' ');
-				std::stringstream FaceStream(FaceData);
-				uint32 PosIndex, UVIndex, NormalIndex;
-				FaceStream >> PosIndex >> UVIndex >> NormalIndex;
+				size_t Pos = FaceData.find('/');
+				size_t Normal = FaceData.find('/', Pos + 1);
 
-				// OBJ 인덱스는 1부터 시작하므로 0기반 인덱스로 변환
+				uint32 PosIndex = 0;
+				uint32 UVIndex = 0;
+				uint32 NormalIndex = 0;
+
+				PosIndex = std::stoi(FaceData.substr(0, Pos));
+
+				if (Pos != std::string::npos && Normal != std::string::npos && Normal > Pos + 1)
+				{
+					// v/vt/vn
+					UVIndex = std::stoi(FaceData.substr(Pos + 1, Normal - Pos - 1));
+					NormalIndex = std::stoi(FaceData.substr(Normal + 1));
+				}
+				else if (Pos != std::string::npos && Normal == std::string::npos)
+				{
+					// v/vt
+					UVIndex = std::stoi(FaceData.substr(Pos + 1));
+				}
+				else if (Pos != std::string::npos && Normal != std::string::npos && Normal == Pos + 1)
+				{
+					// v//vn
+					NormalIndex = std::stoi(FaceData.substr(Normal + 1));
+					UVIndex = 0;
+				}
+
+				if (PosIndex == 0) {
+					UE_LOG("Error: Invalid PosIndex 0 found. Skipping.");
+					continue;
+				}
+
 				OutObjInfo.PositionIndices.Add(PosIndex - 1);
-				OutObjInfo.UVIndices.Add(UVIndex - 1);
-				OutObjInfo.NormalIndices.Add(NormalIndex - 1);
+				OutObjInfo.UVIndices.Add(UVIndex > 0 ? UVIndex - 1 : 0);
+				OutObjInfo.NormalIndices.Add(NormalIndex > 0 ? NormalIndex - 1 : 0);
 			}
 			FaceCount++;
 		}
 	}
-	return true;
 
+	return true;
 }
 
 bool FObjImporter::ParseMtlFile(const path& FilePath, TArray<FObjMaterialInfo>& OutMaterials)
 {
 	std::ifstream File(FilePath);
-	UE_LOG("gg: %s", FilePath.string().c_str());
 	if (!File.is_open())
 	{
 		UE_LOG("Failed to open file: %s", FilePath.c_str());
@@ -131,6 +156,20 @@ bool FObjImporter::ParseMtlFile(const path& FilePath, TArray<FObjMaterialInfo>& 
 		{
 			if (!bFirstMaterial)
 			{
+				UE_LOG("--- Parsed Material: %s ---", CurrentMaterial.Name.c_str());
+				UE_LOG("  - Ka: %.2f %.2f %.2f", CurrentMaterial.AmbientColor.X, CurrentMaterial.AmbientColor.Y, CurrentMaterial.AmbientColor.Z);
+				UE_LOG("  - Kd: %.2f %.2f %.2f", CurrentMaterial.DiffuseColor.X, CurrentMaterial.DiffuseColor.Y, CurrentMaterial.DiffuseColor.Z);
+				UE_LOG("  - Ks: %.2f %.2f %.2f", CurrentMaterial.SpecularColor.X, CurrentMaterial.SpecularColor.Y, CurrentMaterial.SpecularColor.Z);
+				UE_LOG("  - Ns: %.2f", CurrentMaterial.SpecularExponent);
+				UE_LOG("  - Alpha: %.2f", CurrentMaterial.Alpha);
+				if (!CurrentMaterial.DiffuseTexturePath.empty())
+				{
+					UE_LOG("  - Diffuse Map: %s", CurrentMaterial.DiffuseTexturePath.c_str());
+				}
+				if (!CurrentMaterial.NormalTexturePath.empty())
+				{
+					UE_LOG("  - Normal Map: %s", CurrentMaterial.NormalTexturePath.c_str());
+				}
 				OutMaterials.Add(CurrentMaterial);
 			}
 			bFirstMaterial = false;
