@@ -20,8 +20,7 @@ void UCamera::Update()
 	Forward.Normalize();
 	// UE 기준 Up 축: Z
 	Up = FVector(0, 0, 1);
-	// Right = Up.Cross(Forward);
-	Right = Forward.Cross(Up);
+	Right = Up.Cross(Forward);
 
 	/**
 	 * @brief 마우스 우클릭을 하고 있는 동안 카메라 제어가 가능합니다.
@@ -33,8 +32,8 @@ void UCamera::Update()
 		 */
 		FVector Direction = {0, 0, 0};
 
-		if (Input.IsKeyDown(EKeyInput::A)) { Direction += -Right; }
-		if (Input.IsKeyDown(EKeyInput::D)) { Direction += Right; }
+		if (Input.IsKeyDown(EKeyInput::A)) { Direction += Right; }
+		if (Input.IsKeyDown(EKeyInput::D)) { Direction += -Right; }
 		if (Input.IsKeyDown(EKeyInput::W)) { Direction += Forward; }
 		if (Input.IsKeyDown(EKeyInput::S)) { Direction += -Forward; }
 		if (Input.IsKeyDown(EKeyInput::Q)) { Direction += -Up; }
