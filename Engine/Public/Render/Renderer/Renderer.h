@@ -5,6 +5,7 @@
 #include "Editor/EditorPrimitive.h"
 // jft
 #include "Editor/Camera.h"
+#include "ViewportTypes.h"
 
 class UPipeline;
 class UDeviceResources;
@@ -52,11 +53,13 @@ public:
 	void CreateDepthStencilState();
 	void CreateBlendState();
 	void CreateDefaultShader();
+	void CreateStaticMeshShader();
 	void CreateTextShader();
 	void CreateLineInstancedShader();
 	void CreateConstantBuffer();
 
 	void ReleaseDefaultShader();
+	void ReleaseStaticMeshShader();
 	void ReleaseTextShader();
 	void ReleaseLineInstancedShader();
 	static void ReleaseVertexBuffer(ID3D11Buffer* InVertexBuffer);
@@ -124,8 +127,8 @@ public:
 	void UpdateInstance(const TArray<FTextInstance>* Instance);
 	void UpdateInstanceDrawConstants(bool bUseInstancing, uint32 BaseInstanceOffset, uint32 InstanceCount) const;
 
-	void SetViewMode(EViewModeIndex InViewMode) { CurrentViewMode = InViewMode; }
-	EViewModeIndex GetViewMode(EViewModeIndex InViewMode) const { return CurrentViewMode; }
+	void SetViewMode(EViewportRenderMode InViewMode) { CurrentRenderMode = InViewMode; }
+	EViewportRenderMode GetViewMode(EViewportRenderMode InViewMode) const { return CurrentRenderMode; }
 
 	/** Show Flags management */
 	void SetShowFlags(EEngineShowFlags InShowFlags) { CurrentShowFlags = InShowFlags; }
@@ -148,8 +151,14 @@ public:
 	/** LineBatchRenderer에서 사용할 공개 메서드 */
 	UPipeline* GetPipeline() const { return Pipeline; }
 	ID3D11InputLayout* GetDefaultInputLayout() const { return DefaultInputLayout; }
+	ID3D11InputLayout* GetStaticInputLayout() const { return StaticInputLayout; }
+
 	ID3D11VertexShader* GetDefaultVertexShader() const { return DefaultVertexShader; }
+	ID3D11VertexShader* GetStaticVertexShader() const { return StaticVertexShader; }
+
 	ID3D11PixelShader* GetDefaultPixelShader() const { return DefaultPixelShader; }
+	ID3D11PixelShader* GetStaticPixelShader() const { return StaticPixelShader; }
+
 	ID3D11DepthStencilState* GetDefaultDepthStencilState() const { return DefaultDepthStencilState; }
 	ID3D11RasterizerState* GetRasterizerState(const FRenderState& InRenderState);
 
@@ -161,7 +170,7 @@ public:
 private:
 	UPipeline* Pipeline = nullptr;
 	UDeviceResources* DeviceResources = nullptr;
-	EViewModeIndex CurrentViewMode = EViewModeIndex::Lit;
+	EViewportRenderMode CurrentRenderMode = EViewportRenderMode::Lit;
 	EEngineShowFlags CurrentShowFlags = EEngineShowFlags::SF_Default;
 	TArray<UPrimitiveComponent*> PrimitiveComponents;
 
@@ -184,6 +193,10 @@ private:
 	ID3D11VertexShader* DefaultVertexShader = nullptr;
 	ID3D11PixelShader* DefaultPixelShader = nullptr;
 	ID3D11InputLayout* DefaultInputLayout = nullptr;
+	// 추가 
+	ID3D11VertexShader* StaticVertexShader = nullptr;
+	ID3D11PixelShader* StaticPixelShader = nullptr;
+	ID3D11InputLayout* StaticInputLayout = nullptr;
 
 	ID3D11VertexShader* TextVertexShader = nullptr;
 	ID3D11PixelShader* TextPixelShader = nullptr;
@@ -193,7 +206,11 @@ private:
 	ID3D11PixelShader* LineInstancedPixelShader = nullptr;
 	ID3D11InputLayout* LineInstancedInputLayout = nullptr;
 
+	//선용
 	uint32 Stride = 0;
+	//텍스처 렌더링 용
+	uint32 StaticStride = 0;
+
 	uint32 StrideTextVertex = 0;
 	uint32 StrideTextInstance = 0;
 

@@ -2,35 +2,18 @@
 #include "Render/UI/Widget/ViewSettingsWidget.h"
 #include "Render/Renderer/Renderer.h"
 #include "Manager/Viewport/ViewportManager.h"
-
-
-// Viewport Mode, Must Sync with ViewportManager Enum Classes
-static const char* GViewTypeLabels[] = {
-	"Perspective", "OrthoGraphic"
-};
-// Camera Mode
-static const char* CameraMode[] = {
-	"Lit",
-	"Unlit",
-	"WireFrame",
-};
-
+#include "ViewportTypes.h"
+#include "Editor/Grid.h"
 
 IMPLEMENT_CLASS(UViewSettingsWidget, UWidget)
 
-UViewSettingsWidget::UViewSettingsWidget() : Grid(nullptr)
-{
-}
+UViewSettingsWidget::UViewSettingsWidget() : Grid(nullptr) {}
 
 UViewSettingsWidget::~UViewSettingsWidget() = default;
 
-void UViewSettingsWidget::Initialize()
-{
-}
+void UViewSettingsWidget::Initialize() {}
 
-void UViewSettingsWidget::Update()
-{
-}
+void UViewSettingsWidget::Update() {}
 
 void UViewSettingsWidget::RenderWidget()
 {
@@ -51,18 +34,18 @@ void UViewSettingsWidget::RenderWidget()
 		{
 			ImGui::PushID(i);
 			ImGui::Text("Viewport %d", i);
-			int viewTypeIdx = static_cast<int>(ViewportArray[i].ViewType);
-			int renderModeIdx = static_cast<int>(ViewportArray[i].RenderMode);
+			int ViewTypeIdx = static_cast<int>(ViewportArray[i].ViewType);
+			int RenderModeIdx = static_cast<int>(ViewportArray[i].RenderMode);
 
-			if (ImGui::Combo("Projection", &viewTypeIdx, GViewTypeLabels, IM_ARRAYSIZE(GViewTypeLabels)))
+			if (ImGui::Combo("Projection", &ViewTypeIdx, ViewportUI::ViewTypeLabels.data(), static_cast<int>(ViewportUI::ViewTypeLabels.size())))
 			{
-				auto NewType = static_cast<ECameraViewType>(viewTypeIdx);
+				auto NewType = static_cast<EViewportViewType>(ViewTypeIdx);
 				ViewportManager->SetProjectionMode(i, NewType);
 			}
 
-			if (ImGui::Combo("Render Mode", &renderModeIdx, CameraMode, IM_ARRAYSIZE(CameraMode)))
+			if (ImGui::Combo("Render Mode", &RenderModeIdx, ViewportUI::RenderModeLabels.data(), static_cast<int>(ViewportUI::RenderModeLabels.size())))
 			{
-				auto NewMode = static_cast<EViewModeIndex>(renderModeIdx);
+				auto NewMode = static_cast<EViewportRenderMode>(RenderModeIdx);
 				ViewportManager->SetViewMode(i, NewMode);
 			}
 			ImGui::Spacing();
@@ -78,11 +61,11 @@ void UViewSettingsWidget::RenderWidget()
 		Grid->SetCellSize(CurrentCellSize);	
 	}
 
-	if (ImGui::Combo("View Mode", &ViewModeIndex, CameraMode, IM_ARRAYSIZE(CameraMode)))
+	if (ImGui::Combo("View Mode", &ViewModeIndex, ViewportUI::RenderModeLabels.data(), static_cast<int>(ViewportUI::RenderModeLabels.size())))
 	{
-		if (ViewModeIndex >= 0 && ViewModeIndex < static_cast<int32>(EViewModeIndex::End))
+		if (ViewModeIndex >= 0 && ViewModeIndex < static_cast<int32>(EViewportRenderMode::End))
 		{
-			URenderer::GetInstance().SetViewMode(static_cast<EViewModeIndex>(ViewModeIndex));
+			URenderer::GetInstance().SetViewMode(static_cast<EViewportRenderMode>(ViewModeIndex));
 		}
 	}
 

@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <FxCompile Include="Asset\Shader\SampleShader.hlsl" />
-    <FxCompile Include="Asset\Shader\TextShader.hlsl" />
-    <FxCompile Include="Asset\Shader\LineInstanced.hlsl" />
+    <FxCompile Include="Asset\Shader\LineInstanced.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shader\SampleShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Data\Shader\StaticMeshShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shader\TextShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Private\\Core\\Object.cpp" />
-    <ClCompile Include="ImGui\imgui.cpp" />
-    <ClCompile Include="ImGui\imgui_demo.cpp" />
-    <ClCompile Include="ImGui\imgui_draw.cpp" />
-    <ClCompile Include="ImGui\imgui_impl_dx11.cpp" />
-    <ClCompile Include="ImGui\imgui_impl_win32.cpp" />
-    <ClCompile Include="ImGui\imgui_tables.cpp" />
-    <ClCompile Include="ImGui\imgui_widgets.cpp" />
     <ClCompile Include="Private\\Level\\Level.cpp" />
     <ClCompile Include="Private\\Manager\Input\\InputManager.cpp" />
     <ClCompile Include="Private\\Manager\Level\\LevelManager.cpp" />
@@ -39,7 +41,6 @@
     <ClCompile Include="Private\\Render\Renderer\\Pipeline.cpp" />
     <ClCompile Include="Private\\Render\Renderer\\Renderer.cpp" />
     <ClCompile Include="Private\\Render\UI\Factory\\UIWindowFactory.cpp" />
-    <ClCompile Include="Private\\Render\UI\ImGui\\ImGuiHelper.cpp" />
     <ClCompile Include="Private\\Render\UI\Window\\UIWindow.cpp" />
     <ClCompile Include="Global\Memory.cpp" />
     <ClCompile Include="Private\\Render\UI\Window\\ConsoleWindow.cpp" />
@@ -86,25 +87,43 @@
     <ClCompile Include="Private\Math\AABB.cpp" />
     <ClCompile Include="Private\\Render\Renderer\\LineBatchRenderer.cpp" />
     <ClCompile Include="Global\Quat.cpp" />
+    <ClCompile Include="Private\Mesh\MeshComponent.cpp" />
+    <ClCompile Include="Private\Mesh\StaticMeshComponent.cpp" />
+    <ClCompile Include="Private\Mesh\StaticMeshActor.cpp" />
     <ClCompile Include="Private\Manager\Viewport\ViewportManager.cpp" />
     <ClCompile Include="Private\Mesh\StaticMesh\ObjImporter.cpp" />
     <ClCompile Include="Private\Mesh\StaticMesh\ObjManager.cpp" />
     <ClCompile Include="Private\Mesh\StaticMesh\StaticMesh.cpp" />
+    <ClCompile Include="ImGui\imgui.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_demo.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_draw.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_impl_dx11.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_impl_win32.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_tables.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGui\imgui_widgets.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\\Render\UI\ImGui\\ImGuiHelper.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\\Core\\Object.h" />
     <ClInclude Include="Global\Constant.h" />
-    <ClInclude Include="Global\Enum.h" />
     <ClInclude Include="Global\Function.h" />
     <ClInclude Include="Global\Macro.h" />
-    <ClInclude Include="ImGui\imconfig.h" />
-    <ClInclude Include="ImGui\imgui.h" />
-    <ClInclude Include="ImGui\imgui_impl_dx11.h" />
-    <ClInclude Include="ImGui\imgui_impl_win32.h" />
-    <ClInclude Include="ImGui\imgui_internal.h" />
-    <ClInclude Include="ImGui\imstb_rectpack.h" />
-    <ClInclude Include="ImGui\imstb_textedit.h" />
-    <ClInclude Include="ImGui\imstb_truetype.h" />
     <ClInclude Include="Public\\Level\\Level.h" />
     <ClInclude Include="Public\\Manager\Input\\InputManager.h" />
     <ClInclude Include="Public\\Manager\Level\\LevelManager.h" />
@@ -131,7 +150,6 @@
     <ClInclude Include="Public\\Render\Renderer\\Pipeline.h" />
     <ClInclude Include="Public\\Render\Renderer\\Renderer.h" />
     <ClInclude Include="Public\\Render\UI\Factory\\UIWindowFactory.h" />
-    <ClInclude Include="Public\\Render\UI\ImGui\\ImGuiHelper.h" />
     <ClInclude Include="Public\\Render\UI\Window\\UIWindow.h" />
     <ClInclude Include="Global\Matrix.h" />
     <ClInclude Include="Global\Memory.h" />
@@ -147,7 +165,6 @@
     <ClInclude Include="Global\Types.h" />
     <ClInclude Include="Public\\Mesh\\SquareActor.h" />
     <ClInclude Include="Global\Vector.h" />
-    <ClInclude Include="Global\CoreTypes.h" />
     <ClInclude Include="Public\Render\UI\Widget\ViewSettingsWidget.h" />
     <ClInclude Include="Public\\Core\\Class.h" />
     <ClInclude Include="Public\\Render\UI\Widget\\ActorTerminationWidget.h" />
@@ -186,15 +203,65 @@
     <ClInclude Include="Public\\Render\Renderer\\LineBatchRenderer.h" />
     <ClInclude Include="Global\Quat.h" />
     <ClInclude Include="Public\Core\ObjectIterator.h" />
+    <ClInclude Include="Public\Mesh\MeshComponent.h" />
+    <ClInclude Include="Public\Mesh\StaticMeshComponent.h" />
+    <ClInclude Include="Public\Mesh\StaticMeshActor.h" />
     <ClInclude Include="Public\Manager\Viewport\ViewportManager.h" />
     <ClInclude Include="Public\Mesh\StaticMesh\ObjImporter.h" />
     <ClInclude Include="Public\Mesh\StaticMesh\ObjManager.h" />
     <ClInclude Include="Public\Mesh\StaticMesh\StaticMesh.h" />
+    <ClInclude Include="ViewportTypes.h">
+      <Filter>Enums</Filter>
+    </ClInclude>
+    <ClInclude Include="Global\CoreTypes.h">
+      <Filter>Enums</Filter>
+    </ClInclude>
+    <ClInclude Include="Global\Enum.h">
+      <Filter>Enums</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imconfig.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_impl_dx11.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_impl_win32.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_internal.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\\Render\UI\ImGui\\ImGuiHelper.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imstb_rectpack.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imstb_textedit.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imstb_truetype.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Asset\Font\Roboto-Medium.dds" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{74992a3c-3ed0-4f1c-9a59-ea44381a06ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Enums">
+      <UniqueIdentifier>{5f5cd6ae-899b-43e7-b4d9-1e635246c96f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImGui">
+      <UniqueIdentifier>{dc154a9e-b7a2-49e7-aa4f-28f386c885e4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

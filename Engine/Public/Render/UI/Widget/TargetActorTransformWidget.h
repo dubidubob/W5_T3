@@ -18,7 +18,7 @@ public:
 	~UTargetActorTransformWidget() override;
 
 private:
-	AActor* SelectedActor;
+	class AActor* SelectedActor;
 
 	FVector EditLocation;
 	FVector EditRotation;
