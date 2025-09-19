@@ -11,7 +11,7 @@ public:
 
 	// Base Path
 	const path& GetRootPath() const { return RootPath; }
-	const path& GetAssetPath() const { return AssetPath; }
+	const path& GetDataPath() const { return DataPath; }
 
 	// Detailed Asset Path
 	const path& GetShaderPath() const { return ShaderPath; }
@@ -24,7 +24,7 @@ public:
 
 private:
 	path RootPath;
-	path AssetPath;
+	path DataPath;
 	path ShaderPath;
 	path TexturePath;
 	path ModelPath;

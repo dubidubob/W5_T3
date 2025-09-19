@@ -19,7 +19,7 @@ void UPathManager::Init()
 
 	UE_LOG("PathManager: Initialized Successfully");
 	UE_LOG("PathManager: Solution Path: %s", RootPath.string().c_str());
-	UE_LOG("PathManager: Asset Path: %s", AssetPath.string().c_str());
+	UE_LOG("PathManager: Asset Path: %s", DataPath.string().c_str());
 }
 
 /**
@@ -42,14 +42,14 @@ void UPathManager::GetEssentialPath()
 {
 	// Add Essential
 
-	AssetPath = RootPath / L"Asset";
-	ShaderPath = AssetPath / L"Shader";
-	TexturePath = AssetPath / "Texture";
-	ModelPath = AssetPath / "Model";
-	AudioPath = AssetPath / "Audio";
-	WorldPath = AssetPath / "World";
-	ConfigPath = AssetPath / "Config";
-	FontPath = AssetPath / "Font";
+	DataPath = RootPath / L"Data";
+	ShaderPath = DataPath / L"Shader";
+	TexturePath = DataPath / "Texture";
+	ModelPath = DataPath / "Model";
+	AudioPath = DataPath / "Audio";
+	WorldPath = DataPath / "World";
+	ConfigPath = DataPath / "Config";
+	FontPath = DataPath / "Font";
 }
 
 /**
@@ -58,7 +58,7 @@ void UPathManager::GetEssentialPath()
 void UPathManager::ValidateAndCreateDirectories() const
 {
 	TArray<path> DirectoriesToCreate = {
-		AssetPath,
+		DataPath,
 		ShaderPath,
 		TexturePath,
 		ModelPath,
