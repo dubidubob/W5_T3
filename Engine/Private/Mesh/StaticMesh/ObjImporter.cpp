@@ -242,6 +242,12 @@ void FObjImporter::ConvertObjToStaticMesh(const FObjInfo& ObjInfo, FStaticMesh& 
 		Vertex.Pos = ObjInfo.Positions[PosIndex];
 		Vertex.Tex = ObjInfo.UVs[UVIndex];
 		Vertex.Normal = ObjInfo.Normals[NormalIndex];
+		Vertex.Color = FVector4(
+			static_cast<float>(rand()) / RAND_MAX, // R
+			static_cast<float>(rand()) / RAND_MAX, // G
+			static_cast<float>(rand()) / RAND_MAX, // B
+			1.0f                                   // A (항상 불투명)
+		);
 		// OutStaticMesh에 추가
 		OutStaticMesh.Vertices.Add(Vertex);
 		OutStaticMesh.Indices.Add(Idx);
