@@ -84,7 +84,7 @@ void UCamera::Update()
 	case ECameraViewType::ECT_Perspective:
 		UpdateMatrixByPers();
 		break;
-	case ECameraViewType::ECT_Orthographic:
+	case ECameraViewType::ECT_Ortho_Front:
 		UpdateMatrixByOrth();
 		break;
 	}
@@ -171,7 +171,7 @@ FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
 	// (View * B)^-1 = B^-1 * View^-1
 	Result.View = (FMatrix::BasisUEToLHY() * R) * T;
 
-	if (CameraViewType == ECameraViewType::ECT_Orthographic)
+	if (CameraViewType == ECameraViewType::ECT_Ortho_Front)
 	{
 		const float OrthoHeight = OrthoWidth / Aspect;
 		const float Left = -OrthoWidth * 0.5f;
@@ -261,7 +261,7 @@ FRay UCamera::ConvertToWorldRay(float NdcX, float NdcY) const
 		Ray.Origin = CameraPosition;
 		Ray.Direction = DirectionVector;
 	}
-	else if (CameraViewType == ECameraViewType::ECT_Orthographic)
+	else if (CameraViewType == ECameraViewType::ECT_Ortho_Front)
 	{
 		FVector4 DirectionVector = WorldFar - WorldNear;
 		DirectionVector.Normalize();
@@ -376,7 +376,7 @@ void UCamera::RefreshViewMatrices()
 		case ECameraViewType::ECT_Perspective:
 			UpdateMatrixByPers();
 			break;
-		case ECameraViewType::ECT_Orthographic:
+		case ECameraViewType::ECT_Ortho_Front:
 			UpdateMatrixByOrth();
 			break;
 	}

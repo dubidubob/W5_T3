@@ -1,14 +1,9 @@
 #include "pch.h"
 #include "Editor/Camera.h"
+#include "ViewportTypes.h"
 #include "Render/UI/Widget/CameraControlWidget.h"
 
 IMPLEMENT_CLASS(UCameraControlWidget, UWidget)
-
-// Camera Mode
-static const char* CameraMode[] = {
-	"Perspective",
-	"Orthographic"
-};
 
 UCameraControlWidget::UCameraControlWidget()
 {
@@ -63,7 +58,11 @@ void UCameraControlWidget::RenderWidget()
 
 	ImGui::Spacing();
 
-	if (ImGui::Combo("Mode", &CameraModeIndex, CameraMode, IM_ARRAYSIZE(CameraMode)))
+	if (ImGui::Combo(
+		"Mode",
+		&CameraModeIndex,
+		ViewportUI::ViewTypeLabels.data(),
+		static_cast<int>(ViewportUI::ViewTypeLabels.size())))
 	{
 		PushToCamera();
 	}
@@ -154,7 +153,7 @@ void UCameraControlWidget::PushToCamera()
 	 */
 	Camera->SetCameraType(CameraModeIndex == 0
 		                      ? ECameraViewType::ECT_Perspective
-		                      : ECameraViewType::ECT_Orthographic);
+		                      : ECameraViewType::ECT_Ortho_Front);
 
 	/*
 	 * @brief 카메라 파라미터 설정
