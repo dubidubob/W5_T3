@@ -147,7 +147,7 @@ FPrimitiveMetadata FLevelSerializer::JsonToPrimitive(const JSON& InJsonData, uin
 /**
   * @brief FCameraMetadata를 JSON으로 변환 
   */
-JSON FLevelSerializer::CameraMetadataToJson(const FCameraMetaData& InCamera)
+JSON FLevelSerializer::CameraMetadataToJson(const FCameraMetadata& InCamera)
 {
 	JSON CameraJson;
 	CameraJson["Location"] = VectorToJson(InCamera.Location);
@@ -160,9 +160,9 @@ JSON FLevelSerializer::CameraMetadataToJson(const FCameraMetaData& InCamera)
 /**
   * @brief JSON을 FCameraMetadata으로 변환
   */
-FCameraMetaData FLevelSerializer::JsonToCamera(const JSON& InCameraData)
+FCameraMetadata FLevelSerializer::JsonToCamera(const JSON& InCameraData)
 {
-	FCameraMetaData CameraMetadata;
+	FCameraMetadata CameraMetadata;
 
 	try
 	{
