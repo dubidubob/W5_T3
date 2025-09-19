@@ -86,6 +86,7 @@ public:
 	void SaveCameraSettings() const;
 	void LoadCameraSettings();
 
+	// jft copy from main camera, only used for rendering
 	void CopyFrom(const UCamera& Other);
 	void RefreshViewMatrices();
 
@@ -135,8 +136,4 @@ private:
 
 	// Dynamic Mouse Sensitivity
 	float CurrentMouseSensitivity;
-
-private:
-	void UpdateBasisVectors();
-	void UpdateViewProjectionMatricesInternal();
 };

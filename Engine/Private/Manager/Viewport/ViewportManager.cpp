@@ -1,5 +1,16 @@
 #include "pch.h"
 #include "Manager/Viewport/ViewportManager.h"
+#include "Editor/Camera.h"
+
+void UViewportManager::SetSubCamera(UCamera* InCamera)
+{
+	int CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
+	for (int i = 0; i < CameraCnt; i++)
+	{
+		Viewports[i].Camera = new UCamera();
+		Viewports[i].Camera->CopyFrom(*InCamera);
+	}
+}
 
 // jft, spliter should expand this feature
 void UViewportManager::UpdateViewportRects(const POINT& WindowSize)

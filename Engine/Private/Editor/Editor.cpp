@@ -21,6 +21,7 @@ IMPLEMENT_CLASS(UEditor, UObject)
 UEditor::UEditor()
 {
 	ObjectPicker.SetCamera(&Camera);
+	ViewportManager.SetSubCamera(&Camera);
 
 	// Set Camera to Control Panel
 	auto& UIManager = UUIManager::GetInstance();
@@ -36,14 +37,14 @@ UEditor::UEditor()
 UEditor::~UEditor() = default;
 
 void UEditor::Update()
-{
-	// todo : no cacheing?
-	auto& Renderer = URenderer::GetInstance();
+{	
 	Camera.Update();
 
 	ProcessMouseInput(ULevelManager::GetInstance().GetCurrentLevel());
 	ProcessKeyboardInput();
 
+	// todo : no cacheing?
+	auto& Renderer = URenderer::GetInstance();
 	Renderer.UpdateConstant(Camera.GetFViewProjConstants());
 }
 

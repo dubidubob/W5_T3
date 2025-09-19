@@ -349,3 +349,36 @@ void UCamera::LoadCameraSettings()
 	CurrentMouseSensitivity = max(LoadedSensitivity, MIN_MOUSE_SENSITIVITY);
 	CurrentMouseSensitivity = min(CurrentMouseSensitivity, MAX_MOUSE_SENSITIVITY);
 }
+
+void UCamera::CopyFrom(const UCamera& Other)
+{
+	SetLocation(Other.GetLocation());
+	SetRotation(Other.GetRotation());
+	FovY = Other.GetFovY();
+	Aspect = Other.GetAspect();
+	NearZ = Other.GetNearZ();
+	FarZ = Other.GetFarZ();
+	CameraType = ECameraType::ECT_Orthographic;
+	CurrentMoveSpeed = Other.GetMoveSpeed();
+	CurrentMouseSensitivity = Other.GetMouseSensitivity();
+
+	RefreshViewMatrices();
+}
+
+void UCamera::RefreshViewMatrices()
+{
+	Forward = FVector4(1, 0, 0, 1) * FMatrix::RotationMatrixCamera(FVector::GetDegreeToRadian(RelativeRotation));
+	Forward.Normalize();
+	Up = FVector(0, 0, 1);
+	Right = Forward.Cross(Up);
+
+	switch (CameraType)
+	{
+	case ECameraType::ECT_Perspective:
+		UpdateMatrixByPers();
+		break;
+	case ECameraType::ECT_Orthographic:
+		UpdateMatrixByOrth();
+		break;
+	}
+}

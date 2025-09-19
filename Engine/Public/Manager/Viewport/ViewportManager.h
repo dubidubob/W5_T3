@@ -24,6 +24,7 @@ struct FViewportContext {
 class UViewportManager
 {
 public:
+	void SetSubCamera(UCamera* InCamera);
 	void UpdateViewportRects(const POINT& WindowSize);
 
 	void SetProjectionMode(int InIdx, EViewportViewType InViewType) { Viewports[InIdx].ViewType = InViewType; }
@@ -32,6 +33,5 @@ public:
 	FViewportContext* GetViewports() { return Viewports; }
 private:
 	FViewportContext Viewports[4];
-
 };
 
