@@ -23,6 +23,8 @@ public:
 	static EPrimitiveType StringToPrimitiveType(const string& InTypeString);
 	static JSON PrimitiveMetadataToJson(const FPrimitiveMetadata& InPrimitive);
 	static FPrimitiveMetadata JsonToPrimitive(const JSON& InJsonData, uint32 InID);
+	static JSON CameraMetadataToJson(const FCameraMetaData& InCamera);
+	static FCameraMetaData JsonToCamera(const JSON& InCameraData);
 	static JSON LevelToJson(const FLevelMetadata& InLevelData);
 	static FLevelMetadata JsonToLevel(JSON& InJsonData);
 	static bool SaveLevelToFile(const FLevelMetadata& InLevelData, const string& InFilePath);
