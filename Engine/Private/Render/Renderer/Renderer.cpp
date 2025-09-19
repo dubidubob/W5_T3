@@ -382,12 +382,14 @@ void URenderer::Update(UEditor* Editor)
 		for (int i = 0; i < 4; i++)
 		{
 			GetDeviceContext()->RSSetViewports(1, &ViewportArray[i].Viewport);
-			UpdateConstant(ViewportArray[i].Camera->GetFViewProjConstants());
+
 			SetViewMode(ViewportArray[i].RenderMode);
+
+			UpdateConstant(ViewportArray[i].Camera->GetFViewProjConstants());
+
 			DeviceResources->UpdateViewport();
 
 			RenderLevel();
-
 			Editor->RenderEditorBatched();
 			RenderTest(Editor->GetCameraLocation());
 		}
