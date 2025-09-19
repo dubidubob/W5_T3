@@ -63,6 +63,11 @@ const FVector& UEditor::GetCameraLocation()
 	return Camera.GetLocation();
 }
 
+UCamera* UEditor::GetCamera()
+{
+	return &Camera;
+}
+
 void UEditor::RenderEditorBatched()
 {
 	ULineBatchRenderer& LineBatch = ULineBatchRenderer::GetInstance();

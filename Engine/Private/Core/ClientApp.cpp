@@ -101,12 +101,13 @@ int FClientApp::InitializeSystem()
 
 	// UE_LOG("=== Engine Initialization Completed ===");
 
-	// Create Default Level
-	// TODO(KHJ): 나중에 Init에서 처리하도록 하는 게 맞을 듯
-	ULevelManager::GetInstance().CreateDefaultLevel();
-
 	// Initialize Editor
 	Editor = NewObject<UEditor>();
+
+	// Create Default Level
+	// TODO(KHJ): 나중에 Init에서 처리하도록 하는 게 맞을 듯
+	ULevelManager::GetInstance().CreateDefaultLevel(Editor->GetCamera());
+
 
 	return S_OK;
 }

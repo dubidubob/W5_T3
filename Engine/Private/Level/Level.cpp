@@ -21,7 +21,8 @@ ULevel::~ULevel()
 	// 	SafeDelete(Actor);
 	// }
 
-	SafeDelete(CameraPtr);
+	// 카메라의 실제 주인은 Editor라 삭제하면 안됨.
+	//SafeDelete(CameraPtr);
 }
 
 void ULevel::Init()

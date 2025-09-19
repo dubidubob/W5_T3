@@ -9,6 +9,7 @@ using JSON = json::JSON;
 enum class EPrimitiveType : uint8_t;
 struct FLevelMetadata;
 struct FPrimitiveMetadata;
+struct FCameraMetadata;
 
 /**
  * @brief Level 직렬화에 관여하는 클래스

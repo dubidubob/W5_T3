@@ -22,6 +22,7 @@ public:
 	void Update();
 
 	const FVector& GetCameraLocation();
+	UCamera* GetCamera();
 
 	/** 배칭 렌더링 버전 */
 	// void RenderEditor();

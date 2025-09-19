@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Manager/Level/LevelManager.h"
 
+#include "Editor/Camera.h"
 #include "Level/Level.h"
 #include "Mesh/CubeActor.h"
 #include "Mesh/SphereActor.h"
@@ -55,10 +56,11 @@ void ULevelManager::Shutdown()
  * @brief 기본 레벨을 생성하는 함수
  * XXX(KHJ): 이걸 지워야 할지, 아니면 Main Init에서만 배제할지 고민
  */
-void ULevelManager::CreateDefaultLevel()
+void ULevelManager::CreateDefaultLevel(UCamera* InCamera)
 {
 	ULevel* NewLevel = NewObject<ULevel>();
 	NewLevel->SetName("Default");
+	NewLevel->SetCamera(InCamera);
 
 	Levels["Default"] = NewLevel;
 	LoadLevel("Default");
@@ -129,7 +131,7 @@ bool ULevelManager::LoadLevel(const FString& InLevelName, const FString& InFileP
 	// Make New Level
 	ULevel* NewLevel = NewObject<ULevel>();
 	NewLevel->SetName(InLevelName);
-
+	NewLevel->SetCamera(CurrentLevel->GetCamera()); // insert current level's camera ptr to new level 
 	// 직접 LevelSerializer를 사용하여 로드
 	try
 	{
@@ -176,7 +178,7 @@ bool ULevelManager::LoadLevel(const FString& InLevelName, const FString& InFileP
 	{
 		// 기존 레벨이 있다면 정리
 		ULevel* OldLevel;
-
+		
 		if (Levels.find(InLevelName) != Levels.end())
 		{
 			OldLevel = Levels[InLevelName];
@@ -418,8 +420,9 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 		CameraPtr->SetFovY(InMetadata.PerspectiveCamera.FOV);
 		CameraPtr->SetNearZ(InMetadata.PerspectiveCamera.NearClip);
 		CameraPtr->SetFarZ(InMetadata.PerspectiveCamera.FarClip);
+
+		CameraPtr->RefreshViewMatrices();
 	}
-	InLevel->SetCamera(CameraPtr);
 	UE_LOG("LevelManager: 레벨이 메타데이터로부터 성공적으로 로드되었습니다");
 	return true;
 }

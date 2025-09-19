@@ -52,6 +52,31 @@ struct FPrimitiveMetadata
 		return ID == InOther.ID;
 	}
 };
+/**
+ * @brief Perspective Camera Metadata Struct
+ * @param Location 카메라 위치
+ * @param Rotation 카메라 회전
+ * @param FOV 카메라 fov
+ * @param NearClip 카메라 near
+ * @param FarClip 카메라 far
+ */
+struct FCameraMetadata
+{
+	FVector Location;
+	FVector Rotation;
+	float FOV;
+	float NearClip;
+	float FarClip;
+
+	FCameraMetadata()
+		: Location(0.0f, 2.0f, -5.0f),
+		Rotation(0.0f, 0.0f, 0.0f),
+		FOV(60.0f),
+		NearClip(0.1f),
+		FarClip(1000.0f)
+	{
+	}
+};
 
 /**
  * @brief Level Meta Data Struct
@@ -122,28 +147,3 @@ struct FLevelMetadata
 	}
 };
 
-/**
- * @brief Perspective Camera Metadata Struct
- * @param Location 카메라 위치
- * @param Rotation 카메라 회전
- * @param FOV 카메라 fov
- * @param NearClip 카메라 near
- * @param FarClip 카메라 far
- */
-struct FCameraMetadata
-{
-	FVector Location;
-	FVector Rotation;
-	float FOV;
-	float NearClip;
-	float FarClip;
-
-	FCameraMetadata()
-		: Location(0.0f, 2.0f, -5.0f),
-		Rotation(0.0f, 0.0f, 0.0f),
-		FOV(60.0f),
-		NearClip(0.1f),
-		FarClip(1000.0f)
-	{
-	}
-};

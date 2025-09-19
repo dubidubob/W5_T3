@@ -3,7 +3,7 @@
 
 #include "json.hpp"
 #include "Utility/Metadata.h"
-
+#include "Utility/Metadata.h"
 using json::JSON;
 
 /**
@@ -201,8 +201,10 @@ FCameraMetadata FLevelSerializer::JsonToCamera(const JSON& InCameraData)
 JSON FLevelSerializer::LevelToJson(const FLevelMetadata& InLevelData)
 {
 	JSON LevelJson;
+
 	LevelJson["Version"] = InLevelData.Version;
 	LevelJson["NextUUID"] = InLevelData.NextUUID;
+
 
 	JSON PrimitivesJson;
 	for (const auto& [ID, Primitive] : InLevelData.Primitives)
@@ -211,8 +213,7 @@ JSON FLevelSerializer::LevelToJson(const FLevelMetadata& InLevelData)
 	}
 	LevelJson["Primitives"] = PrimitivesJson;
 
-	JSON CameraJson;
-	CameraJson = CameraMetadataToJson(InLevelData.PerspectiveCamera);
+	JSON CameraJson = CameraMetadataToJson(InLevelData.PerspectiveCamera);
 	LevelJson["PerspectiveCamera"] = CameraJson;
 
 	return LevelJson;

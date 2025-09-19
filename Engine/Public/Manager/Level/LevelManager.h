@@ -2,6 +2,7 @@
 #include "Core/Object.h"
 
 class ULevel;
+class UCamera;
 struct FLevelMetadata;
 
 class ULevelManager : public UObject
@@ -11,7 +12,7 @@ class ULevelManager : public UObject
 
 public:
 	void Update() const;
-	void CreateDefaultLevel();
+	void CreateDefaultLevel(UCamera* InCamera);
 	void RegisterLevel(const FString& InName, ULevel* InLevel);
 	void LoadLevel(const FString& InName);
 	void Shutdown();
