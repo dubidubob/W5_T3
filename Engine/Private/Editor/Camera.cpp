@@ -140,7 +140,9 @@ void UCamera::UpdateMatrixByOrth()
 	/**
 	 * @brief Projection 행렬 연산
 	 */
-	OrthoWidth = 2.0f * std::tanf(FVector::GetDegreeToRadian(FovY) * 0.5f);
+	// todo : zoom feature needed
+	const float BaseOrthoWidth = 50.0f;
+	OrthoWidth = BaseOrthoWidth; // 2.0f * std::tanf(FVector::GetDegreeToRadian(FovY) * 0.5f);
 	const float OrthoHeight = OrthoWidth / Aspect;
 	const float Left = -OrthoWidth * 0.5f;
 	const float Right1 = OrthoWidth * 0.5f;

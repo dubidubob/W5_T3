@@ -30,6 +30,7 @@ UEditor::UEditor()
 	UViewSettingsWidget* ViewSettingsWidget =
 		Cast<UViewSettingsWidget>(UIManager.FindWidget("UViewSettingsWidget"));
 	ViewSettingsWidget->SetGrid(&Grid);
+	ViewSettingsWidget->SetRenderer(&URenderer::GetInstance());
 };
 
 UEditor::~UEditor() = default;

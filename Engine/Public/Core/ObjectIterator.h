@@ -15,9 +15,9 @@ public:
 		return CurrentObject != nullptr;
 	}
 
-	TObject& operator*() const
+	TObject* operator*() const
 	{
-		return *CurrentObject;
+		return CurrentObject;
 	}
 
 	TObject* operator->() const

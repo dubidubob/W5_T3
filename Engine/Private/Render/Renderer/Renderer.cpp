@@ -203,13 +203,13 @@ void URenderer::CreateDefaultShader()
 	ID3DBlob* VertexShaderCSO;
 	ID3DBlob* PixelShaderCSO;
 
-	D3DCompileFromFile(L"Asset/Shader/SampleShader.hlsl", nullptr, nullptr, "MainVS", "vs_5_0", 0, 0,
+	D3DCompileFromFile(L"Data/Shader/SampleShader.hlsl", nullptr, nullptr, "MainVS", "vs_5_0", 0, 0,
 	                   &VertexShaderCSO, nullptr);
 
 	GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
 	                                VertexShaderCSO->GetBufferSize(), nullptr, &DefaultVertexShader);
 
-	D3DCompileFromFile(L"Asset/Shader/SampleShader.hlsl", nullptr, nullptr, "MainPS", "ps_5_0", 0, 0,
+	D3DCompileFromFile(L"Data/Shader/SampleShader.hlsl", nullptr, nullptr, "MainPS", "ps_5_0", 0, 0,
 	                   &PixelShaderCSO, nullptr);
 
 	GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
@@ -235,13 +235,13 @@ void URenderer::CreateTextShader()
 	ID3DBlob* VertexShaderCSO;
 	ID3DBlob* PixelShaderCSO;
 
-	D3DCompileFromFile(L"Asset/Shader/TextShader.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0,
+	D3DCompileFromFile(L"Data/Shader/TextShader.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0,
 	                   &VertexShaderCSO, nullptr);
 
 	GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
 	                                VertexShaderCSO->GetBufferSize(), nullptr, &TextVertexShader);
 
-	D3DCompileFromFile(L"Asset/Shader/TextShader.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0,
+	D3DCompileFromFile(L"Data/Shader/TextShader.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0,
 	                   &PixelShaderCSO, nullptr);
 
 	GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
@@ -272,13 +272,13 @@ void URenderer::CreateLineInstancedShader()
 	ID3DBlob* VertexShaderCSO = nullptr;
 	ID3DBlob* PixelShaderCSO = nullptr;
 
-	D3DCompileFromFile(L"Asset/Shader/LineInstanced.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0,
+	D3DCompileFromFile(L"Data/Shader/LineInstanced.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0,
 	                   &VertexShaderCSO, nullptr);
 
 	GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
 	                                VertexShaderCSO->GetBufferSize(), nullptr, &LineInstancedVertexShader);
 
-	D3DCompileFromFile(L"Asset/Shader/LineInstanced.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0,
+	D3DCompileFromFile(L"Data/Shader/LineInstanced.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0,
 	                   &PixelShaderCSO, nullptr);
 
 	GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
@@ -371,13 +371,36 @@ void URenderer::Update(UEditor* Editor)
 {
 	RenderBegin();
 
-	RenderLevel();
-	// Editor->RenderEditor();
-	Editor->RenderEditorBatched();
-	RenderTest(Editor->GetCameraLocation());
-	//RenderLines();
+	// jft
+	if (bIsWindowDivided)
+	{
+		InitializeViewports();
+		for (int i = 0; i < 4; i++)
+		{
+			GetDeviceContext()->RSSetViewports(1, &vp[i]);
+
+			DeviceResources->UpdateViewport();
+
+			RenderLevel();
+
+			Editor->RenderEditorBatched();
+			RenderTest(Editor->GetCameraLocation());
+		}
+	}
+	else
+	{
+		GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
+		DeviceResources->UpdateViewport();
+
+		RenderLevel();
+		// Editor->RenderEditor();
+		Editor->RenderEditorBatched();
+		RenderTest(Editor->GetCameraLocation());
+		//RenderLines();
+	}
 
 	UUIManager::GetInstance().Render();
+
 
 	RenderEnd();
 }
@@ -392,13 +415,35 @@ void URenderer::RenderBegin()
 	ID3D11DepthStencilView* DepthStencilView = DeviceResources->GetDepthStencilView();
 	GetDeviceContext()->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
+	// jft
+	// GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
 
 	ID3D11RenderTargetView* RenderTargetViews[] = {RenderTargetView}; // 배열 생성
 
 	GetDeviceContext()->OMSetRenderTargets(1, RenderTargetViews, DeviceResources->GetDepthStencilView());
-	DeviceResources->UpdateViewport();
+
+	// jft
+	// DeviceResources->UpdateViewport();
 }
+
+// jft
+void URenderer::InitializeViewports()
+{
+	float W = GetDeviceResources()->GetViewportInfo().Width;
+	float H = GetDeviceResources()->GetViewportInfo().Height;
+	float halfW = W * 0.5f, halfH = H * 0.5f;
+
+	// TL
+	vp[0] = { 0,      0,      halfW, halfH, 0.f, 1.f };
+	// TR
+	vp[1] = { halfW,  0,      halfW, halfH, 0.f, 1.f };
+	// BL
+	vp[2] = { 0,      halfH,  halfW, halfH, 0.f, 1.f };
+	// BR
+	vp[3] = { halfW,  halfH,  halfW, halfH, 0.f, 1.f };
+}
+
+
 
 /**
  * @brief Buffer에 데이터 입력 및 Draw
@@ -498,7 +543,7 @@ void URenderer::RenderTest(const FVector& CameraLocation)
 
 	//텍스처, 샘플러 설정
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
-	ID3D11ShaderResourceView* Srv = ResourceManager.GetTexture("Asset/Font/Pretendard-Regular.dds");
+	ID3D11ShaderResourceView* Srv = ResourceManager.GetTexture("Data/Font/Pretendard-Regular.dds");
 	ID3D11SamplerState* SamplerState = ResourceManager.GetSamplerState(ESamplerType::Text);
 
 	Pipeline->SetShaderResourceView(0, false, Srv);

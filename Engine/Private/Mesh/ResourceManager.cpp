@@ -220,34 +220,30 @@ void UResourceManager::CreateTextSampler()
 	SamplerStates.emplace(ESamplerType::Text, SamplerState);
 }
 
-ID3D11ShaderResourceView* UResourceManager::LoadTexture(const FString& Path)
-{
-	URenderer& Renderer = URenderer::GetInstance();
-	ID3D11Device* Device = Renderer.GetDevice();
-	const wstring WidePath = StringToWideString(Path);
-
-	ID3D11Resource* Texture;
-	ID3D11ShaderResourceView* NewResourceView;
-	HRESULT Hr = DirectX::CreateDDSTextureFromFile(Device, WidePath.c_str(), &Texture, &NewResourceView);
-
-	Texture->Release();
-
-	return NewResourceView;
-}
-
 ID3D11ShaderResourceView* UResourceManager::GetTexture(const FString& Path)
 {
-	if (ShaderResourceViews.count(Path) > 0)
+	auto It = ShaderResourceViews.find(Path);
+	if (It != ShaderResourceViews.end())
 	{
-		return ShaderResourceViews[Path];
-	}
-	else
-	{
-		ID3D11ShaderResourceView* NewResourceView = LoadTexture(Path);
-		ShaderResourceViews.emplace(Path, NewResourceView);
-		return NewResourceView;
+		return It->second;
 	}
 
+	ID3D11ShaderResourceView* NewResourceView = nullptr;
+	if (Path.ends_with(".dds"))
+	{
+		NewResourceView = LoadDDSTexture(Path);
+	}
+	else if (Path.ends_with(".png") || Path.ends_with(".jpg"))
+	{
+		NewResourceView = LoadWICImage(Path);
+	}
+
+	if (NewResourceView)
+	{
+		ShaderResourceViews[Path] = NewResourceView;
+	}
+
+	return NewResourceView;
 }
 
 ID3D11SamplerState* UResourceManager::GetSamplerState(ESamplerType Type)
@@ -267,6 +263,26 @@ const TArray<FCharacterInfo>& UResourceManager::GetCharInfos()
 		LoadCharInfoMap();
 	}
 	return CharInfos;
+}
+
+ID3D11ShaderResourceView* UResourceManager::LoadDDSTexture(const FString& Path)
+{
+	ID3D11Device* Device = URenderer::GetInstance().GetDevice();
+	const wstring WidePath = StringToWideString(Path);
+
+	ID3D11ShaderResourceView* NewResourceView;
+	HRESULT Hr = DirectX::CreateDDSTextureFromFile(Device, WidePath.c_str(), nullptr, &NewResourceView);
+	return NewResourceView;
+}
+
+ID3D11ShaderResourceView* UResourceManager::LoadWICImage(const FString& Path)
+{
+	ID3D11Device* Device = URenderer::GetInstance().GetDevice();
+	const wstring WidePath = StringToWideString(Path);
+
+	ID3D11ShaderResourceView* NewResourceView;
+	HRESULT Hr = DirectX::CreateWICTextureFromFile(Device, WidePath.c_str(), nullptr, &NewResourceView);
+	return NewResourceView;
 }
 
 void UResourceManager::LoadCharInfoMap()
