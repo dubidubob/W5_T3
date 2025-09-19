@@ -374,9 +374,14 @@ void URenderer::Update(UEditor* Editor)
 	// jft
 	if (bIsWindowDivided)
 	{
+		long width = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width;
+		long height = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Height;
+
+		Editor->GetViewportManager()->UpdateViewportRects({width, height});
+		FViewportContext* ViewportArray = Editor->GetViewportManager()->GetViewports();
 		for (int i = 0; i < 4; i++)
 		{
-			GetDeviceContext()->RSSetViewports(1, &vp[i]);
+			GetDeviceContext()->RSSetViewports(1, &ViewportArray[i].Viewport);
 
 			DeviceResources->UpdateViewport();
 

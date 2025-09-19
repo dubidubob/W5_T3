@@ -49,7 +49,9 @@ public:
 
 	FVector CalculatePlaneNormal(const FVector4& Axis);
 	FVector CalculatePlaneNormal(const FVector& Axis);
+	const FVector& GetLocation() const { return RelativeLocation; }
 	FVector& GetLocation() { return RelativeLocation; }
+	const FVector& GetRotation() const { return RelativeRotation; }
 	FVector& GetRotation() { return RelativeRotation; }
 	const FVector& GetForward() const { return Forward; }
 	const FVector& GetUp() const { return Up; }
@@ -83,6 +85,9 @@ public:
 	 */
 	void SaveCameraSettings() const;
 	void LoadCameraSettings();
+
+	void CopyFrom(const UCamera& Other);
+	void RefreshViewMatrices();
 
 	/* *
 	 * @brief 행렬 형태로 저장된 좌표와 변환 행렬과의 연산한 결과를 반환합니다.
@@ -130,4 +135,8 @@ private:
 
 	// Dynamic Mouse Sensitivity
 	float CurrentMouseSensitivity;
+
+private:
+	void UpdateBasisVectors();
+	void UpdateViewProjectionMatricesInternal();
 };

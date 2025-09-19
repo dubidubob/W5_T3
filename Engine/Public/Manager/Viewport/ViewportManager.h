@@ -28,6 +28,8 @@ public:
 
 	void SetProjectionMode(int InIdx, EViewportViewType InViewType) { Viewports[InIdx].ViewType = InViewType; }
 	void SetViewMode(int InIdx, EViewportRenderMode InRenderType) { Viewports[InIdx].RenderMode = InRenderType; }
+
+	FViewportContext* GetViewports() { return Viewports; }
 private:
 	FViewportContext Viewports[4];
 

@@ -9,7 +9,7 @@
 
 struct FQuat;
 
-class ULineBatchRenderer;
+// class ULineBatchRenderer;
 
 class UEditor : public UObject
 {
@@ -26,6 +26,9 @@ public:
 	/** 배칭 렌더링 버전 */
 	// void RenderEditor();
 	void RenderEditorBatched();
+
+	/** jft, ViewportManager Getter*/
+	UViewportManager* GetViewportManager() { return &ViewportManager; }
 
 private:
 
