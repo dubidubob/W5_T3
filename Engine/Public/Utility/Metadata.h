@@ -3,6 +3,7 @@
 /**
  * @brief UObject Meta Data Struct
  * @param ID 고유 ID
+ * @param ObjStaticMeshAsset 스태틱 메쉬 에셋 경로(.obj)
  * @param Location 위치
  * @param Rotation 회전
  * @param Scale 스케일
@@ -11,6 +12,7 @@
 struct FPrimitiveMetadata
 {
 	uint32 ID;
+	FString ObjStaticMeshAsset; 
 	FVector Location;
 	FVector Rotation;
 	FVector Scale;
@@ -21,6 +23,7 @@ struct FPrimitiveMetadata
 	 */
 	FPrimitiveMetadata()
 		: ID(0)
+		  , ObjStaticMeshAsset("")
 		  , Location(0.0f, 0.0f, 0.0f)
 		  , Rotation(0.0f, 0.0f, 0.0f)
 		  , Scale(1.0f, 1.0f, 1.0f)
@@ -55,13 +58,14 @@ struct FPrimitiveMetadata
  * @param Version 레벨 버전
  * @param NextUUID 다음으로 찍어낼 UUID
  * @param Primitives 레벨 내 Primitive를 모아놓은 Metadata Map
+ * @param PerspectiveCamera 카메라 메타데이터
  */
 struct FLevelMetadata
 {
 	uint32 Version;
 	uint32 NextUUID;
 	TMap<uint32, FPrimitiveMetadata> Primitives;
-
+	FCameraMetaData PerspectiveCamera;
 	/**
 	 * @brief 기본 생성자
 	 */
@@ -115,5 +119,31 @@ struct FLevelMetadata
 	{
 		Primitives.clear();
 		NextUUID = 0;
+	}
+};
+
+/**
+ * @brief Perspective Camera Meta Data Struct
+ * @param Location 카메라 위치
+ * @param Rotation 카메라 회전
+ * @param FOV 카메라 fov
+ * @param NearClip 카메라 near
+ * @param FarClip 카메라 far
+ */
+struct FCameraMetaData
+{
+	FVector Location;
+	FVector Rotation;
+	float FOV;
+	float NearClip;
+	float FarClip;
+
+	FCameraMetaData()
+		: Location(0.0f, 2.0f, -5.0f),
+		Rotation(0.0f, 0.0f, 0.0f),
+		FOV(60.0f),
+		NearClip(0.1f),
+		FarClip(1000.0f)
+	{
 	}
 };
