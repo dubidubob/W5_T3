@@ -153,29 +153,6 @@ enum class EFillMode : uint8_t
 	End = 0xFF
 };
 
-/**
- * @brief View Mode State
- */
-enum class EViewModeIndex : uint32
-{
-	Lit,
-	Unlit,
-	Wireframe,
-
-	End
-};
-
-enum class ECameraProjType
-{
-	ECT_Perspective,
-	ECT_Ortho_Front,
-	ECT_Ortho_Back,
-	ECT_Ortho_Top,
-	ECT_Ortho_Bottom,
-	ECT_Ortho_Left,
-	ECT_Ortho_Right
-};
-
 enum class ESamplerType
 {
 	Text,

@@ -1,4 +1,5 @@
 #pragma once
+#include "ViewportTypes.h"
 class UCamera;
 class UViewportManager : public UObject
 {
@@ -14,8 +15,8 @@ public:
 	void UpdateSubCamera(UCamera* InCamera);
 	void UpdateViewportRects(const POINT& WindowSize);
 
-	void SetProjectionMode(uint32 InIdx, ECameraProjType InViewType);
-	void SetViewMode(uint32 InIdx, EViewModeIndex InRenderType);
+	void SetProjectionMode(int InIdx, EViewportViewType InViewType);
+	void SetViewMode(int InIdx, EViewportRenderMode InRenderType) { Viewports[InIdx].RenderMode = InRenderType; }
 
 	struct FViewportInfo* GetViewportInfo(uint32 ViewportIdx);
 

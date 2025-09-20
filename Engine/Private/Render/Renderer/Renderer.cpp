@@ -826,7 +826,6 @@ void URenderer::RenderEditorPrimitive(FEditorPrimitive& Primitive, struct FRende
 	Pipeline->Draw(Primitive.NumVertices, 0);
 }
 
-
 void URenderer::CreateInstanceBuffer()
 {
 	uint32 InByteWidth = sizeof(FTextInstance) * 100;
@@ -1068,7 +1067,7 @@ void URenderer::UpdateConstant(const FViewProjConstants& InViewProjConstants) co
 		{
 			ViewProjectionConstants->View = InViewProjConstants.View;
 			ViewProjectionConstants->Projection = InViewProjConstants.Projection;
-			ViewProjectionConstants->ViewModeIndex = static_cast<uint32>(CurrentViewMode);
+			ViewProjectionConstants->ViewModeIndex = static_cast<uint32>(CurrentRenderMode);
 		}
 		GetDeviceContext()->Unmap(ConstantBufferPerFrame, 0);
 	}
@@ -1143,14 +1142,14 @@ FPipelineInfo URenderer::CreatePipelineInfo(const FRenderState& InRenderState)
 {
 	FRenderState ModifiedRenderState = InRenderState;
 
-	switch (CurrentViewMode)
+	switch (CurrentRenderMode)
 	{
-	case EViewModeIndex::Wireframe:
+	case EViewportRenderMode::Wireframe:
 		ModifiedRenderState.FillMode = EFillMode::WireFrame;
 		ModifiedRenderState.CullMode = ECullMode::None;
 		break;
-	case EViewModeIndex::Lit:
-	case EViewModeIndex::Unlit:
+	case EViewportRenderMode::Lit:
+	case EViewportRenderMode::Unlit:
 	default:
 		break;
 	}
@@ -1168,14 +1167,14 @@ FPipelineInfo URenderer::CreateTextPipelineInfo(const FRenderState& InRenderStat
 {
 	FRenderState ModifiedRenderState = InRenderState;
 
-	switch (CurrentViewMode)
+	switch (CurrentRenderMode)
 	{
-	case EViewModeIndex::Wireframe:
+	case EViewportRenderMode::Wireframe:
 		ModifiedRenderState.FillMode = EFillMode::WireFrame;
 		ModifiedRenderState.CullMode = ECullMode::None;
 		break;
-	case EViewModeIndex::Lit:
-	case EViewModeIndex::Unlit:
+	case EViewportRenderMode::Lit:
+	case EViewportRenderMode::Unlit:
 	default:
 		break;
 	}

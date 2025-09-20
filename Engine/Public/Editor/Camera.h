@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/Object.h"
+#include "ViewportTypes.h"
 class UCamera : public UObject
 {
 	DECLARE_CLASS(UCamera, UObject)
@@ -10,7 +11,7 @@ public:
         // UE 기준(X-forward) 원점 바라보도록 -X로 초기 위치 설정
         RelativeLocation(FVector(-10.0f, 0.0f, 0.0f)), RelativeRotation(FVector(0, 0, 0)),
         FovY(90.f), Aspect(float(Render::INIT_SCREEN_WIDTH) / Render::INIT_SCREEN_HEIGHT),
-        NearZ(0.1f), FarZ(100.f), CameraViewType(ECameraProjType::ECT_Perspective),
+        NearZ(0.1f), FarZ(100.f), CameraViewType(EViewportViewType::Perspective),
         CurrentMoveSpeed(DEFAULT_CAMERA_SPEED), CurrentMouseSensitivity(DEFAULT_MOUSE_SENSITIVITY)
     {
 		LoadCameraSettings();
@@ -18,6 +19,7 @@ public:
 	~UCamera() override {}
 
 	void Update();
+	void Manipulate();
 	void UpdateMatrixByPers();
 	void UpdateMatrixByOrth();
 
@@ -31,7 +33,8 @@ public:
 	void SetNearZ(const float InOtherNearZ) { NearZ = InOtherNearZ; }
 	void SetFarZ(const float InOtherFarZ) { FarZ = InOtherFarZ; }
 
-	void SetCameraType(const ECameraProjType InCameraType);
+	// jft
+	void SetCameraType(const EViewportViewType InCameraType);
 
 	/**
 	 * @brief Getter
@@ -54,7 +57,7 @@ public:
 	const float GetAspect() const { return Aspect; }
 	const float GetNearZ() const { return NearZ; }
 	const float GetFarZ() const { return FarZ; }
-	const ECameraProjType GetCameraType() const { return CameraViewType; }
+	const EViewportViewType GetCameraType() const { return CameraViewType; }
 
 	float GetMoveSpeed() const { return CurrentMoveSpeed; }
 	void SetMoveSpeed(float InSpeed)
@@ -124,7 +127,7 @@ private:
 	float NearZ = {};
 	float FarZ = {};
 	float OrthoWidth = {};
-	ECameraProjType CameraViewType = {};
+	EViewportViewType CameraViewType = {};
 
 	// Ortho Parameters
 	float OrthoDistance = 50.0f;

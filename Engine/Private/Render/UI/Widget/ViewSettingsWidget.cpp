@@ -8,19 +8,13 @@
 
 IMPLEMENT_CLASS(UViewSettingsWidget, UWidget)
 
-UViewSettingsWidget::UViewSettingsWidget() : Grid(nullptr)
-{
-}
+UViewSettingsWidget::UViewSettingsWidget() : Grid(nullptr) {}
 
 UViewSettingsWidget::~UViewSettingsWidget() = default;
 
-void UViewSettingsWidget::Initialize()
-{
-}
+void UViewSettingsWidget::Initialize() {}
 
-void UViewSettingsWidget::Update()
-{
-}
+void UViewSettingsWidget::Update() {}
 
 void UViewSettingsWidget::RenderWidget()
 {
@@ -46,14 +40,14 @@ void UViewSettingsWidget::RenderWidget()
 
 			if (ImGui::Combo("Projection", &ProjTypeIdx, ViewportUI::ViewTypeLabels.data(), static_cast<int>(ViewportUI::ViewTypeLabels.size())))
 			{
-				auto NewType = static_cast<ECameraProjType>(ProjTypeIdx);
-				ViewportManager->SetProjectionMode(Idx, NewType);
+				auto NewType = static_cast<EViewportViewType>(ViewTypeIdx);
+				ViewportManager->SetProjectionMode(i, NewType);
 			}
 
 			if (ImGui::Combo("Render Mode", &ViewModeIdx, ViewportUI::RenderModeLabels.data(), static_cast<int>(ViewportUI::RenderModeLabels.size())))
 			{
-				auto NewMode = static_cast<EViewModeIndex>(ViewModeIdx);
-				ViewportManager->SetViewMode(Idx, NewMode);
+				auto NewMode = static_cast<EViewportRenderMode>(RenderModeIdx);
+				ViewportManager->SetViewMode(i, NewMode);
 			}
 			ImGui::Spacing();
 			ImGui::Separator();
@@ -70,9 +64,9 @@ void UViewSettingsWidget::RenderWidget()
 
 	if (ImGui::Combo("View Mode", &ViewModeIndex, ViewportUI::RenderModeLabels.data(), static_cast<int>(ViewportUI::RenderModeLabels.size())))
 	{
-		if (ViewModeIndex >= 0 && ViewModeIndex < static_cast<int32>(EViewModeIndex::End))
+		if (ViewModeIndex >= 0 && ViewModeIndex < static_cast<int32>(EViewportRenderMode::End))
 		{
-			URenderer::GetInstance().SetViewMode(static_cast<EViewModeIndex>(ViewModeIndex));
+			URenderer::GetInstance().SetViewMode(static_cast<EViewportRenderMode>(ViewModeIndex));
 		}
 	}
 
