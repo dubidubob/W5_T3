@@ -92,7 +92,7 @@ void UCamera::Manipulate()
 	{
 		if (Input.IsKeyDown(EKeyInput::MouseRight))
 		{
-			const FVector MouseDelta = UInputManager::GetInstance().GetMouseDelta();
+			const FVector2 MouseDelta = UInputManager::GetInstance().GetMouseDelta();
 
 			float MouseDeltaX = MouseDelta.X * CurrentMouseSensitivity;
 			float MouseDeltaY = MouseDelta.Y * CurrentMouseSensitivity;

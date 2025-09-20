@@ -184,12 +184,6 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 		bool IsDragging = InputManager.IsKeyDown(EKeyInput::MouseLeft);
 
 		ViewportManager->SetMouseInputNDC(POINT(W, H), MousePositionNdc, IsDragging);
-		UCamera* Cam = ViewportManager->GetSelectedViewportCamera();
-
-		MousePositionNdc = ViewportManager->GetSelectedViewportMousePositionNdc(POINT(W, H), POINT(MouseInput.X, MouseInput.Y));
-		UCamera* cam = ViewportManager->GetSelectedViewportCamera();
-
-		WorldRay = cam->ConvertToWorldRay(MousePositionNdc.X, MousePositionNdc.Y);
 	}
 
 	// 월드 레이 먼저 계산 (릴리즈 커밋에 사용)

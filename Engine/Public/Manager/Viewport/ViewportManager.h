@@ -29,9 +29,7 @@ public:
 	const TArray<class SWindow*>& GetWindows() { return Windows; }
 
 private:
-	FViewportContext Viewports[4];
 	FVector ViewportRatio;
-	int SelectedViewportIdx;
 	int CandidateViewportIdx;
 	bool bSelectUpdated;
 	bool bOrthoManipulating;

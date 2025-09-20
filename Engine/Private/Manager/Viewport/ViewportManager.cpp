@@ -97,7 +97,7 @@ void UViewportManager::SetSubCamera(UCamera* InCamera)
 {
 	Camera = InCamera;
 	int CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
-	for (int i = 0; i < CameraCnt; i++)
+	for (int Idx = 0; Idx < CameraCnt; Idx++)
 	{
 		if (Viewports[Idx])
 		{
@@ -131,8 +131,8 @@ void UViewportManager::SetMainCamera()
 {
 	// jft 이때서야 Candidate Viewport Idx 비로소 반영 todo : ray update를 click 때마다 하기
 	SelectedViewportIdx = CandidateViewportIdx;
-	Camera->CopyFrom(*Viewports[SelectedViewportIdx].Camera);
-	Camera->SetCameraType(Viewports[SelectedViewportIdx].ViewType);
+	Camera->CopyFrom(*Viewports[SelectedViewportIdx]->GetViewportInfo()->Camera);
+	Camera->SetCameraType(Viewports[SelectedViewportIdx]->GetViewportInfo()->ViewType);
 }
 
 void UViewportManager::UpdateSubCamera()
@@ -140,19 +140,19 @@ void UViewportManager::UpdateSubCamera()
 	int32 CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
 	for (int32 Idx = 0; Idx < CameraCnt; Idx++)
 	{
-		if (Viewports[SelectedViewportIdx].ViewType == EViewportViewType::Perspective)
+		if (Viewports[SelectedViewportIdx]->GetViewportInfo()->ViewType == EViewportViewType::Perspective)
 		{
-			if (i != SelectedViewportIdx) continue;
-			Viewports[i].Camera->CopyFrom(*Camera);
+			if (Idx != SelectedViewportIdx) continue;
+			Viewports[Idx]->GetViewportInfo()->Camera->CopyFrom(*Camera);
 		}
 		else
 		{
 			// jft
-			if (bOrthoManipulating && Viewports[i].ViewType != EViewportViewType::Perspective)
+			if (bOrthoManipulating && Viewports[Idx]->GetViewportInfo()->ViewType != EViewportViewType::Perspective)
 			{				
-				FVector NewLocation = Viewports[i].Camera->GetLocation() + Camera->GetOrthoMoveDelta();
-				Viewports[i].Camera->SetLocation(NewLocation);
-				Viewports[i].Camera->RefreshViewMatrices();
+				FVector NewLocation = Viewports[Idx]->GetViewportInfo()->Camera->GetLocation() + Camera->GetOrthoMoveDelta();
+				Viewports[Idx]->GetViewportInfo()->Camera->SetLocation(NewLocation);
+				Viewports[Idx]->GetViewportInfo()->Camera->RefreshViewMatrices();
 			}
 		}
 	}
@@ -168,53 +168,26 @@ void UViewportManager::SetProjectionMode(uint32 InIdx, EViewportViewType InViewT
 	if (Viewports[InIdx])
 	{
 		Viewports[InIdx]->GetViewportInfo()->SetViewType(InViewType);
+		SetMainCamera();
 	}
 }
 
-void UViewportManager::SetProjectionMode(int InIdx, EViewportViewType InViewType)
+void UViewportManager::SetViewMode(uint32 InIdx, EViewportRenderMode InRenderType)
 {
-	Viewports[InIdx].ViewType = InViewType;
-	Viewports[InIdx].Camera->SetCameraType(InViewType);
-	Viewports[InIdx].Camera->RefreshViewMatrices(); // 카메라/VP 갱신
-
-	SetMainCamera();
+	if (Viewports[InIdx])
+	{
+		Viewports[InIdx]->GetViewportInfo()->RenderMode = InRenderType;
+	}
 }
 
-FVector UViewportManager::GetSelectedViewportMousePositionNdc(const POINT& WindowSize, const POINT& InMouse)
+FViewportInfo* UViewportManager::GetViewportInfo(uint32 ViewportIdx)
 {
-	float W = WindowSize.x;
-	float H = WindowSize.y;
-	const float boundaryW = W * ViewportRatio.X;
-	const float boundaryH = H * ViewportRatio.Y;
-
-	int selected = 0;
-
-	// Define Rect
-	struct FRect { float x, y, w, h; };
-	FRect rects[4] = {
-		{ 0.0f,        0.0f,        boundaryW,           boundaryH           }, // 0: LT
-		{ boundaryW,   0.0f,        (W - boundaryW),     boundaryH           }, // 1: RT
-		{ 0.0f,        boundaryH,   boundaryW,           (H - boundaryH)     }, // 2: LB
-		{ boundaryW,   boundaryH,   (W - boundaryW),     (H - boundaryH)     }  // 3: RB
-	};
-
-
-	// Select Viewport
-	auto hitRect = [&](const FRect& r)->bool {
-		return (InMouse.x >= r.x && InMouse.x < r.x + r.w &&
-			InMouse.y >= r.y && InMouse.y < r.y + r.h);
-		};
-	if (hitRect(rects[0])) selected = 0;
-	else if (hitRect(rects[1])) selected = 1;
-	else if (hitRect(rects[2])) selected = 2;
-	else                        selected = 3;
-
-	const FRect& R = rects[selected];
-
-	// Change to Default Viewport MouseInput
-	const float u = (InMouse.x - R.x) / R.w;
-	const float v = (InMouse.y - R.y) / R.h;
-
+	if (Viewports[ViewportIdx])
+	{
+		return Viewports[ViewportIdx]->GetViewportInfo();
+	}
+	return nullptr;
+}
 
 void UViewportManager::SetMouseInputNDC(const POINT& WindowSize, const FVector2& InMouseNDC, bool bIsDragging)
 {
