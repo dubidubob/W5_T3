@@ -81,7 +81,7 @@ const FVector& UEditor::GetCameraLocation()
 
 UCamera* UEditor::GetCamera()
 {
-	return &Camera;
+	return Camera;
 }
 
 void UEditor::RenderEditorBatched()
