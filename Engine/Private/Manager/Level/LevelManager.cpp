@@ -7,6 +7,9 @@
 #include "Mesh/SphereActor.h"
 #include "Mesh/TriangleActor.h"
 #include "Mesh/SquareActor.h"
+#include "Mesh/StaticMeshActor.h"
+#include "Mesh/StaticMeshComponent.h"
+#include "Mesh/StaticMesh/StaticMesh.h"
 #include "Manager/Path/PathManager.h"
 #include "Utility/LevelSerializer.h"
 #include "Utility/Metadata.h"
@@ -321,6 +324,15 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 		// TODO: 액터에서 얻어온게 StaticMeshComp이면
 		//       PrimitiveMeta.Type = EPrimitiveType::StaticMeshComp
 		//       PrimitiveMeat.ObjStaticMeshAsset  = StaticMeshComp->GetAssetPathFileName(); // 직접 구현
+		else if (AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(Actor))
+		{
+			PrimitiveMeta.Type = EPrimitiveType::StaticMeshComp;
+			UStaticMeshComponent* StaticMeshComponent = StaticMeshActor->GetStaticMeshCompoent();
+			if (StaticMeshComponent && StaticMeshComponent->GetStaticMesh())
+			{
+				PrimitiveMeta.ObjStaticMeshAsset = StaticMeshComponent->GetStaticMesh()->GetAssetPathFileName();
+			}
+		}
 		else
 		{
 			UE_LOG("LevelManager: Unknown Actor Type, Skipping...");
@@ -389,6 +401,18 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 		// 	break;
 
 		// TODO: StaticMeshComp type이면 StaticMeshComp용 액터 생성
+		case EPrimitiveType::StaticMeshComp:
+		{
+			AStaticMeshActor* StaticMeshActor = InLevel->SpawnActor<AStaticMeshActor>();
+			NewActor = StaticMeshActor;
+			if (StaticMeshActor)
+			{
+				// TODO: GetStaticMeshComponent로 바꿔달라 요청할 것.
+				UStaticMeshComponent* StaticMeshComponent = StaticMeshActor->GetStaticMeshCompoent();
+				StaticMeshComponent->SetStaticMesh(PrimitiveMeta.ObjStaticMeshAsset);
+			}
+			break;
+		}
 		default:
 			UE_LOG("LevelManager: Unknown Primitive Type: %d", static_cast<int32>(PrimitiveMeta.Type));
 			assert(!"고려하지 않은 Actor 타입");

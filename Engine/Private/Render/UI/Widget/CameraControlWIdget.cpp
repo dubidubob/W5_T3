@@ -32,6 +32,9 @@ void UCameraControlWidget::RenderWidget()
 		SyncFromCamera();
 		bSyncedOnce = true;
 	}
+	// 이게 매번 호출되어야 슬라이더에 반영될 거 같습니다.
+	// TODO: 아직 Test 못해봄
+	SyncFromCamera();
 
 	ImGui::TextUnformatted("Camera Transform");
 	ImGui::Spacing();
