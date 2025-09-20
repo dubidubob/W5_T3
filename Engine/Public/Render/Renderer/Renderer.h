@@ -55,7 +55,9 @@ public:
 	void CreateTextShader();
 	void CreateLineInstancedShader();
 	void CreateConstantBuffer();
+	void CreateDiffuseSamplerBuffer();
 
+	void ReleaseDiffuseSamplerBuffer();
 	void ReleaseDefaultShader();
 	void ReleaseStaticMeshShader();
 	void ReleaseTextShader();
@@ -183,6 +185,8 @@ private:
 	ID3D11Buffer* ConstantBufferCharTable = nullptr;
 	ID3D11Buffer* ConstantBufferInstance = nullptr;
 	//////////////////////////////////////
+
+	ID3D11SamplerState* DiffuseSampler = nullptr;
 
 	ID3D11Buffer* TextInstanceBuffer = nullptr;
 	/////////////////////////////////////

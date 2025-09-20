@@ -1,3 +1,6 @@
+Texture2D DiffuseTexture : register(t1);
+SamplerState DiffuseSampler : register(s0);
+
 cbuffer constants : register(b0)
 {
 	row_major float4x4 world;
@@ -44,6 +47,7 @@ struct PS_INPUT
 {
 	float4 Position : SV_POSITION;
 	float4 Color : COLOR;
+	float2 Tex : TEXCOORD;
 };
 
 PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
@@ -71,6 +75,16 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 
 float4 MainPS(PS_INPUT Input) : SV_TARGET
 {
-	float4 FinalColor = lerp(Input.Color, totalColor, totalColor.a);
-	return FinalColor;
+	// 텍스처 색상 샘플링
+	float4 texColor = DiffuseTexture.Sample(DiffuseSampler, Input.Tex);
+
+    // 기존 색상과 텍스처 혼합
+	float4 finalColor = texColor * Input.Color;
+
+    // totalColor (b2)와도 혼합
+	finalColor = lerp(finalColor, totalColor, totalColor.a);
+
+	return finalColor;
+	//float4 FinalColor = lerp(Input.Color, totalColor, totalColor.a);
+	//return FinalColor;
 }
