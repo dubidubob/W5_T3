@@ -16,8 +16,7 @@ void UCamera::Update()
 	// UE 기준(X-forward, Z-up)으로 Forward 기준축을 X로 변경
 	Forward = FVector4(1, 0, 0, 1) * FMatrix::RotationMatrixCamera(FVector::GetDegreeToRadian(RelativeRotation));
 	Forward.Normalize();
-	// UE 기준 Up 축: Z
-	Up = FVector(0, 0, 1);
+	Up = FVector(0, 0, 1); // Z up
 	Right = Up.Cross(Forward);
 
 	/* Camera 조작*/
@@ -97,7 +96,8 @@ void UCamera::Manipulate()
 
 			float MouseDeltaX = MouseDelta.X * CurrentMouseSensitivity;
 			float MouseDeltaY = MouseDelta.Y * CurrentMouseSensitivity;
-			
+
+			// jft ㅜㅜ
 			switch (CameraViewType)
 			{
 			case EViewportViewType::Front:
@@ -415,6 +415,15 @@ void UCamera::LoadCameraSettings()
 // jft : magic number
 void UCamera::SetCameraType(const EViewportViewType InCameraType)
 {
+	if (bIsSingleVP
+		&& URenderer::GetInstance().GetDividedWindow()
+		&& CameraViewType == EViewportViewType::Perspective
+		&& InCameraType != EViewportViewType::Perspective)
+	{
+		bIsSingleVP = false;
+		SaveCameraInfo();
+	}
+
 	CameraViewType = InCameraType;
 
 	if (InCameraType == EViewportViewType::Perspective)
@@ -462,6 +471,10 @@ void UCamera::SetCameraType(const EViewportViewType InCameraType)
 
 	SetLocation(MoveAxis);
 	SetRotation(CameraRotation);
+}
+
+void UCamera::SaveCameraInfo()
+{
 }
 
 void UCamera::CopyFrom(const UCamera& Other)

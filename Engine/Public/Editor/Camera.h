@@ -35,6 +35,7 @@ public:
 
 	// jft
 	void SetCameraType(const EViewportViewType InCameraType);
+	void SaveCameraInfo();
 
 	/**
 	 * @brief Getter
@@ -134,9 +135,20 @@ private:
 	float OrthoDistance = 50.0f;
 	FVector OrthoMoveDelta;
 
+	// jft : isSwitching to Multi VP?
+	bool bIsSingleVP = true;
+	
 	// Dynamic Movement Speed
 	float CurrentMoveSpeed;
 
 	// Dynamic Mouse Sensitivity
 	float CurrentMouseSensitivity;
+
+	// Saved
+	FVector SavedRelativeLocation = {};
+	FVector SavedRelativeRotation = {};
+	float SaveFovY = {};
+	float SaveAspect = {};
+	float SaveNearZ = {};
+	float SaveFarZ = {};
 };
