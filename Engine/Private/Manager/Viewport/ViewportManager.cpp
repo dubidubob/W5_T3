@@ -205,7 +205,7 @@ void UViewportManager::SetSplitterMouseInput(const POINT& WindowSize, const FVec
 			{
 				if (Viewports[Idx] == SelectedWindow)
 				{
-					SelectedViewportIdx = Idx;
+					CandidateViewportIdx = Idx;
 					break;
 				}
 			}
