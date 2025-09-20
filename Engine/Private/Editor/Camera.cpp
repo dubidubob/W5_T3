@@ -10,6 +10,12 @@ IMPLEMENT_CLASS(UCamera, UObject)
 
 void UCamera::Update()
 {
+	if (!URenderer::GetInstance().GetDividedWindow() && !bIsSingleVP)
+	{
+		bIsSingleVP = true;
+		LoadMainCameraInfo();
+	}
+
 	/*
 	 * QE 상하는 카메라가 보는 방향과 관계 없이 월드 기준으로 상하로 움직인다.
 	 */
@@ -416,12 +422,14 @@ void UCamera::LoadCameraSettings()
 void UCamera::SetCameraType(const EViewportViewType InCameraType)
 {
 	if (bIsSingleVP
-		&& URenderer::GetInstance().GetDividedWindow()
-		&& CameraViewType == EViewportViewType::Perspective
-		&& InCameraType != EViewportViewType::Perspective)
+		&&
+		((CameraViewType == EViewportViewType::Perspective&& InCameraType != EViewportViewType::Perspective)
+		||
+		(URenderer::GetInstance().GetDividedWindow()))
+		)
 	{
 		bIsSingleVP = false;
-		SaveCameraInfo();
+		SaveMainCameraInfo();
 	}
 
 	CameraViewType = InCameraType;
@@ -473,8 +481,26 @@ void UCamera::SetCameraType(const EViewportViewType InCameraType)
 	SetRotation(CameraRotation);
 }
 
-void UCamera::SaveCameraInfo()
+void UCamera::SaveMainCameraInfo()
 {
+	SavedRelativeLocation = RelativeLocation;
+	SavedRelativeRotation = RelativeRotation;
+	SaveFovY = FovY;
+	SaveAspect = Aspect;
+	SaveNearZ = NearZ;
+	SaveFarZ = FarZ;
+	SaveCameraViewType = CameraViewType;
+}
+
+void UCamera::LoadMainCameraInfo()
+{
+	RelativeLocation = SavedRelativeLocation;
+	RelativeRotation = SavedRelativeRotation;
+	FovY = SaveFovY;
+	Aspect = SaveAspect;
+	NearZ = SaveNearZ;
+	FarZ = SaveFarZ;
+	CameraViewType = SaveCameraViewType;
 }
 
 void UCamera::CopyFrom(const UCamera& Other)

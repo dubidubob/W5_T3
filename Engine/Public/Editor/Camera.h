@@ -35,7 +35,8 @@ public:
 
 	// jft
 	void SetCameraType(const EViewportViewType InCameraType);
-	void SaveCameraInfo();
+	void SaveMainCameraInfo();
+	void LoadMainCameraInfo();
 
 	/**
 	 * @brief Getter
@@ -151,4 +152,5 @@ private:
 	float SaveAspect = {};
 	float SaveNearZ = {};
 	float SaveFarZ = {};
+	EViewportViewType SaveCameraViewType = {};
 };
