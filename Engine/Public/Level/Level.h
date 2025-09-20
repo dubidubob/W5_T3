@@ -33,7 +33,7 @@ public:
 	//void AddEditorPrimitiveComponent(AActor* Actor);
 
 	template<typename T, typename... Args>
-	T* SpawnActor(const FString& InName = "");
+	T* SpawnActor();
 	// template<typename T, typename... Args>
 	// T* SpawnEditorActor(Args&&... args);
 
@@ -74,7 +74,7 @@ private:
 };
 
 template <typename T, typename ... Args>
-T* ULevel::SpawnActor(const FString& InName)
+T* ULevel::SpawnActor()
 {
 	T* NewActor = NewObject<T>();
 
@@ -84,8 +84,7 @@ T* ULevel::SpawnActor(const FString& InName)
 	NewActor->SetOuter(this);
 	//Outer 설정 시 Outer의 메모리 카운트에 자신의 메모리 합산 작업 수행
 
-	LevelActors.push_back(NewActor);
-	if (!InName.empty()) { NewActor->SetName(InName); }
+	LevelActors.Add(NewActor);
 	NewActor->BeginPlay();
 
 	UE_LOG("%s", NewActor->GetName().c_str());
