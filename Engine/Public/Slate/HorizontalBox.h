@@ -1,12 +1,8 @@
 #pragma once
-#include "Window.h"
+#include "Box.h"
 
-class SHorizontalBox : public SWindow
+class SHorizontalBox : public SBox
 {
 public:
-	virtual void OnResized() override;
-	void AddChild(SWindow* NewChild);
-
-private:
-	TArray<SWindow*> Children;
+	virtual void OnWindowResized(const POINT& WindowSize) override;
 };

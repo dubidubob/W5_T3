@@ -1,9 +1,30 @@
 #include "pch.h"
 #include "Slate/Viewport.h"
+#include "Editor/Camera.h"
+
+void FViewportInfo::SetProjType(ECameraProjType InProjType)
+{
+	ProjType = InProjType;
+	Camera->SetCameraType(InProjType);
+	Camera->RefreshViewMatrices();
+}
 
 void SViewport::OnWindowResized(const POINT& WindowSize)
 {
 	CurrentWindowSize = WindowSize;
+	UpdateDxViewport(CurrentWindowSize);
+	if (ViewportInfo.Camera)
+	{
+		ViewportInfo.Camera->SetAspect(GetRect().Width / GetRect().Height);
+	}
+}
+
+void SViewport::OnResized()
+{
+	if (ViewportInfo.Camera)
+	{
+		ViewportInfo.Camera->SetAspect(GetRect().Width / GetRect().Height);
+	}
 	UpdateDxViewport(CurrentWindowSize);
 }
 
@@ -11,9 +32,12 @@ void SViewport::UpdateDxViewport(const POINT& WindowSize)
 {
 	FRect NormalizedRect = GetRect();
 
-	// NDC(-1~1) -> Window(0~Width/Height)
+	// NDC X좌표 변환
 	float PixelX = (NormalizedRect.X + 1.0f) * 0.5f * WindowSize.x;
-	float PixelY = (1.0f - NormalizedRect.Y) * 0.5f * WindowSize.y;
+	// NDC Y좌표 변환 (Y축 방향 반전)
+	float TopY = NormalizedRect.Y + NormalizedRect.Height;
+	float PixelY = (1.0f - TopY) * 0.5f * WindowSize.y;
+
 	float PixelWidth = NormalizedRect.Width * 0.5f * WindowSize.x;
 	float PixelHeight = NormalizedRect.Height * 0.5f * WindowSize.y;
 

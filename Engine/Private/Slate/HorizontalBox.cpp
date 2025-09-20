@@ -1,26 +1,32 @@
 #include "pch.h"
 #include "Slate/HorizontalBox.h"
 
-void SHorizontalBox::OnResized()
+void SHorizontalBox::OnWindowResized(const POINT& InWindowSize)
 {
-	FRect NewRect = GetRect();
+	float TotalWidth = 0.0f;
+	for (SWindow* Child : Children) {
+		TotalWidth += Child->GetRect().Width;
+	}
+
+	if (TotalWidth == 0.0f) return;
+
+	FRect Rect = GetRect();
+	float CurrentX = Rect.X;
+	float ParentHeight = Rect.Height;
+	float ParentWidth = Rect.Width;
+
 	for (SWindow* Child : Children)
 	{
-		if (Child)
-		{
-			FRect ChildRect = Child->GetRect();
-			ChildRect.Y = NewRect.Y;
-			ChildRect.Height = NewRect.Height;
+		float Ratio = Child->GetRect().Width / TotalWidth;
+		float NewWidth = ParentWidth * Ratio;
 
-			Child->SetRect(ChildRect);
-		}
+		FRect NewChildRect = { CurrentX, Rect.Y, NewWidth, ParentHeight };
+		Child->SetRect(NewChildRect);
+
+		CurrentX += NewWidth;
 	}
-}
-
-void SHorizontalBox::AddChild(SWindow* NewChild)
-{
-	if (NewChild)
+	for (SWindow* Child : Children)
 	{
-		Children.Add(NewChild);
+		Child->OnWindowResized(InWindowSize);
 	}
 }

@@ -138,7 +138,7 @@ void UCameraControlWidget::SyncFromCamera()
 {
 	if (!Camera) { return; }
 
-	CameraModeIndex = (Camera->GetCameraType() == ECameraViewType::ECT_Perspective) ? 0 : 1;
+	CameraModeIndex = (Camera->GetCameraType() == ECameraProjType::ECT_Perspective) ? 0 : 1;
 	UiFovY = Camera->GetFovY();
 	UiNearZ = Camera->GetNearZ();
 	UiFarZ = Camera->GetFarZ();
@@ -152,8 +152,8 @@ void UCameraControlWidget::PushToCamera()
 	 * @brief 카메라 모드 설정
 	 */
 	Camera->SetCameraType(CameraModeIndex == 0
-		                      ? ECameraViewType::ECT_Perspective
-		                      : ECameraViewType::ECT_Ortho_Back);
+		                      ? ECameraProjType::ECT_Perspective
+		                      : ECameraProjType::ECT_Ortho_Back);
 
 	/*
 	 * @brief 카메라 파라미터 설정

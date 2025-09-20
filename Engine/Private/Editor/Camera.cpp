@@ -52,7 +52,7 @@ void UCamera::Update()
 		/**
 		* @brief 마우스 위치 변화량을 감지하여 카메라의 회전을 담당합니다.
 		*/
-		const FVector MouseDelta = UInputManager::GetInstance().GetMouseDelta();
+		const FVector2 MouseDelta = UInputManager::GetInstance().GetMouseDelta();
 		RelativeRotation.Y += MouseDelta.Y * CurrentMouseSensitivity;
 		RelativeRotation.Z += MouseDelta.X * CurrentMouseSensitivity;
 
@@ -80,10 +80,10 @@ void UCamera::Update()
 
 	switch (CameraViewType)
 	{
-	case ECameraViewType::ECT_Perspective:
+	case ECameraProjType::ECT_Perspective:
 		UpdateMatrixByPers();
 		break;
-	case ECameraViewType::ECT_Ortho_Front:
+	case ECameraProjType::ECT_Ortho_Front:
 		UpdateMatrixByOrth();
 		break;
 	}
@@ -157,34 +157,34 @@ void UCamera::UpdateMatrixByOrth()
 	ViewProjConstants.Projection = P;
 }
 
-void UCamera::SetCameraType(const ECameraViewType InCameraType)
+void UCamera::SetCameraType(const ECameraProjType InCameraType)
 {
 	CameraViewType = InCameraType;
 
-	if (InCameraType != ECameraViewType::ECT_Perspective)
+	if (InCameraType != ECameraProjType::ECT_Perspective)
 	{ // orthographic setting
 		FVector MoveAxis; // z u, x f, y r
 		switch (InCameraType)
 		{
-		case ECameraViewType::ECT_Ortho_Back :
+		case ECameraProjType::ECT_Ortho_Back :
 			MoveAxis = FVector(-1.0f* OrthoDistance, 0, 0);
 			SetLocation(MoveAxis);
 			SetRotation(FVector(0.0f, 0.0f, 0.0f));
 			break;
 
-		case ECameraViewType::ECT_Ortho_Front:
+		case ECameraProjType::ECT_Ortho_Front:
 			MoveAxis = FVector(1.0f * OrthoDistance, 0, 0);
 			SetLocation(MoveAxis);
 			SetRotation(FVector(0.0f, 0.0f, 0.0f));
 			break;
 
-		case ECameraViewType::ECT_Ortho_Top:
+		case ECameraProjType::ECT_Ortho_Top:
 			MoveAxis = FVector(0, 0, 1.0f * OrthoDistance);
 			SetLocation(MoveAxis);
 			SetRotation(FVector(0.0f, 0.0f, 0.0f));
 			break;
 
-		case ECameraViewType::ECT_Ortho_Bottom:
+		case ECameraProjType::ECT_Ortho_Bottom:
 			MoveAxis = FVector(0, 0, -1.0f * OrthoDistance);
 			SetLocation(MoveAxis);
 			SetRotation(FVector(0.0f, 0.0f, 0.0f));
@@ -204,7 +204,7 @@ FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
 	// (View * B)^-1 = B^-1 * View^-1
 	Result.View = (FMatrix::BasisUEToLHY() * R) * T;
 
-	if (CameraViewType != ECameraViewType::ECT_Perspective)
+	if (CameraViewType != ECameraProjType::ECT_Perspective)
 	{
 		const float OrthoHeight = OrthoWidth / Aspect;
 		const float Left = -OrthoWidth * 0.5f;
@@ -224,7 +224,7 @@ FViewProjConstants UCamera::GetFViewProjConstantsInverse() const
 		P.Data[3][3] = 1.0f;
 		Result.Projection = P;
 	}
-	else if ((CameraViewType == ECameraViewType::ECT_Perspective))
+	else if ((CameraViewType == ECameraProjType::ECT_Perspective))
 	{
 		const float FovRadian = FVector::GetDegreeToRadian(FovY);
 		const float F = 1.0f / std::tanf(FovRadian * 0.5f);
@@ -286,7 +286,7 @@ FRay UCamera::ConvertToWorldRay(float NdcX, float NdcY) const
 		ViewProjMatrix.View.Data[3][2],
 		ViewProjMatrix.View.Data[3][3]);
 
-	if (CameraViewType == ECameraViewType::ECT_Perspective)
+	if (CameraViewType == ECameraProjType::ECT_Perspective)
 	{
 		FVector4 DirectionVector = WorldFar - CameraPosition;
 		DirectionVector.Normalize();
@@ -294,7 +294,7 @@ FRay UCamera::ConvertToWorldRay(float NdcX, float NdcY) const
 		Ray.Origin = CameraPosition;
 		Ray.Direction = DirectionVector;
 	}
-	else if (CameraViewType == ECameraViewType::ECT_Ortho_Front)
+	else if (CameraViewType == ECameraProjType::ECT_Ortho_Front)
 	{
 		FVector4 DirectionVector = WorldFar - WorldNear;
 		DirectionVector.Normalize();
@@ -388,7 +388,7 @@ void UCamera::CopyFrom(const UCamera& Other)
 	SetLocation(Other.GetLocation());
 	SetRotation(Other.GetRotation());
 	FovY = Other.GetFovY();
-	Aspect = Other.GetAspect();
+	//Aspect = Other.GetAspect();
 	NearZ = Other.GetNearZ();
 	FarZ = Other.GetFarZ();
 	CurrentMoveSpeed = Other.GetMoveSpeed();
@@ -406,10 +406,10 @@ void UCamera::RefreshViewMatrices()
 
 	switch (CameraViewType)
 	{
-		case ECameraViewType::ECT_Perspective:
+		case ECameraProjType::ECT_Perspective:
 			UpdateMatrixByPers();
 			break;
-		case ECameraViewType::ECT_Ortho_Front:
+		case ECameraProjType::ECT_Ortho_Front:
 			UpdateMatrixByOrth();
 			break;
 	}

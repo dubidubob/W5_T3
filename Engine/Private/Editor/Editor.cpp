@@ -24,6 +24,12 @@ UEditor::UEditor()
 	Camera = NewObject<UCamera>();
 	ObjectPicker = NewObject<UObjectPicker>();
 	ViewportManager = NewObject<UViewportManager>();
+
+
+	const float W = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width;
+	const float H = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Height;
+	ViewportManager->Initialize(POINT(W, H));
+
 	Gizmo = NewObject<UGizmo>();
 	Grid = NewObject<UGrid>();
 	Axis = NewObject<UAxis>();
@@ -167,7 +173,7 @@ void UEditor::ProcessKeyboardInput()
 void UEditor::ProcessMouseInput(ULevel* InLevel)
 {
 	const UInputManager& InputManager = UInputManager::GetInstance();
-	FVector MousePositionNdc = InputManager.GetMouseNDCPosition();
+	FVector2 MousePositionNdc = InputManager.GetMouseNDCPosition();
 
 	// 월드 레이 먼저 계산 (릴리즈 커밋에 사용)
 	FRay WorldRay = Camera->ConvertToWorldRay(MousePositionNdc.X, MousePositionNdc.Y);
@@ -176,15 +182,17 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 	auto& Renderer = URenderer::GetInstance();
 	if (Renderer.GetDividedWindow())
 	{
-		FVector MouseInput = InputManager.GetMousePosition();
+		const float W = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width;
+		const float H = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Height;
+		bool IsDragging = InputManager.IsKeyDown(EKeyInput::MouseLeft);
 
-		const float W = static_cast<float>(URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width);
-		const float H = static_cast<float>(URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Height);
+		ViewportManager->SetMouseInputNDC(POINT(W, H), MousePositionNdc, IsDragging);
+		UCamera* Cam = ViewportManager->GetSelectedViewportCamera();
 
-		MousePositionNdc = ViewportManager->GetSelectedViewportMousePositionNdc(POINT(W, H), POINT(MouseInput.X, MouseInput.Y));
-		UCamera* cam = ViewportManager->GetSelectedViewportCamera();
-
-		WorldRay = cam->ConvertToWorldRay(MousePositionNdc.X, MousePositionNdc.Y);
+		if (Cam)
+		{
+			WorldRay = Cam->ConvertToWorldRay(MousePositionNdc.X, MousePositionNdc.Y);
+		}
 	}
 
 	HandleGizmo(InLevel, WorldRay);

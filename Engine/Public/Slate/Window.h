@@ -5,20 +5,21 @@
 class SWindow
 {
 public:
-	virtual bool IsHover(FVector2 Coord) const
-	{
-		return (Coord.X >= Rect.X && Coord.X <= Rect.X + Rect.Width &&
-			Coord.Y >= Rect.Y && Coord.Y <= Rect.Y + Rect.Height);
-	}
+	virtual ~SWindow() = default;
+
+	virtual SWindow* HitTest(const FVector2& MouseCoord);
+	virtual void Drag(FVector2 MouseCoord) {}
+	virtual void DragEnd() {}
+	bool IsHover(const FVector2& MouseCoord) const;
 
 	FRect GetRect() const { return Rect; }
-
 	void SetRect(const FRect& NewRect)
 	{
 		Rect = NewRect;
 		OnResized();
 	}
-	virtual void Render() const {}
+	virtual bool CanRender(FRect& OutRect, FVector4& OutColor, const FVector2& MouseCoord) const { return false; }
+	virtual void OnWindowResized(const POINT& WindowSize) {}
 
 protected:
 	/**

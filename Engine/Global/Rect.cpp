@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Rect.h"
+
 FRect::FRect()
 	: X(0.0f), Y(0.0f), Width(0.0f), Height(0.0f)
 {
@@ -27,7 +28,7 @@ float FRect::GetLeft() const
 	return X;
 }
 
-float FRect::GetTop() const
+float FRect::GetBottom() const
 {
 	return Y;
 }
@@ -37,7 +38,7 @@ float FRect::GetRight() const
 	return X + Width;
 }
 
-float FRect::GetBottom() const
+float FRect::GetTop() const
 {
 	return Y + Height;
 }
@@ -57,24 +58,24 @@ FVector2 FRect::GetCenter() const
 	return FVector2(GetCenterX(), GetCenterY());
 }
 
-FVector2 FRect::GetTopLeft() const
+FVector2 FRect::GetBottomLeft() const
 {
 	return FVector2(X, Y);
 }
 
-FVector2 FRect::GetTopRight() const
+FVector2 FRect::GetBottomRight() const
 {
 	return FVector2(GetRight(), Y);
 }
 
-FVector2 FRect::GetBottomLeft() const
+FVector2 FRect::GetTopLeft() const
 {
-	return FVector2(X, GetBottom());
+	return FVector2(X, GetTop());
 }
 
-FVector2 FRect::GetBottomRight() const
+FVector2 FRect::GetTopRight() const
 {
-	return FVector2(GetRight(), GetBottom());
+	return FVector2(GetRight(), GetTop());
 }
 
 FVector2 FRect::GetSize() const
@@ -106,7 +107,7 @@ bool FRect::IsEmpty() const
 bool FRect::Contains(float PointX, float PointY) const
 {
 	return PointX >= X && PointX <= GetRight() &&
-		PointY >= Y && PointY <= GetBottom();
+		PointY >= Y && PointY <= GetTop();
 }
 
 bool FRect::Contains(const FVector2& Point) const
@@ -119,28 +120,28 @@ bool FRect::Contains(const FRect& Other) const
 {
 	return Other.X >= X && Other.Y >= Y &&
 		Other.GetRight() <= GetRight() &&
-		Other.GetBottom() <= GetBottom();
+		Other.GetTop() <= GetTop();
 }
 
 // 사각형 교집합 검사
 bool FRect::Intersects(const FRect& Other) const
 {
 	return !(Other.X > GetRight() || Other.GetRight() < X ||
-		Other.Y > GetBottom() || Other.GetBottom() < Y);
+		Other.Y > GetTop() || Other.GetTop() < Y);
 }
 
 // 교집합 사각형 계산
 FRect FRect::GetIntersection(const FRect& Other) const
 {
 	if (!Intersects(Other))
-		return FRect(); // 빈 사각형 반환
+		return FRect();
 
 	float NewX = std::max(X, Other.X);
 	float NewY = std::max(Y, Other.Y);
 	float NewRight = std::min(GetRight(), Other.GetRight());
-	float NewBottom = std::min(GetBottom(), Other.GetBottom());
+	float NewTop = std::min(GetTop(), Other.GetTop());
 
-	return FRect(NewX, NewY, NewRight - NewX, NewBottom - NewY);
+	return FRect(NewX, NewY, NewRight - NewX, NewTop - NewY);
 }
 
 // 합집합 사각형 계산
@@ -152,9 +153,9 @@ FRect FRect::GetUnion(const FRect& Other) const
 	float NewX = std::min(X, Other.X);
 	float NewY = std::min(Y, Other.Y);
 	float NewRight = std::max(GetRight(), Other.GetRight());
-	float NewBottom = std::max(GetBottom(), Other.GetBottom());
+	float NewTop = std::max(GetTop(), Other.GetTop());
 
-	return FRect(NewX, NewY, NewRight - NewX, NewBottom - NewY);
+	return FRect(NewX, NewY, NewRight - NewX, NewTop - NewY);
 }
 
 // 사각형 확장/축소

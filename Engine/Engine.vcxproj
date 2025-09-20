@@ -118,7 +118,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -143,7 +143,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -171,10 +171,12 @@
     <ClInclude Include="Public\DirectXTK\DirectXHelpers.h" />
     <ClInclude Include="Public\Render\UI\Widget\ViewSettingsWidget.h" />
     <ClInclude Include="Public\Render\UI\Window\DetailWindow.h" />
+    <ClInclude Include="Public\Slate\Box.h" />
     <ClInclude Include="Public\Slate\HorizontalBox.h" />
     <ClInclude Include="Public\Slate\Splitter.h" />
     <ClInclude Include="Public\Slate\SplitterH.h" />
     <ClInclude Include="Public\Slate\SplitterV.h" />
+    <ClInclude Include="Public\Slate\VerticalBox.h" />
     <ClInclude Include="Public\Slate\Viewport.h" />
     <ClInclude Include="Public\Slate\Window.h" />
     <ClInclude Include="Public\\Core\\Class.h" />
@@ -265,10 +267,12 @@
     <ClCompile Include="Private\Render\UI\Widget\ActorListWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ViewSettingsWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Window\DetailWindow.cpp" />
+    <ClCompile Include="Private\Slate\Box.cpp" />
     <ClCompile Include="Private\Slate\HorizontalBox.cpp" />
     <ClCompile Include="Private\Slate\Splitter.cpp" />
     <ClCompile Include="Private\Slate\SplitterH.cpp" />
     <ClCompile Include="Private\Slate\SplitterV.cpp" />
+    <ClCompile Include="Private\Slate\VerticalBox.cpp" />
     <ClCompile Include="Private\Slate\Viewport.cpp" />
     <ClCompile Include="Private\Slate\Window.cpp" />
     <ClCompile Include="Private\\Core\\Class.cpp" />
@@ -355,6 +359,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Asset\Shader\TextShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Data\Shader\SlateShader.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

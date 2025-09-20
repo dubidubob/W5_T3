@@ -165,7 +165,7 @@ enum class EViewModeIndex : uint32
 	End
 };
 
-enum class ECameraViewType
+enum class ECameraProjType
 {
 	ECT_Perspective,
 	ECT_Ortho_Front,

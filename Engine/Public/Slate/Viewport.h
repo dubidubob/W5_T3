@@ -1,11 +1,13 @@
 #pragma once
 #include "Window.h"
 
-struct FViewport {
+struct FViewportInfo {
 	class UCamera* Camera;
 	D3D11_VIEWPORT DxViewport;
-	ECameraViewType ViewType;
+	ECameraProjType ProjType;
 	EViewModeIndex RenderMode;
+
+	void SetProjType(ECameraProjType InProjType);
 };
 
 class SViewport : public SWindow
@@ -15,18 +17,16 @@ public:
 	/**
 	* @brief 외부에서 창 크기 변경 이벤트를 전달받아 뷰포트 재구성
 	*/ 
-	void OnWindowResized(const POINT& WindowSize);
+	virtual void OnWindowResized(const POINT& WindowSize) override;
+	FViewportInfo* GetViewportInfo() { return &ViewportInfo; }
 
 protected:
-	virtual void OnResized() override
-	{
-		UpdateDxViewport(CurrentWindowSize);
-	}
+	virtual void OnResized() override;
 
 private:
 	void UpdateDxViewport(const POINT& WindowSize);
 
-	FViewport ViewportInfo;
+	FViewportInfo ViewportInfo;
 	POINT CurrentWindowSize;
 };
 
