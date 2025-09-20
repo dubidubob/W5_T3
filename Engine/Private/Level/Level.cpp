@@ -69,6 +69,12 @@ void ULevel::Render()
 
 void ULevel::Cleanup()
 {
+	TArray<AActor*> Actors = LevelActors;
+	LevelActors.Empty();
+	for (auto Actor : Actors)
+	{
+		SafeDelete(Actor);
+	}
 }
 
 void ULevel::AddLevelPrimitiveComponent(AActor* Actor)
@@ -293,6 +299,6 @@ void ULevel::ProcessPendingDeletions()
 	}
 
 	// Clear TArray
-	ActorsToDelete.clear();
+	ActorsToDelete.Empty();
 	UE_LOG("[Level] All Pending Deletions Processed");
 }
