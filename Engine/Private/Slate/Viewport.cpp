@@ -48,3 +48,11 @@ void SViewport::UpdateDxViewport(const POINT& WindowSize)
 	ViewportInfo.DxViewport.MinDepth = 0.0f;
 	ViewportInfo.DxViewport.MaxDepth = 1.0f;
 }
+
+// jft : independent with viewport's actual rect... but why..?
+FRect SViewport::GetViewportPixelRect()
+{
+	return FRect(ViewportInfo.DxViewport.TopLeftX, ViewportInfo.DxViewport.TopLeftY,
+		ViewportInfo.DxViewport.Width, ViewportInfo.DxViewport.Height);
+}
+
