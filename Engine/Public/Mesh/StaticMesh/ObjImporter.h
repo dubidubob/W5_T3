@@ -59,5 +59,15 @@ private:
 	* @brief FObjInfo To FStaticMesh
 	*/
 	static void ConvertObjToStaticMesh(const FObjInfo& ObjInfo, FStaticMesh& OutStaticMesh);
+
+	static FVector PositionToUEBasis(const FVector& InVector)
+	{
+		return FVector(InVector.X, -InVector.Y, InVector.Z);
+	}
+
+	static FVector2 UVToUEBasis(const FVector2& InVector)
+	{
+		return FVector2(InVector.X, 1.0f - InVector.Y);
+	}
 };
 
