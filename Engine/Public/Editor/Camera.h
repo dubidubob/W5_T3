@@ -19,6 +19,7 @@ public:
 	~UCamera() override {}
 
 	void Update();
+	void Manipulate();
 	void UpdateMatrixByPers();
 	void UpdateMatrixByOrth();
 
@@ -32,6 +33,7 @@ public:
 	void SetNearZ(const float InOtherNearZ) { NearZ = InOtherNearZ; }
 	void SetFarZ(const float InOtherFarZ) { FarZ = InOtherFarZ; }
 
+	// jft
 	void SetCameraType(const EViewportViewType InCameraType);
 
 	/**
