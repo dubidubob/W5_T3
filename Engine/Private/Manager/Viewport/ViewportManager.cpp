@@ -1,7 +1,9 @@
 #include "pch.h"
 #include "Manager/Viewport/ViewportManager.h"
 #include "Editor/Camera.h"
-
+// jft, 종속성 없애기!
+#include "Render/Renderer/Renderer.h"
+#include "Manager/Input/InputManager.h"
 IMPLEMENT_CLASS(UViewportManager, UObject)
 
 UViewportManager::~UViewportManager()
@@ -18,6 +20,7 @@ UViewportManager::~UViewportManager()
 
 void UViewportManager::SetSubCamera(UCamera* InCamera)
 {
+	Camera = InCamera;
 	int CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
 	for (int i = 0; i < CameraCnt; i++)
 	{
@@ -27,13 +30,54 @@ void UViewportManager::SetSubCamera(UCamera* InCamera)
 	}
 }
 
-void UViewportManager::UpdateSubCamera(UCamera* InCamera)
+void UViewportManager::Update()
+{
+	// jft urgent..
+	if (URenderer::GetInstance().GetDividedWindow())
+	{
+		// Order Need Tobe Preserved
+		if (UInputManager::GetInstance().IsKeyPressed(EKeyInput::MouseLeft))
+		{
+			SetMainCamera();
+		}
+
+		if (UInputManager::GetInstance().IsKeyPressed(EKeyInput::MouseRight))
+			bOrthoManipulating = true;
+		if (UInputManager::GetInstance().IsKeyReleased(EKeyInput::MouseRight))
+			bOrthoManipulating = false;
+
+		UpdateSubCamera();
+	}
+}
+
+void UViewportManager::SetMainCamera()
+{
+	// jft 이때서야 Candidate Viewport Idx 비로소 반영 todo : ray update를 click 때마다 하기
+	SelectedViewportIdx = CandidateViewportIdx;
+	Camera->CopyFrom(*Viewports[SelectedViewportIdx].Camera);
+	Camera->SetCameraType(Viewports[SelectedViewportIdx].ViewType);
+}
+
+void UViewportManager::UpdateSubCamera()
 {
 	int CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
 	for (int i = 0; i < CameraCnt; i++)
 	{
-		if (Viewports[i].ViewType != EViewportViewType::Perspective) continue;
-		Viewports[i].Camera->CopyFrom(*InCamera);
+		if (Viewports[SelectedViewportIdx].ViewType == EViewportViewType::Perspective)
+		{
+			if (i != SelectedViewportIdx) continue;
+			Viewports[i].Camera->CopyFrom(*Camera);
+		}
+		else
+		{
+			// jft
+			if (bOrthoManipulating && Viewports[i].ViewType != EViewportViewType::Perspective)
+			{				
+				FVector NewLocation = Viewports[i].Camera->GetLocation() + Camera->GetOrthoMoveDelta();
+				Viewports[i].Camera->SetLocation(NewLocation);
+				Viewports[i].Camera->RefreshViewMatrices();
+			}
+		}
 	}
 }
 
@@ -56,14 +100,18 @@ void UViewportManager::UpdateViewportRects(const POINT& WindowSize)
 
 void UViewportManager::SetProjectionMode(int InIdx, EViewportViewType InViewType)
 {
-	// jft : no need to make viewtype cause it's alreay on camera
 	Viewports[InIdx].ViewType = InViewType;
 	Viewports[InIdx].Camera->SetCameraType(InViewType);
 	Viewports[InIdx].Camera->RefreshViewMatrices(); // 카메라/VP 갱신
+
+	SetMainCamera();
 }
 
 FVector UViewportManager::GetSelectedViewportMousePositionNdc(const POINT& WindowSize, const POINT& InMouse)
 {
+	// UCamera* SelectedCamera = Viewports[SelectedViewportIdx].Camera;
+	// InCamera->CopyFrom(*SelectedCamera);
+
 	float W = WindowSize.x;
 	float H = WindowSize.y;
 	const float boundaryW = W * ViewportRatio.X;
@@ -99,7 +147,8 @@ FVector UViewportManager::GetSelectedViewportMousePositionNdc(const POINT& Windo
 
 
 	// Update Results
-	SelectedViewportIdx = selected;
+	CandidateViewportIdx = selected;
+
 	// NDC (-1,-1) ~ (1, 1)
 	FVector MousePositionNdc(2.0f * u - 1.0f, 1.0f - 2.0f * v, 0.0f);
 

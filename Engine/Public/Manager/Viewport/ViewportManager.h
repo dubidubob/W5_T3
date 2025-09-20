@@ -21,9 +21,11 @@ public:
 	}
 
 	~UViewportManager();
-
 	void SetSubCamera(UCamera* InCamera);
-	void UpdateSubCamera(UCamera* InCamera);
+
+	void Update();
+	void SetMainCamera();
+	void UpdateSubCamera();
 	void UpdateViewportRects(const POINT& WindowSize);
 
 	void SetProjectionMode(int InIdx, EViewportViewType InViewType);
@@ -40,5 +42,10 @@ private:
 	FViewportContext Viewports[4];
 	FVector ViewportRatio;
 	int SelectedViewportIdx;
+	int CandidateViewportIdx;
+	bool bSelectUpdated;
+	bool bOrthoManipulating;
+
+	UCamera* Camera;
 };
 

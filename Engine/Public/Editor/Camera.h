@@ -35,6 +35,7 @@ public:
 
 	// jft
 	void SetCameraType(const EViewportViewType InCameraType);
+	void SaveCameraInfo();
 
 	/**
 	 * @brief Getter
@@ -83,10 +84,11 @@ public:
 	void SaveCameraSettings() const;
 	void LoadCameraSettings();
 
-	// jft copy from main camera, only used for rendering
-	void CopyFrom(const UCamera& Other);
+	void CopyFrom(const UCamera& Other); 
+
 	void RefreshViewMatrices();
 	float GetOrthoDistance() { return OrthoDistance; }
+	FVector GetOrthoMoveDelta() { return OrthoMoveDelta; }
 
 	/* *
 	 * @brief 행렬 형태로 저장된 좌표와 변환 행렬과의 연산한 결과를 반환합니다.
@@ -131,10 +133,22 @@ private:
 
 	// Ortho Parameters
 	float OrthoDistance = 50.0f;
+	FVector OrthoMoveDelta;
 
+	// jft : isSwitching to Multi VP?
+	bool bIsSingleVP = true;
+	
 	// Dynamic Movement Speed
 	float CurrentMoveSpeed;
 
 	// Dynamic Mouse Sensitivity
 	float CurrentMouseSensitivity;
+
+	// Saved
+	FVector SavedRelativeLocation = {};
+	FVector SavedRelativeRotation = {};
+	float SaveFovY = {};
+	float SaveAspect = {};
+	float SaveNearZ = {};
+	float SaveFarZ = {};
 };
