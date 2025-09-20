@@ -79,7 +79,7 @@ void UCamera::Manipulate()
 			/**
 			* @brief 마우스 위치 변화량을 감지하여 카메라의 회전을 담당합니다.
 			*/
-			const FVector MouseDelta = UInputManager::GetInstance().GetMouseDelta();
+			const FVector2 MouseDelta = UInputManager::GetInstance().GetMouseDelta();
 			RelativeRotation.Y = std::clamp(RelativeRotation.Y + MouseDelta.Y * CurrentMouseSensitivity, -89.0f, 89.0f);
 			RelativeRotation.Z += MouseDelta.X * CurrentMouseSensitivity;
 
@@ -92,7 +92,7 @@ void UCamera::Manipulate()
 	{
 		if (Input.IsKeyDown(EKeyInput::MouseRight))
 		{
-			const FVector MouseDelta = UInputManager::GetInstance().GetMouseDelta();
+			const FVector2 MouseDelta = UInputManager::GetInstance().GetMouseDelta();
 			switch (CameraViewType)
 			{
 			case EViewportViewType::Front:

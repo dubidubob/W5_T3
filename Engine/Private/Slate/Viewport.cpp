@@ -2,10 +2,10 @@
 #include "Slate/Viewport.h"
 #include "Editor/Camera.h"
 
-void FViewportInfo::SetProjType(ECameraProjType InProjType)
+void FViewportInfo::SetViewType(EViewportViewType InViewType)
 {
-	ProjType = InProjType;
-	Camera->SetCameraType(InProjType);
+	ViewType = InViewType;
+	Camera->SetCameraType(InViewType);
 	Camera->RefreshViewMatrices();
 }
 

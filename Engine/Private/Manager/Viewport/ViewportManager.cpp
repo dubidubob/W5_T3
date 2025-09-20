@@ -120,15 +120,15 @@ void UViewportManager::UpdateViewportRects(const POINT& WindowSize)
 	RootWindow->OnWindowResized(WindowSize);
 }
 
-void UViewportManager::SetProjectionMode(uint32 InIdx, ECameraProjType InProjType)
+void UViewportManager::SetProjectionMode(uint32 InIdx, EViewportViewType InViewType)
 {
 	if (Viewports[InIdx])
 	{
-		Viewports[InIdx]->GetViewportInfo()->SetProjType(InProjType);
+		Viewports[InIdx]->GetViewportInfo()->SetViewType(InViewType);
 	}
 }
 
-void UViewportManager::SetViewMode(uint32 InIdx, EViewModeIndex InRenderType)
+void UViewportManager::SetViewMode(uint32 InIdx, EViewportRenderMode InRenderType)
 {
 	if (Viewports[InIdx])
 	{

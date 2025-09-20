@@ -15,8 +15,8 @@ public:
 	void UpdateSubCamera(UCamera* InCamera);
 	void UpdateViewportRects(const POINT& WindowSize);
 
-	void SetProjectionMode(int InIdx, EViewportViewType InViewType);
-	void SetViewMode(int InIdx, EViewportRenderMode InRenderType) { Viewports[InIdx].RenderMode = InRenderType; }
+	void SetProjectionMode(uint32 InIdx, EViewportViewType InViewType);
+	void SetViewMode(uint32 InIdx, EViewportRenderMode InRenderType);
 
 	struct FViewportInfo* GetViewportInfo(uint32 ViewportIdx);
 

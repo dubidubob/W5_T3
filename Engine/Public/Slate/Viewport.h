@@ -1,13 +1,14 @@
 #pragma once
 #include "Window.h"
+#include "ViewportTypes.h"
 
 struct FViewportInfo {
 	class UCamera* Camera;
 	D3D11_VIEWPORT DxViewport;
-	ECameraProjType ProjType;
-	EViewModeIndex RenderMode;
+	EViewportViewType ViewType;
+	EViewportRenderMode RenderMode;
 
-	void SetProjType(ECameraProjType InProjType);
+	void SetViewType(EViewportViewType InViewType);
 };
 
 class SViewport : public SWindow
