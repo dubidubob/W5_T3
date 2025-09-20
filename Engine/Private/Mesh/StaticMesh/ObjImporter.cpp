@@ -20,7 +20,8 @@ FStaticMesh* FObjImporter::ParseAndConvert(const FString& FileName)
 
 bool FObjImporter::ParseObjFile(const FString& FileName, FObjInfo& OutObjInfo)
 {
-	const path FilePath = UPathManager::GetInstance().GetDataPath() / FileName;
+	FString ObjFilePath = FileName + ".obj";
+	const path FilePath = UPathManager::GetInstance().GetDataPath() / ObjFilePath;
 	std::ifstream File(FilePath);
 	if (!File.is_open())
 	{
@@ -137,6 +138,7 @@ bool FObjImporter::ParseObjFile(const FString& FileName, FObjInfo& OutObjInfo)
 
 bool FObjImporter::ParseMtlFile(const path& FilePath, TArray<FObjMaterialInfo>& OutMaterials)
 {
+
 	std::ifstream File(FilePath);
 	if (!File.is_open())
 	{
@@ -149,6 +151,7 @@ bool FObjImporter::ParseMtlFile(const path& FilePath, TArray<FObjMaterialInfo>& 
 	FString Line;
 	while (std::getline(File, Line))
 	{
+
 		std::stringstream Stream(Line);
 		std::string Prefix;
 		Stream >> Prefix;
