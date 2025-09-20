@@ -100,10 +100,11 @@ void UViewportManager::UpdateViewportRects(const POINT& WindowSize)
 
 void UViewportManager::SetProjectionMode(int InIdx, EViewportViewType InViewType)
 {
-	// jft : no need to make viewtype cause it's alreay on camera
 	Viewports[InIdx].ViewType = InViewType;
 	Viewports[InIdx].Camera->SetCameraType(InViewType);
 	Viewports[InIdx].Camera->RefreshViewMatrices(); // 카메라/VP 갱신
+
+	SetMainCamera();
 }
 
 FVector UViewportManager::GetSelectedViewportMousePositionNdc(const POINT& WindowSize, const POINT& InMouse)

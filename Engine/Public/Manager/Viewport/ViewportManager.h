@@ -33,7 +33,6 @@ public:
 
 	FViewportContext* GetViewports() { return Viewports; }
 
-	void UpdateSelectedViewport();
 	FVector GetSelectedViewportMousePositionNdc(const POINT& WindowSize, const POINT& InMouse);
 	UCamera* GetSelectedViewportCamera() { return Viewports[SelectedViewportIdx].Camera; }
 

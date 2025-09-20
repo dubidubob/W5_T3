@@ -101,44 +101,50 @@ void UCamera::Manipulate()
 			switch (CameraViewType)
 			{
 			case EViewportViewType::Front:
-				RelativeLocation.Y += MouseDeltaX;
+				RelativeLocation.Y -= MouseDeltaX;
 				RelativeLocation.Z += MouseDeltaY;
 
+				OrthoMoveDelta.X = 0.0f;
 				OrthoMoveDelta.Y = MouseDeltaX;
 				OrthoMoveDelta.Z = MouseDeltaY;
 				break;
 			case EViewportViewType::Back:
-				RelativeLocation.Y -= MouseDeltaX;
+				RelativeLocation.Y += MouseDeltaX;
 				RelativeLocation.Z += MouseDeltaY;
 
+				OrthoMoveDelta.X = 0.0f;
 				OrthoMoveDelta.Y = MouseDeltaX;
 				OrthoMoveDelta.Z = MouseDeltaY;
 				break;
 			case EViewportViewType::Top:
-				RelativeLocation.Y -= MouseDeltaX;
+				RelativeLocation.Y += MouseDeltaX;
 				RelativeLocation.X += MouseDeltaY;
 
+				OrthoMoveDelta.Z = 0.0f;
 				OrthoMoveDelta.Y = MouseDeltaX;
 				OrthoMoveDelta.X = MouseDeltaY;
 				break;
 			case EViewportViewType::Bottom:
-				RelativeLocation.Y -= MouseDeltaX;
+				RelativeLocation.Y += MouseDeltaX;
 				RelativeLocation.X -= MouseDeltaY;
 
+				OrthoMoveDelta.Z = 0.0f;
 				OrthoMoveDelta.Y = MouseDeltaX;
 				OrthoMoveDelta.X = MouseDeltaY;
 				break;
 			case EViewportViewType::Left:
-				RelativeLocation.X += MouseDeltaX;
+				RelativeLocation.X -= MouseDeltaX;
 				RelativeLocation.Z += MouseDeltaY;
 
+				OrthoMoveDelta.Y = 0.0f;
 				OrthoMoveDelta.X = MouseDeltaX;
 				OrthoMoveDelta.Z = MouseDeltaY;
 				break;
 			case EViewportViewType::Right:
-				RelativeLocation.X -= MouseDeltaX;
+				RelativeLocation.X += MouseDeltaX;
 				RelativeLocation.Z += MouseDeltaY;
 
+				OrthoMoveDelta.Y = 0.0f;
 				OrthoMoveDelta.X = MouseDeltaX;
 				OrthoMoveDelta.Z = MouseDeltaY;
 				break;
