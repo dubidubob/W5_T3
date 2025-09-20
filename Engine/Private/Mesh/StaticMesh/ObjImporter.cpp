@@ -7,6 +7,7 @@
 FStaticMesh* FObjImporter::ParseAndConvert(const FString& FileName)
 {
 	FObjInfo RawData;
+
 	if (!ParseObjFile(FileName, RawData))
 	{
 		return nullptr;
@@ -14,12 +15,13 @@ FStaticMesh* FObjImporter::ParseAndConvert(const FString& FileName)
 
 	FStaticMesh* CookedData = new FStaticMesh();
 	ConvertObjToStaticMesh(RawData, *CookedData);
-
+	CookedData->FileName = FileName;
 	return CookedData;
 }
 
 bool FObjImporter::ParseObjFile(const FString& FileName, FObjInfo& OutObjInfo)
 {
+	
 	FString ObjFilePath = FileName + ".obj";
 	const path FilePath = UPathManager::GetInstance().GetDataPath() / ObjFilePath;
 	std::ifstream File(FilePath);
