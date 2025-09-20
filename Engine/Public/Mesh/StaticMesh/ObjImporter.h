@@ -5,7 +5,7 @@ struct FStaticMesh;
 
 struct FObjMaterialInfo
 {
-	FString MaterialPath;
+	FString Name;
 	FVector AmbientColor;   // Ka
 	FVector DiffuseColor;   // Kd
 	FVector SpecularColor;  // Ks
@@ -14,6 +14,7 @@ struct FObjMaterialInfo
 
 	FString DiffuseTexturePath; // map_Kd
 	FString NormalTexturePath;  // map_bump or norm
+	FString SpecularPath;
 };
 
 struct FObjInfo
@@ -35,7 +36,6 @@ struct FObjInfo
 	};
 
 	TArray<FMaterialGroup> MaterialGroups;
-	// 
 	TArray<FObjMaterialInfo> Materials;
 };
 

@@ -96,7 +96,7 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 		// 타입에 따라 액터 생성
 		if (SelectedPrimitiveType == 0) // Cube
 		{
-			FString Name = "Demon";
+			FString Name = "Car";
 			NewActor = CurrentLevel->SpawnActor<AStaticMeshActor>(Name);
 			//TODO : FName 으로 변경 
 			NewActor->GetStaticMeshComponent()->SetStaticMesh(Name);

@@ -12,12 +12,14 @@ struct FNormalVertex
 
 struct FStaticMaterial
 {
+	FString Name;
 	FVector AmbientColor;
 	FVector DiffuseColor;
 	FVector SpecularColor;
 	float SpecularExponent;
 	float Alpha;
-
+	FString SpecularPath;
+	FString DiffusePath;
 	//ID3D11ShaderResourceView* DiffuseSRV = nullptr;
 	ID3D11ShaderResourceView* TextureSRV = nullptr;
 

@@ -82,9 +82,6 @@ int FClientApp::InitializeSystem()
 
 	auto& Renderer = URenderer::GetInstance();
 	Renderer.Init(Window->GetWindowHandle());
-	//ObjManager 초기화
-	auto& ObjManager = FObjManager::GetInstance();
-	ObjManager.Initialize(Renderer.GetDevice());
 	// UIManager Initialize
 	auto& UiManager = UUIManager::GetInstance();
 	UiManager.Initialize(Window->GetWindowHandle());

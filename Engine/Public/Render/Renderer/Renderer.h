@@ -47,7 +47,6 @@ class URenderer : public UObject
 public:
 	void Init(HWND InWindowHandle);
 	void Release();
-
 	void CreateRasterizerState();
 	void CreateDepthStencilState();
 	void CreateBlendState();

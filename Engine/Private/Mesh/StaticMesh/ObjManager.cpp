@@ -3,12 +3,15 @@
 #include "Core/ObjectIterator.h"
 #include "Public/Mesh/StaticMesh/ObjImporter.h"
 #include "Public/Mesh/StaticMesh/StaticMesh.h"
+#include "Public/Render/Renderer/Renderer.h"
+#include "Public/Manager/Path/PathManager.h"
 
 IMPLEMENT_SINGLETON(FObjManager)
 
 FObjManager::FObjManager() = default;
 FObjManager::~FObjManager()
 {
+	// StaticMeshAssetMap 정리
 	for (auto& Pair : StaticMeshAssetMap)
 	{
 		if (Pair.second)
@@ -19,6 +22,7 @@ FObjManager::~FObjManager()
 	}
 	StaticMeshAssetMap.Empty();
 
+	// StaticMeshMap 정리
 	for (auto& Pair : StaticMeshMap)
 	{
 		if (Pair.second)
@@ -29,8 +33,19 @@ FObjManager::~FObjManager()
 	}
 	StaticMeshMap.Empty();
 
+	// TextureCache 정리
+	for (auto& Pair : TextureCache)
+	{
+		if (Pair.second)
+		{
+			Pair.second->Release();   // DirectX COM 객체 해제
+			Pair.second = nullptr;
+		}
+	}
+	TextureCache.Empty();
 }
 
+// 이걸로 호출 되긴 함 
 FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 {
 	auto It = StaticMeshAssetMap.find(PathFileName);
@@ -42,9 +57,13 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 	}
 
 	FStaticMesh* NewStaticMesh = FObjImporter::ParseAndConvert(PathFileName);
-	
+
+	// vertex  & Index 
 	CreateVertexBuffer(NewStaticMesh);
 	CreateIndexBuffer(NewStaticMesh);
+
+	// texture
+	CreateTextureBuffer(NewStaticMesh);
 
 	if (NewStaticMesh)
 	{
@@ -61,10 +80,10 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 	return NewStaticMesh;
 }
 
-void FObjManager::Initialize(ID3D11Device* InDevice)
-{
-	Device = InDevice;
-}
+//void FObjManager::Initialize(ID3D11Device* InDevice)
+//{
+//	Device = InDevice;
+//}
 
 UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 {
@@ -105,6 +124,7 @@ UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 void FObjManager::CreateVertexBuffer(FStaticMesh* OutStaticMesh)
 {
 	if (OutStaticMesh->Vertices.empty()) return;
+	ID3D11Device* Device = URenderer::GetInstance().GetDevice();
 
 	D3D11_BUFFER_DESC vbd = {};
 	vbd.Usage = D3D11_USAGE_DEFAULT;
@@ -125,6 +145,7 @@ void FObjManager::CreateVertexBuffer(FStaticMesh* OutStaticMesh)
 void FObjManager::CreateIndexBuffer(FStaticMesh* OutStaticMesh)
 {
 	if (OutStaticMesh->Indices.empty()) return;
+	ID3D11Device* Device = URenderer::GetInstance().GetDevice();
 
 
 	D3D11_BUFFER_DESC ibd = {};
@@ -143,4 +164,46 @@ void FObjManager::CreateIndexBuffer(FStaticMesh* OutStaticMesh)
 	}
 
 	OutStaticMesh->IndexCount = static_cast<uint32>(OutStaticMesh->Indices.size());
+}
+
+void FObjManager::CreateTextureBuffer(FStaticMesh* OutStaticMesh)
+{
+	if (!OutStaticMesh) return;
+
+	ID3D11Device* Device = URenderer::GetInstance().GetDevice();
+	ID3D11DeviceContext* Context = URenderer::GetInstance().GetDeviceContext();
+
+	for (FStaticMaterial& Mat : OutStaticMesh->Materials)
+	{
+
+		if (!Mat.DiffusePath.empty())
+		{
+			Mat.TextureSRV = LoadTexture(Device, Context, Mat.DiffusePath);
+		}
+	}
+}
+
+ID3D11ShaderResourceView* FObjManager::LoadTexture(ID3D11Device* Device, ID3D11DeviceContext* Context, const FString& FilePath)
+{
+	const path TexturePath = UPathManager::GetInstance().GetDataPath() / FilePath;
+	// 1) 캐시에 있는지 확인
+	auto It = TextureCache.find(FilePath);
+	if (It != TextureCache.end())
+	{
+		return It->second; // 이미 있으면 재사용
+	}
+
+	// 2) 새로 로드
+	ID3D11ShaderResourceView* SRV = nullptr;
+	HRESULT hr = DirectX::CreateWICTextureFromFile(
+		Device,
+		Context,
+		TexturePath.wstring().c_str(),
+		nullptr,
+		&SRV
+	);
+	// 3) 캐시에 저장 후 반환
+	TextureCache[FilePath] = SRV;
+
+	return SRV;
 }
