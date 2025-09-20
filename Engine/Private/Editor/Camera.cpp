@@ -20,6 +20,7 @@ void UCamera::Update()
 	Up = FVector(0, 0, 1);
 	Right = Up.Cross(Forward);
 
+	/* Camera 조작*/
 	Manipulate();
 	
 	if (URenderer::GetInstance().GetDeviceResources())
