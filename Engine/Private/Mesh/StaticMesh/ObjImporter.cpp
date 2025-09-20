@@ -243,9 +243,12 @@ void FObjImporter::ConvertObjToStaticMesh(const FObjInfo& ObjInfo, FStaticMesh& 
 		else
 		{
 			FNormalVertex Vertex;
-			Vertex.Pos = ObjInfo.Positions[PosIndex];
+			//Vertex.Pos = ObjInfo.Positions[PosIndex];
+			Vertex.Pos = { ObjInfo .Positions[PosIndex].X,-ObjInfo.Positions[PosIndex].Y,ObjInfo.Positions[PosIndex].Z};
 
-			if (UVIndex < ObjInfo.UVs.size()) { Vertex.Tex = ObjInfo.UVs[UVIndex]; }
+			if (UVIndex < ObjInfo.UVs.size()) {
+				Vertex.Tex = { ObjInfo.UVs[UVIndex].X, 1.0f - ObjInfo.UVs[UVIndex].Y };
+			}
 			else { Vertex.Tex = FVector2(0.0f, 0.0f); }
 
 			if (NormalIndex < ObjInfo.Normals.size()) { Vertex.Normal = ObjInfo.Normals[NormalIndex]; }

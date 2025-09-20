@@ -541,19 +541,23 @@ void URenderer::RenderLevel()
 		UStaticMesh* StaticMesh = StaticMeshComponent->GetStaticMesh();
 		if (!StaticMesh) continue;
 
-		FStaticMesh* MeshData = StaticMesh->GetStaticMeshAsset();
-		if (!MeshData) continue;
+        FStaticMesh* MeshData = StaticMesh->GetStaticMeshAsset();
+        if (!MeshData) continue;
 
+        // Ensure static-mesh pipeline and constants are bound before drawing
+        Pipeline->UpdatePipeline(CreatePipelineInfo(StaticMeshComponent->GetRenderState()));
+        Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);   // b0 (world)
+        Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);    // b2 (color)
+        UpdateConstant(PrimitiveComponent);                           // update b0 with world matrix
+        UpdateConstant(FVector4(0.f, 0.f, 0.f, 0.f));                 // default color influence off
+        UpdateInstanceDrawConstants(false, 0, 0);                     // disable instancing (b3)
 
-		GetDeviceContext()->VSSetShader(StaticVertexShader, nullptr, 0);
-		GetDeviceContext()->PSSetShader(StaticPixelShader, nullptr, 0);
-		GetDeviceContext()->IASetInputLayout(StaticInputLayout);
-		//Stride = sizeof(FNormalVertex);
-		UINT offset = 0;
-		GetDeviceContext()->IASetVertexBuffers(0, 1, &MeshData->VertexBuffer, &StaticStride, &offset);
-		GetDeviceContext()->IASetIndexBuffer(MeshData->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		GetDeviceContext()->PSSetSamplers(0, 1, &DiffuseSampler);     // s0 슬롯
+        // Vertex/Index buffers and topology
+        UINT offset = 0;
+        GetDeviceContext()->IASetVertexBuffers(0, 1, &MeshData->VertexBuffer, &StaticStride, &offset);
+        GetDeviceContext()->IASetIndexBuffer(MeshData->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+        GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        GetDeviceContext()->PSSetSamplers(0, 1, &DiffuseSampler);     // s0 슬롯
 
 		for (const FStaticMeshSection& Section : MeshData->Sections)
 		{
@@ -563,10 +567,10 @@ void URenderer::RenderLevel()
 				continue;
 			}
 
-			GetDeviceContext()->PSSetShaderResources(1, 1, &Mat.TextureSRV);  // t1 슬롯
-			// 드로우 호출
-			GetDeviceContext()->DrawIndexed(Section.NumIndices, Section.FirstIndex, 0);
-		}
+            GetDeviceContext()->PSSetShaderResources(1, 1, &Mat.TextureSRV);  // t1 슬롯
+            // 드로우 호출
+            GetDeviceContext()->DrawIndexed(Section.NumIndices, Section.FirstIndex, 0);
+        }
 
 	}
 
