@@ -13,6 +13,7 @@ public:
 	virtual ~UObject();
 
 	// Getter & Setter
+	uint32 GetInternalIndex() const { return InternalIndex; }
 	FString GetName() const { return Name.ToString(); }
 	FString GetBaseName() const { return Name.ToBaseNameString(); }
 	const UObject* GetOuter() const { return Outer; }
@@ -61,4 +62,14 @@ T* Cast(UObject* Object)
 		return static_cast<T*>(Object);
 
 	return nullptr;
+}
+
+bool IsValid(UObject* Object)
+{
+	if(Object && Object->GetInternalIndex() >= GUObjectArray.Num())
+	{
+		return false;
+	}
+
+	return GUObjectArray[Object->GetInternalIndex()] == Object;
 }

@@ -98,9 +98,10 @@ UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 		UE_LOG("Failed to create UStaticMesh object for '%s'.", PathFileName.c_str());
 	}
 
+	StaticMeshMap.Add(PathFileName, NewStaticMesh);
+
 	return NewStaticMesh;
 }
-
 
 void FObjManager::CreateVertexBuffer(FStaticMesh* OutStaticMesh)
 {
