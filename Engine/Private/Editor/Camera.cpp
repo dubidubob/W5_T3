@@ -80,7 +80,7 @@ void UCamera::Manipulate()
 			* @brief 마우스 위치 변화량을 감지하여 카메라의 회전을 담당합니다.
 			*/
 			const FVector MouseDelta = UInputManager::GetInstance().GetMouseDelta();
-			RelativeRotation.Y += MouseDelta.Y * CurrentMouseSensitivity;
+			RelativeRotation.Y = std::clamp(RelativeRotation.Y + MouseDelta.Y * CurrentMouseSensitivity, -89.0f, 89.0f);
 			RelativeRotation.Z += MouseDelta.X * CurrentMouseSensitivity;
 
 			// Pitch 클램프(짐벌 플립 방지)
