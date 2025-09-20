@@ -159,6 +159,7 @@
     <ClInclude Include="Public\Core\ObjectIterator.h" />
     <ClInclude Include="Public\Manager\Viewport\ViewportManager.h" />
     <ClInclude Include="Public\Math\AABB.h" />
+    <ClInclude Include="Public\Mesh\Material\Material.h" />
     <ClInclude Include="Public\Mesh\MeshComponent.h" />
     <ClInclude Include="Public\Mesh\StaticMeshActor.h" />
     <ClInclude Include="Public\Mesh\StaticMeshComponent.h" />
@@ -248,6 +249,7 @@
     <ClCompile Include="Global\NameTable.cpp" />
     <ClCompile Include="Private\Manager\Viewport\ViewportManager.cpp" />
     <ClCompile Include="Private\Math\AABB.cpp" />
+    <ClCompile Include="Private\Mesh\Material\Material.cpp" />
     <ClCompile Include="Private\Mesh\MeshComponent.cpp" />
     <ClCompile Include="Private\Mesh\StaticMeshActor.cpp" />
     <ClCompile Include="Private\Mesh\StaticMeshComponent.cpp" />

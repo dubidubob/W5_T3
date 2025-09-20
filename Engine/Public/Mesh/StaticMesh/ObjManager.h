@@ -28,5 +28,7 @@ public:
 private:
 	TMap<FString, FStaticMesh*> StaticMeshAssetMap;
 	TMap<FString, UStaticMesh*> StaticMeshMap;
+	TMap<FString, int32> MaterialNameToIndex;
+
 	ID3D11Device* Device = nullptr;
 };

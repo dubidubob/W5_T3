@@ -25,6 +25,8 @@ struct FObjInfo
 	TArray<uint32> UVIndices;
 	TArray<uint32> NormalIndices;
 
+	//Material List
+
 	// OBJ의 Material/Group 정보를 저장하는 구조체
 	struct FMaterialGroup
 	{

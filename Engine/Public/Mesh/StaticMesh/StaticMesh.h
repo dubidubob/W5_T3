@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/Object.h"
+class UMaterial;
 
 struct FNormalVertex
 {
@@ -76,6 +77,7 @@ public:
 
 private:
 	FStaticMesh* StaticMeshAsset;
+	UMaterial* Materials;
 };
 
 

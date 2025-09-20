@@ -98,7 +98,8 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 		{
 			NewActor = CurrentLevel->SpawnActor<AStaticMeshActor>();
 			//TODO : FName 으로 변경 
-			NewActor->GetStaticMeshCompoent()->SetStaticMesh("Cube.obj");
+			NewActor->GetStaticMeshCompoent()->SetStaticMesh("Demon.obj");
+			//NewActor->GetStaticMeshCompoent()->SetStaticMesh("Cube.obj");
 		}
 		//else if (SelectedPrimitiveType == 1) // Sphere
 		//{
