@@ -32,6 +32,7 @@
 #include "Global/Matrix.h"
 #include "Global/Quat.h"
 #include "Global/Vector.h"
+#include "Global/Rect.h"
 #include "Global/CoreTypes.h"
 #include "Global/Macro.h"
 #include "Global/Function.h"

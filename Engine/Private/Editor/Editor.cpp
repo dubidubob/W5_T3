@@ -24,6 +24,12 @@ UEditor::UEditor()
 	Camera = NewObject<UCamera>();
 	ObjectPicker = NewObject<UObjectPicker>();
 	ViewportManager = NewObject<UViewportManager>();
+
+
+	const float W = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width;
+	const float H = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Height;
+	ViewportManager->Initialize(POINT(W, H));
+
 	Gizmo = NewObject<UGizmo>();
 	Grid = NewObject<UGrid>();
 	Axis = NewObject<UAxis>();
@@ -167,19 +173,22 @@ void UEditor::ProcessKeyboardInput()
 void UEditor::ProcessMouseInput(ULevel* InLevel)
 {
 	const UInputManager& InputManager = UInputManager::GetInstance();
-	FVector MousePositionNdc = InputManager.GetMouseNDCPosition();
+	FVector2 MousePositionNdc = InputManager.GetMouseNDCPosition();
 
 	// Multi Viewport Mode -> Adjust MousePosition & FRay & Cam
 	auto& Renderer = URenderer::GetInstance();
 	if (Renderer.GetDividedWindow())
 	{
-		FVector MouseInput = InputManager.GetMousePosition();
+		const float W = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width;
+		const float H = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Height;
 
-		const float W = static_cast<float>(URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width);
-		const float H = static_cast<float>(URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Height);
+		// Mouse Left : Split 이면 Drag / Click만
+		bool IsDragging = InputManager.IsKeyDown(EKeyInput::MouseLeft);
+		FVector2 MousePositionNdc = InputManager.GetMouseNDCPosition();
+		ViewportManager->SetSplitterMouseInput(POINT(W, H), MousePositionNdc, IsDragging);
 
-		MousePositionNdc = ViewportManager->GetSelectedViewportMousePositionNdc(POINT(W, H), POINT(MouseInput.X, MouseInput.Y));
-		UCamera* cam = ViewportManager->GetSelectedViewportCamera();
+		FVector2 MousePosition = InputManager.GetMousePosition();
+		MousePositionNdc = ViewportManager->GetViewportMouseInputNdc(MousePosition);
 	}
 
 	// 월드 레이 먼저 계산 (릴리즈 커밋에 사용)

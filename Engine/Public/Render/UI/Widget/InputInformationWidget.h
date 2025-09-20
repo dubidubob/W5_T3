@@ -22,8 +22,8 @@ private:
 	TArray<FString> RecentKeyPresses;
 
 	// 마우스 관련
-	FVector LastMousePosition;
-	FVector MouseDelta;
+	FVector2 LastMousePosition;
+	FVector2 MouseDelta;
 
 	// 키 입력 통계
 	TMap<FString, uint32> KeyPressCount;

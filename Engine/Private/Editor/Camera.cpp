@@ -79,7 +79,7 @@ void UCamera::Manipulate()
 			/**
 			* @brief 마우스 위치 변화량을 감지하여 카메라의 회전을 담당합니다.
 			*/
-			const FVector MouseDelta = UInputManager::GetInstance().GetMouseDelta();
+			const FVector2 MouseDelta = UInputManager::GetInstance().GetMouseDelta();
 			RelativeRotation.Y = std::clamp(RelativeRotation.Y + MouseDelta.Y * CurrentMouseSensitivity, -89.0f, 89.0f);
 			RelativeRotation.Z += MouseDelta.X * CurrentMouseSensitivity;
 
@@ -92,7 +92,7 @@ void UCamera::Manipulate()
 	{
 		if (Input.IsKeyDown(EKeyInput::MouseRight))
 		{
-			const FVector MouseDelta = UInputManager::GetInstance().GetMouseDelta();
+			const FVector2 MouseDelta = UInputManager::GetInstance().GetMouseDelta();
 
 			float MouseDeltaX = MouseDelta.X * CurrentMouseSensitivity;
 			float MouseDeltaY = MouseDelta.Y * CurrentMouseSensitivity;
@@ -482,7 +482,7 @@ void UCamera::CopyFrom(const UCamera& Other)
 	SetLocation(Other.GetLocation());
 	SetRotation(Other.GetRotation());
 	FovY = Other.GetFovY();
-	Aspect = Other.GetAspect();
+	//Aspect = Other.GetAspect();
 	NearZ = Other.GetNearZ();
 	FarZ = Other.GetFarZ();
 	/*CameraViewType = Other.GetCameraType();*/

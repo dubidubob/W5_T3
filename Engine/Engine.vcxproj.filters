@@ -94,6 +94,13 @@
     <ClCompile Include="Private\Mesh\StaticMesh\ObjImporter.cpp" />
     <ClCompile Include="Private\Mesh\StaticMesh\ObjManager.cpp" />
     <ClCompile Include="Private\Mesh\StaticMesh\StaticMesh.cpp" />
+    <ClCompile Include="Private\Slate\Panel.cpp" />
+    <ClCompile Include="Private\Slate\Splitter.cpp" />
+    <ClCompile Include="Private\Slate\SplitterH.cpp" />
+    <ClCompile Include="Private\Slate\SplitterV.cpp" />
+    <ClCompile Include="Private\Slate\Window.cpp" />
+    <ClCompile Include="Global\Rect.cpp" />
+    <ClCompile Include="Private\Slate\Viewport.cpp" />
     <ClCompile Include="ImGui\imgui.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
@@ -210,6 +217,13 @@
     <ClInclude Include="Public\Mesh\StaticMesh\ObjImporter.h" />
     <ClInclude Include="Public\Mesh\StaticMesh\ObjManager.h" />
     <ClInclude Include="Public\Mesh\StaticMesh\StaticMesh.h" />
+    <ClInclude Include="Public\Slate\Panel.h" />
+    <ClInclude Include="Public\Slate\Splitter.h" />
+    <ClInclude Include="Public\Slate\SplitterH.h" />
+    <ClInclude Include="Public\Slate\SplitterV.h" />
+    <ClInclude Include="Public\Slate\Window.h" />
+    <ClInclude Include="Global\Rect.h" />
+    <ClInclude Include="Public\Slate\Viewport.h" />
     <ClInclude Include="ViewportTypes.h">
       <Filter>Enums</Filter>
     </ClInclude>

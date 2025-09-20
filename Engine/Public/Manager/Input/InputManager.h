@@ -36,9 +36,9 @@ public:
 	float GetMouseWheelDelta() const { return MouseWheelDelta; }
 
 	// Getter
-	const FVector& GetMouseNDCPosition() const { return NDCMousePosition; }
-	const FVector& GetMousePosition() const { return CurrentMousePosition; }
-	const FVector& GetMouseDelta() const { return MouseDelta; }
+	const FVector2& GetMouseNDCPosition() const { return NDCMousePosition; }
+	const FVector2& GetMousePosition() const { return CurrentMousePosition; }
+	const FVector2& GetMouseDelta() const { return MouseDelta; }
 
 private:
 	// Key Status
@@ -47,15 +47,15 @@ private:
 	TMap<int32, EKeyInput> VirtualKeyMap;
 
 	// Mouse Position
-	FVector CurrentMousePosition;
-	FVector PreviousMousePosition;
-	FVector MouseDelta;
+	FVector2 CurrentMousePosition;
+	FVector2 PreviousMousePosition;
+	FVector2 MouseDelta;
 
 	// Mouse Wheel
 	float MouseWheelDelta;
 
 	// NDC Mouse Position
-	FVector NDCMousePosition;
+	FVector2 NDCMousePosition;
 
 	// Window Focus
 	bool bIsWindowFocused;
