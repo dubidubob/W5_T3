@@ -94,31 +94,53 @@ void UCamera::Manipulate()
 		if (Input.IsKeyDown(EKeyInput::MouseRight))
 		{
 			const FVector MouseDelta = UInputManager::GetInstance().GetMouseDelta();
+
+			float MouseDeltaX = MouseDelta.X * CurrentMouseSensitivity;
+			float MouseDeltaY = MouseDelta.Y * CurrentMouseSensitivity;
+			
 			switch (CameraViewType)
 			{
 			case EViewportViewType::Front:
-				RelativeLocation.Y += MouseDelta.X * CurrentMouseSensitivity;
-				RelativeLocation.Z += MouseDelta.Y * CurrentMouseSensitivity;
+				RelativeLocation.Y += MouseDeltaX;
+				RelativeLocation.Z += MouseDeltaY;
+
+				OrthoMoveDelta.Y = MouseDeltaX;
+				OrthoMoveDelta.Z = MouseDeltaY;
 				break;
 			case EViewportViewType::Back:
-				RelativeLocation.Y -= MouseDelta.X * CurrentMouseSensitivity;
-				RelativeLocation.Z += MouseDelta.Y * CurrentMouseSensitivity;
+				RelativeLocation.Y -= MouseDeltaX;
+				RelativeLocation.Z += MouseDeltaY;
+
+				OrthoMoveDelta.Y = MouseDeltaX;
+				OrthoMoveDelta.Z = MouseDeltaY;
 				break;
 			case EViewportViewType::Top:
-				RelativeLocation.Y -= MouseDelta.X * CurrentMouseSensitivity;
-				RelativeLocation.X += MouseDelta.Y * CurrentMouseSensitivity;
+				RelativeLocation.Y -= MouseDeltaX;
+				RelativeLocation.X += MouseDeltaY;
+
+				OrthoMoveDelta.Y = MouseDeltaX;
+				OrthoMoveDelta.X = MouseDeltaY;
 				break;
 			case EViewportViewType::Bottom:
-				RelativeLocation.Y -= MouseDelta.X * CurrentMouseSensitivity;
-				RelativeLocation.X -= MouseDelta.Y * CurrentMouseSensitivity;
+				RelativeLocation.Y -= MouseDeltaX;
+				RelativeLocation.X -= MouseDeltaY;
+
+				OrthoMoveDelta.Y = MouseDeltaX;
+				OrthoMoveDelta.X = MouseDeltaY;
 				break;
 			case EViewportViewType::Left:
-				RelativeLocation.X += MouseDelta.X * CurrentMouseSensitivity;
-				RelativeLocation.Z += MouseDelta.Y * CurrentMouseSensitivity;
+				RelativeLocation.X += MouseDeltaX;
+				RelativeLocation.Z += MouseDeltaY;
+
+				OrthoMoveDelta.X = MouseDeltaX;
+				OrthoMoveDelta.Z = MouseDeltaY;
 				break;
 			case EViewportViewType::Right:
-				RelativeLocation.X -= MouseDelta.X * CurrentMouseSensitivity;
-				RelativeLocation.Z += MouseDelta.Y * CurrentMouseSensitivity;
+				RelativeLocation.X -= MouseDeltaX;
+				RelativeLocation.Z += MouseDeltaY;
+
+				OrthoMoveDelta.X = MouseDeltaX;
+				OrthoMoveDelta.Z = MouseDeltaY;
 				break;
 			}
 		}
@@ -142,6 +164,9 @@ void UCamera::UpdateMatrixByPers()
 	 * f = 1 / tan(fovY/2)
 	 */
 	const float RadianFovY = FVector::GetDegreeToRadian(FovY);
+
+
+
 	const float F = 1.0f / std::tanf(RadianFovY * 0.5f);
 
 	FMatrix P = FMatrix::Identity;
@@ -441,6 +466,7 @@ void UCamera::CopyFrom(const UCamera& Other)
 	Aspect = Other.GetAspect();
 	NearZ = Other.GetNearZ();
 	FarZ = Other.GetFarZ();
+	/*CameraViewType = Other.GetCameraType();*/
 	CurrentMoveSpeed = Other.GetMoveSpeed();
 	CurrentMouseSensitivity = Other.GetMouseSensitivity();
 

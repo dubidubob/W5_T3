@@ -21,9 +21,11 @@ public:
 	}
 
 	~UViewportManager();
-
 	void SetSubCamera(UCamera* InCamera);
-	void UpdateSubCamera(UCamera* InCamera);
+
+	void Update();
+	void SetMainCamera();
+	void UpdateSubCamera();
 	void UpdateViewportRects(const POINT& WindowSize);
 
 	void SetProjectionMode(int InIdx, EViewportViewType InViewType);
@@ -31,6 +33,7 @@ public:
 
 	FViewportContext* GetViewports() { return Viewports; }
 
+	void UpdateSelectedViewport();
 	FVector GetSelectedViewportMousePositionNdc(const POINT& WindowSize, const POINT& InMouse);
 	UCamera* GetSelectedViewportCamera() { return Viewports[SelectedViewportIdx].Camera; }
 
@@ -40,5 +43,10 @@ private:
 	FViewportContext Viewports[4];
 	FVector ViewportRatio;
 	int SelectedViewportIdx;
+	int CandidateViewportIdx;
+	bool bSelectUpdated;
+	bool bOrthoManipulating;
+
+	UCamera* Camera;
 };
 
