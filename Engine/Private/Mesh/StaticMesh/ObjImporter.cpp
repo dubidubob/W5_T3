@@ -252,12 +252,12 @@ void FObjImporter::ConvertObjToStaticMesh(const FObjInfo& ObjInfo, FStaticMesh& 
 		else
 		{
 			FNormalVertex Vertex;
-			Vertex.Pos = ObjInfo.Positions[PosIndex];
+			Vertex.Pos = PositionToUEBasis(ObjInfo.Positions[PosIndex]);
 
-			if (UVIndex < ObjInfo.UVs.size()) { Vertex.Tex = ObjInfo.UVs[UVIndex]; }
+			if (UVIndex < ObjInfo.UVs.size()) { Vertex.Tex = UVToUEBasis(ObjInfo.UVs[UVIndex]); }
 			else { Vertex.Tex = FVector2(0.0f, 0.0f); }
 
-			if (NormalIndex < ObjInfo.Normals.size()) { Vertex.Normal = ObjInfo.Normals[NormalIndex]; }
+			if (NormalIndex < ObjInfo.Normals.size()) { Vertex.Normal = PositionToUEBasis(ObjInfo.Normals[NormalIndex]); }
 			else { Vertex.Normal = FVector(0.0f, 0.0f, 1.0f); }
 
 			Vertex.Color = { static_cast<float>(rand()) / RAND_MAX ,
