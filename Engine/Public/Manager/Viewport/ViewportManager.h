@@ -12,7 +12,10 @@ public:
 	void Initialize(const POINT& InWindowSize);
 
 	void SetSubCamera(UCamera* InCamera);
-	void UpdateSubCamera(UCamera* InCamera);
+
+	void Update();
+	void SetMainCamera();
+	void UpdateSubCamera();
 	void UpdateViewportRects(const POINT& WindowSize);
 
 	void SetProjectionMode(uint32 InIdx, EViewportViewType InViewType);
@@ -26,6 +29,14 @@ public:
 	const TArray<class SWindow*>& GetWindows() { return Windows; }
 
 private:
+	FViewportContext Viewports[4];
+	FVector ViewportRatio;
+	int SelectedViewportIdx;
+	int CandidateViewportIdx;
+	bool bSelectUpdated;
+	bool bOrthoManipulating;
+
+	UCamera* Camera;
 	int32 SelectedViewportIdx = 0;
 	class SWindow* RootWindow = nullptr;
 	class SWindow* DraggingWindow = nullptr;

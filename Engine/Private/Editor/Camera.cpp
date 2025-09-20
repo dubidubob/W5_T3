@@ -16,10 +16,10 @@ void UCamera::Update()
 	// UE 기준(X-forward, Z-up)으로 Forward 기준축을 X로 변경
 	Forward = FVector4(1, 0, 0, 1) * FMatrix::RotationMatrixCamera(FVector::GetDegreeToRadian(RelativeRotation));
 	Forward.Normalize();
-	// UE 기준 Up 축: Z
-	Up = FVector(0, 0, 1);
+	Up = FVector(0, 0, 1); // Z up
 	Right = Up.Cross(Forward);
 
+	/* Camera 조작*/
 	Manipulate();
 	
 	if (URenderer::GetInstance().GetDeviceResources())
@@ -92,32 +92,61 @@ void UCamera::Manipulate()
 	{
 		if (Input.IsKeyDown(EKeyInput::MouseRight))
 		{
-			const FVector2 MouseDelta = UInputManager::GetInstance().GetMouseDelta();
+			const FVector MouseDelta = UInputManager::GetInstance().GetMouseDelta();
+
+			float MouseDeltaX = MouseDelta.X * CurrentMouseSensitivity;
+			float MouseDeltaY = MouseDelta.Y * CurrentMouseSensitivity;
+
+			// jft ㅜㅜ
 			switch (CameraViewType)
 			{
 			case EViewportViewType::Front:
-				RelativeLocation.Y += MouseDelta.X * CurrentMouseSensitivity;
-				RelativeLocation.Z += MouseDelta.Y * CurrentMouseSensitivity;
+				RelativeLocation.Y -= MouseDeltaX;
+				RelativeLocation.Z += MouseDeltaY;
+
+				OrthoMoveDelta.X = 0.0f;
+				OrthoMoveDelta.Y = MouseDeltaX;
+				OrthoMoveDelta.Z = MouseDeltaY;
 				break;
 			case EViewportViewType::Back:
-				RelativeLocation.Y -= MouseDelta.X * CurrentMouseSensitivity;
-				RelativeLocation.Z += MouseDelta.Y * CurrentMouseSensitivity;
+				RelativeLocation.Y += MouseDeltaX;
+				RelativeLocation.Z += MouseDeltaY;
+
+				OrthoMoveDelta.X = 0.0f;
+				OrthoMoveDelta.Y = MouseDeltaX;
+				OrthoMoveDelta.Z = MouseDeltaY;
 				break;
 			case EViewportViewType::Top:
-				RelativeLocation.Y -= MouseDelta.X * CurrentMouseSensitivity;
-				RelativeLocation.X += MouseDelta.Y * CurrentMouseSensitivity;
+				RelativeLocation.Y += MouseDeltaX;
+				RelativeLocation.X += MouseDeltaY;
+
+				OrthoMoveDelta.Z = 0.0f;
+				OrthoMoveDelta.Y = MouseDeltaX;
+				OrthoMoveDelta.X = MouseDeltaY;
 				break;
 			case EViewportViewType::Bottom:
-				RelativeLocation.Y -= MouseDelta.X * CurrentMouseSensitivity;
-				RelativeLocation.X -= MouseDelta.Y * CurrentMouseSensitivity;
+				RelativeLocation.Y += MouseDeltaX;
+				RelativeLocation.X -= MouseDeltaY;
+
+				OrthoMoveDelta.Z = 0.0f;
+				OrthoMoveDelta.Y = MouseDeltaX;
+				OrthoMoveDelta.X = MouseDeltaY;
 				break;
 			case EViewportViewType::Left:
-				RelativeLocation.X += MouseDelta.X * CurrentMouseSensitivity;
-				RelativeLocation.Z += MouseDelta.Y * CurrentMouseSensitivity;
+				RelativeLocation.X -= MouseDeltaX;
+				RelativeLocation.Z += MouseDeltaY;
+
+				OrthoMoveDelta.Y = 0.0f;
+				OrthoMoveDelta.X = MouseDeltaX;
+				OrthoMoveDelta.Z = MouseDeltaY;
 				break;
 			case EViewportViewType::Right:
-				RelativeLocation.X -= MouseDelta.X * CurrentMouseSensitivity;
-				RelativeLocation.Z += MouseDelta.Y * CurrentMouseSensitivity;
+				RelativeLocation.X += MouseDeltaX;
+				RelativeLocation.Z += MouseDeltaY;
+
+				OrthoMoveDelta.Y = 0.0f;
+				OrthoMoveDelta.X = MouseDeltaX;
+				OrthoMoveDelta.Z = MouseDeltaY;
 				break;
 			}
 		}
@@ -141,6 +170,9 @@ void UCamera::UpdateMatrixByPers()
 	 * f = 1 / tan(fovY/2)
 	 */
 	const float RadianFovY = FVector::GetDegreeToRadian(FovY);
+
+
+
 	const float F = 1.0f / std::tanf(RadianFovY * 0.5f);
 
 	FMatrix P = FMatrix::Identity;
@@ -383,6 +415,15 @@ void UCamera::LoadCameraSettings()
 // jft : magic number
 void UCamera::SetCameraType(const EViewportViewType InCameraType)
 {
+	if (bIsSingleVP
+		&& URenderer::GetInstance().GetDividedWindow()
+		&& CameraViewType == EViewportViewType::Perspective
+		&& InCameraType != EViewportViewType::Perspective)
+	{
+		bIsSingleVP = false;
+		SaveCameraInfo();
+	}
+
 	CameraViewType = InCameraType;
 
 	if (InCameraType == EViewportViewType::Perspective)
@@ -432,6 +473,10 @@ void UCamera::SetCameraType(const EViewportViewType InCameraType)
 	SetRotation(CameraRotation);
 }
 
+void UCamera::SaveCameraInfo()
+{
+}
+
 void UCamera::CopyFrom(const UCamera& Other)
 {
 	SetLocation(Other.GetLocation());
@@ -440,6 +485,7 @@ void UCamera::CopyFrom(const UCamera& Other)
 	//Aspect = Other.GetAspect();
 	NearZ = Other.GetNearZ();
 	FarZ = Other.GetFarZ();
+	/*CameraViewType = Other.GetCameraType();*/
 	CurrentMoveSpeed = Other.GetMoveSpeed();
 	CurrentMouseSensitivity = Other.GetMouseSensitivity();
 
