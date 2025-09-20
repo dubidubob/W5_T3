@@ -11,6 +11,7 @@ public:
 	virtual void Drag(FVector2 MouseCoord) {}
 	virtual void DragEnd() {}
 	bool IsHover(const FVector2& MouseCoord) const;
+	void UpdateRect();
 
 	FRect GetRect() const { return Rect; }
 	void SetRect(const FRect& NewRect)

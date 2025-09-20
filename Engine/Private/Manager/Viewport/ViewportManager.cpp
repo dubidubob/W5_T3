@@ -39,51 +39,51 @@ void UViewportManager::Initialize(const POINT& InWindowSize)
 	SVerticalBox* RootBox = new SVerticalBox(); Windows.Add(RootBox);
 	RootBox->SetRect(RootRect);
 
-	// 상하 분할 (SplitterH)
-	SSplitterH* SplitterH = new SSplitterH(); Windows.Add(SplitterH);
-	SplitterH->SetRect(FRect(-1.0f, -0.5f * SplitterNdcHeight, 2.0f, SplitterNdcHeight));
+		// 상하 분할 (SplitterH)
+		SSplitterH* SplitterH = new SSplitterH(); Windows.Add(SplitterH);
+		SplitterH->SetRect(FRect(-1.0f, -0.5f * SplitterNdcHeight, 2.0f, SplitterNdcHeight));
 
-	// 상단 박스 (TopBox)
-	SHorizontalBox* TopBox = new SHorizontalBox(); Windows.Add(TopBox);
-	TopBox->SetRect(FRect(-1.0f, SplitterH->GetRect().GetTop(), 2.0f, 1.0f - SplitterH->GetRect().GetTop()));
-	SplitterH->SideLT = TopBox;
+		// 상단 박스 (TopBox)
+		SHorizontalBox* TopBox = new SHorizontalBox(); Windows.Add(TopBox);
+		TopBox->SetRect(FRect(-1.0f, SplitterH->GetRect().GetTop(), 2.0f, 1.0f - SplitterH->GetRect().GetTop()));
+		SplitterH->SideLT = TopBox;
 
-	// 하단 박스 (BottomBox)
-	SHorizontalBox* BottomBox = new SHorizontalBox(); Windows.Add(BottomBox);
-	BottomBox->SetRect(FRect(-1.0f, -1.0f, 2.0f, SplitterH->GetRect().Y - (-1.0f)));
-	SplitterH->SideRB = BottomBox;
+		// 하단 박스 (BottomBox)
+		SHorizontalBox* BottomBox = new SHorizontalBox(); Windows.Add(BottomBox);
+		BottomBox->SetRect(FRect(-1.0f, -1.0f, 2.0f, SplitterH->GetRect().Y - (-1.0f)));
+		SplitterH->SideRB = BottomBox;
 
 	RootBox->AddChild(BottomBox);
 	RootBox->AddChild(SplitterH);
 	RootBox->AddChild(TopBox);
 
-	// 상단 박스 내 좌우 분할 (TopSplitterV)
-	SSplitterV* TopSplitterV = new SSplitterV(); Windows.Add(TopSplitterV);
-	TopSplitterV->SetRect(FRect(-0.5f * SplitterNdcWidth, TopBox->GetRect().Y, SplitterNdcWidth, TopBox->GetRect().Height));
+		// 상단 박스 내 좌우 분할 (TopSplitterV)
+		SSplitterV* TopSplitterV = new SSplitterV(); Windows.Add(TopSplitterV);
+		TopSplitterV->SetRect(FRect(-0.5f * SplitterNdcWidth, TopBox->GetRect().Y, SplitterNdcWidth, TopBox->GetRect().Height));
 
-	SViewport* TopLeft = new SViewport(); Windows.Add(TopLeft);
-	TopLeft->SetRect(FRect(-1.0f, TopBox->GetRect().Y, TopSplitterV->GetRect().X - (-1.0f), TopBox->GetRect().Height));
-	TopSplitterV->SideLT = TopLeft;
+		SViewport* TopLeft = new SViewport(); Windows.Add(TopLeft);
+		TopLeft->SetRect(FRect(-1.0f, TopBox->GetRect().Y, TopSplitterV->GetRect().X - (-1.0f), TopBox->GetRect().Height));
+		TopSplitterV->SideLT = TopLeft;
 
-	SViewport* TopRight = new SViewport(); Windows.Add(TopRight);
-	TopRight->SetRect(FRect(TopSplitterV->GetRect().GetRight(), TopBox->GetRect().Y, TopBox->GetRect().GetRight() - TopSplitterV->GetRect().GetRight(), TopBox->GetRect().Height));
-	TopSplitterV->SideRB = TopRight;
+		SViewport* TopRight = new SViewport(); Windows.Add(TopRight);
+		TopRight->SetRect(FRect(TopSplitterV->GetRect().GetRight(), TopBox->GetRect().Y, TopBox->GetRect().GetRight() - TopSplitterV->GetRect().GetRight(), TopBox->GetRect().Height));
+		TopSplitterV->SideRB = TopRight;
 
 	TopBox->AddChild(TopLeft);
 	TopBox->AddChild(TopSplitterV);
 	TopBox->AddChild(TopRight);
 
-	// 하단 박스 내 좌우 분할 (BottomSplitterV)
-	SSplitterV* BottomSplitterV = new SSplitterV(); Windows.Add(BottomSplitterV);
-	BottomSplitterV->SetRect(FRect(-0.5f * SplitterNdcWidth, BottomBox->GetRect().Y, SplitterNdcWidth, BottomBox->GetRect().Height));
+		// 하단 박스 내 좌우 분할 (BottomSplitterV)
+		SSplitterV* BottomSplitterV = new SSplitterV(); Windows.Add(BottomSplitterV);
+		BottomSplitterV->SetRect(FRect(-0.5f * SplitterNdcWidth, BottomBox->GetRect().Y, SplitterNdcWidth, BottomBox->GetRect().Height));
 
-	SViewport* BottomLeft = new SViewport(); Windows.Add(BottomLeft);
-	BottomLeft->SetRect(FRect(-1.0f, BottomBox->GetRect().Y, BottomSplitterV->GetRect().X - (-1.0f), BottomBox->GetRect().Height));
-	BottomSplitterV->SideLT = BottomLeft;
+		SViewport* BottomLeft = new SViewport(); Windows.Add(BottomLeft);
+		BottomLeft->SetRect(FRect(-1.0f, BottomBox->GetRect().Y, BottomSplitterV->GetRect().X - (-1.0f), BottomBox->GetRect().Height));
+		BottomSplitterV->SideLT = BottomLeft;
 
-	SViewport* BottomRight = new SViewport(); Windows.Add(BottomRight);
-	BottomRight->SetRect(FRect(BottomSplitterV->GetRect().GetRight(), BottomBox->GetRect().Y, BottomBox->GetRect().GetRight() - BottomSplitterV->GetRect().GetRight(), BottomBox->GetRect().Height));
-	BottomSplitterV->SideRB = BottomRight;
+		SViewport* BottomRight = new SViewport(); Windows.Add(BottomRight);
+		BottomRight->SetRect(FRect(BottomSplitterV->GetRect().GetRight(), BottomBox->GetRect().Y, BottomBox->GetRect().GetRight() - BottomSplitterV->GetRect().GetRight(), BottomBox->GetRect().Height));
+		BottomSplitterV->SideRB = BottomRight;
 
 	BottomBox->AddChild(BottomLeft);
 	BottomBox->AddChild(BottomSplitterV);
@@ -96,11 +96,12 @@ void UViewportManager::Initialize(const POINT& InWindowSize)
 void UViewportManager::SetSubCamera(UCamera* InCamera)
 {
 	Camera = InCamera;
-	int CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
-	for (int Idx = 0; Idx < CameraCnt; Idx++)
+	int32 CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
+	for (int32 Idx = 0; Idx < CameraCnt; Idx++)
 	{
 		if (Viewports[Idx])
 		{
+			if (Viewports[Idx]->GetViewportInfo()->ViewType != EViewportViewType::Perspective) continue;
 			Viewports[Idx]->GetViewportInfo()->Camera = NewObject<UCamera>();
 			Viewports[Idx]->GetViewportInfo()->Camera->CopyFrom(*InCamera);
 		}
@@ -109,14 +110,13 @@ void UViewportManager::SetSubCamera(UCamera* InCamera)
 
 void UViewportManager::Update()
 {
-	// jft urgent..
+	// jft urgent.. render와의 종속성 lets go
 	if (URenderer::GetInstance().GetDividedWindow())
 	{
 		// Order Need Tobe Preserved
+		// jft input 정리
 		if (UInputManager::GetInstance().IsKeyPressed(EKeyInput::MouseLeft))
-		{
 			SetMainCamera();
-		}
 
 		if (UInputManager::GetInstance().IsKeyPressed(EKeyInput::MouseRight))
 			bOrthoManipulating = true;
@@ -160,6 +160,7 @@ void UViewportManager::UpdateSubCamera()
 
 void UViewportManager::UpdateViewportRects(const POINT& WindowSize)
 {
+	// jft : right now
 	RootWindow->OnWindowResized(WindowSize);
 }
 
@@ -189,9 +190,8 @@ FViewportInfo* UViewportManager::GetViewportInfo(uint32 ViewportIdx)
 	return nullptr;
 }
 
-void UViewportManager::SetMouseInputNDC(const POINT& WindowSize, const FVector2& InMouseNDC, bool bIsDragging)
+void UViewportManager::SetSplitterMouseInput(const POINT& WindowSize, const FVector2& InMouseNDC, bool bIsDragging)
 {
-	SelectedViewportIdx = -1;
 	if (bIsDragging && DraggingWindow)
 	{
 		DraggingWindow->Drag(InMouseNDC);
@@ -218,6 +218,19 @@ void UViewportManager::SetMouseInputNDC(const POINT& WindowSize, const FVector2&
 			DraggingWindow = nullptr;
 		}
 	}
+}
+
+FVector2 UViewportManager::GetViewportMouseInputNdc(const FVector2& InMouse)
+{
+	const FRect& R = Viewports[SelectedViewportIdx]->GetRect();
+
+	// Change to Single Viewport MouseInput
+	const float u = (InMouse.X - R.X) / R.Width;
+	const float v = (InMouse.Y - R.Y) / R.Height;
+
+	FVector2 MousePositionNdc(2.0f * u - 1.0f, 1.0f - 2.0f * v);
+
+	return MousePositionNdc;
 }
 
 UCamera* UViewportManager::GetSelectedViewportCamera()

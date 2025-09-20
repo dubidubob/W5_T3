@@ -23,7 +23,9 @@ public:
 
 	struct FViewportInfo* GetViewportInfo(uint32 ViewportIdx);
 
-	void SetMouseInputNDC(const POINT& WindowSize, const FVector2& InMouseNDC, bool bIsDragging);
+	void SetSplitterMouseInput(const POINT& WindowSize, const FVector2& InMouseNDC, bool bIsDragging);
+	FVector2 GetViewportMouseInputNdc(const FVector2& InMouse);
+
 	class UCamera* GetSelectedViewportCamera();
 
 	const TArray<class SWindow*>& GetWindows() { return Windows; }

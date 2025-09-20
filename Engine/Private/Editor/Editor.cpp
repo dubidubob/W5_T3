@@ -181,9 +181,14 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 	{
 		const float W = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width;
 		const float H = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Height;
-		bool IsDragging = InputManager.IsKeyDown(EKeyInput::MouseLeft);
 
-		ViewportManager->SetMouseInputNDC(POINT(W, H), MousePositionNdc, IsDragging);
+		// Mouse Left : Split 이면 Drag / Click만
+		bool IsDragging = InputManager.IsKeyDown(EKeyInput::MouseLeft);
+		FVector2 MousePositionNdc = InputManager.GetMouseNDCPosition();
+		ViewportManager->SetSplitterMouseInput(POINT(W, H), MousePositionNdc, IsDragging);
+
+		FVector2 MousePosition = InputManager.GetMousePosition();
+		MousePositionNdc = ViewportManager->GetViewportMouseInputNdc(MousePosition);
 	}
 
 	// 월드 레이 먼저 계산 (릴리즈 커밋에 사용)
