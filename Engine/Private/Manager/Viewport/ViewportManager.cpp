@@ -220,16 +220,18 @@ void UViewportManager::SetSplitterMouseInput(const POINT& WindowSize, const FVec
 	}
 }
 
-FVector2 UViewportManager::GetViewportMouseInputNdc(const FVector2& InMouse)
+FVector2 UViewportManager::GetViewportMouseInputNdc(const POINT& WindowSize, const FVector2& InMouse)
 {
-	const FRect& R = Viewports[SelectedViewportIdx]->GetRect();
+	const FRect& R = Viewports[SelectedViewportIdx]->GetViewportPixelRect();
+	// UE_LOG("%.2f, %.2f, %.2f, %.2f. %.2f, %.2f", InMouse.X, InMouse.Y, R.X, R.Y, R.Width, R.Height);
 
 	// Change to Single Viewport MouseInput
 	const float u = (InMouse.X - R.X) / R.Width;
 	const float v = (InMouse.Y - R.Y) / R.Height;
+	// UE_LOG("%.2f, %.2f", u, v);
 
 	FVector2 MousePositionNdc(2.0f * u - 1.0f, 1.0f - 2.0f * v);
-
+	// UE_LOG("%.2f, %.2f", MousePositionNdc.X, MousePositionNdc.Y);
 	return MousePositionNdc;
 }
 

@@ -20,7 +20,7 @@ public:
 	*/ 
 	virtual void OnWindowResized(const POINT& WindowSize) override;
 	FViewportInfo* GetViewportInfo() { return &ViewportInfo; }
-
+	FRect GetViewportPixelRect();
 protected:
 	virtual void OnResized() override;
 
