@@ -17,12 +17,11 @@ class SViewport : public SWindow
 public:
 	/**
 	* @brief 외부에서 창 크기 변경 이벤트를 전달받아 뷰포트 재구성
+	* todo : rect 정상적인 update 안 함
 	*/ 
 	virtual void OnWindowResized(const POINT& WindowSize) override;
 	FViewportInfo* GetViewportInfo() { return &ViewportInfo; }
 	FRect GetViewportPixelRect();
-protected:
-	virtual void OnResized() override;
 
 private:
 	void UpdateDxViewport(const POINT& WindowSize);

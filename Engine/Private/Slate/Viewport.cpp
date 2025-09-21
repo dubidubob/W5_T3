@@ -12,20 +12,14 @@ void FViewportInfo::SetViewType(EViewportViewType InViewType)
 void SViewport::OnWindowResized(const POINT& WindowSize)
 {
 	CurrentWindowSize = WindowSize;
-	UpdateDxViewport(CurrentWindowSize);
-	if (ViewportInfo.Camera)
-	{
-		ViewportInfo.Camera->SetAspect(GetRect().Width / GetRect().Height);
-	}
-}
 
-void SViewport::OnResized()
-{
+	UpdateDxViewport(CurrentWindowSize);
 	if (ViewportInfo.Camera)
 	{
-		ViewportInfo.Camera->SetAspect(GetRect().Width / GetRect().Height);
+		float VpWidth = ViewportInfo.DxViewport.Width;
+		float VpHeight = ViewportInfo.DxViewport.Height;
+		ViewportInfo.Camera->SetAspect(VpWidth / VpHeight);
 	}
-	UpdateDxViewport(CurrentWindowSize);
 }
 
 void SViewport::UpdateDxViewport(const POINT& WindowSize)
@@ -49,9 +43,13 @@ void SViewport::UpdateDxViewport(const POINT& WindowSize)
 	ViewportInfo.DxViewport.MaxDepth = 1.0f;
 }
 
-// jft : independent with viewport's actual rect... but why..?
 FRect SViewport::GetViewportPixelRect()
 {
+	UE_LOG("Viewport Info : %.2f %.2f %.2f %.2f", ViewportInfo.DxViewport.TopLeftX,
+		ViewportInfo.DxViewport.TopLeftY, ViewportInfo.DxViewport.Width,
+		ViewportInfo.DxViewport.Height);
+	UE_LOG("Rect : %.2f %.2f %.2f %.2f", GetRect().X, GetRect().Y,
+		GetRect().Width, GetRect().Height);
 	return FRect(ViewportInfo.DxViewport.TopLeftX, ViewportInfo.DxViewport.TopLeftY,
 		ViewportInfo.DxViewport.Width, ViewportInfo.DxViewport.Height);
 }

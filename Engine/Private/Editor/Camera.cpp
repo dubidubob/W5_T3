@@ -40,7 +40,8 @@ void UCamera::Update()
 
 	/* Camera 조작*/
 	Manipulate();
-	
+
+	// Update Main Camera Aspect, updating multi viewport is in OnWindowResized
 	if (URenderer::GetInstance().GetDeviceResources())
 	{
 		float Width = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width;
@@ -190,7 +191,7 @@ void UCamera::UpdateMatrixByPers()
 	 */
 	const float RadianFovY = FVector::GetDegreeToRadian(FovY);
 
-
+	float aspect = Aspect;
 
 	const float F = 1.0f / std::tanf(RadianFovY * 0.5f);
 
