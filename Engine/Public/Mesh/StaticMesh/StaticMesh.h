@@ -65,6 +65,21 @@ struct FStaticMesh
 			IndexBuffer = nullptr;
 		}
 	}
+
+	FString GetFileName() const
+	{
+		return FileName.ToString();
+	}
+
+	FString GetBaseFileName() const
+	{
+		FString FullName = FileName.ToString();
+		size_t DotPos = FullName.find_last_of('.');
+		if (DotPos != FString::npos)
+			return FullName.substr(0, DotPos);
+		return FullName; 
+	}
+
 };
 
 class UStaticMesh : public UObject
