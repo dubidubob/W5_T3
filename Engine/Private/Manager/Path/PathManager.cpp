@@ -49,6 +49,7 @@ void UPathManager::GetEssentialPath()
 	AudioPath = DataPath / "Audio";
 	WorldPath = DataPath / "World";
 	ConfigPath = DataPath / "Config";
+	EditorIniPath = ConfigPath / "editor.ini";
 	FontPath = DataPath / "Font";
 }
 

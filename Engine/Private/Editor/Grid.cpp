@@ -65,7 +65,7 @@ void UGrid::SetupGrid()
 
 void UGrid::SaveGridSettings() const
 {
-	const path ConfigFilePath = UPathManager::GetInstance().GetConfigPath() / "editor.ini";
+	const path ConfigFilePath = UPathManager::GetInstance().GetEditorIniPath();
 
 	WritePrivateProfileStringA(
 		"Grid",
@@ -77,7 +77,7 @@ void UGrid::SaveGridSettings() const
 
 void UGrid::LoadGridSettings()
 {
-	const path ConfigFilePath = UPathManager::GetInstance().GetConfigPath() / "editor.ini";
+	const path ConfigFilePath = UPathManager::GetInstance().GetEditorIniPath();
 
 	// Check if config file exists
 	if (!std::filesystem::exists(ConfigFilePath))
