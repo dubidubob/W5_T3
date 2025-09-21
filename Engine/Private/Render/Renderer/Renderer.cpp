@@ -604,6 +604,7 @@ void URenderer::RenderLevel()
         Pipeline->UpdatePipeline(CreatePipelineInfo(StaticMeshComponent->GetRenderState()));
         Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);   // b0 (world)
         Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);    // b2 (color)
+        Pipeline->SetConstantBuffer(2, false, ConstantBufferColor);    // b2 (color)
         UpdateConstant(PrimitiveComponent);                           // update b0 with world matrix
         UpdateConstant(FVector4(0.f, 0.f, 0.f, 0.f));                 // default color influence off
         UpdateInstanceDrawConstants(false, 0, 0);                     // disable instancing (b3)
