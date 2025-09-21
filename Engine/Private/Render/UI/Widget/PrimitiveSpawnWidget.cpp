@@ -89,10 +89,12 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 		AStaticMeshActor* NewActor = nullptr;
 
 		FString Name = PrimitiveTypes[SelectedPrimitiveType];
+		FString StaticMeshPath = Name + ".obj";
+
 		if (!Name.empty())
 		{
 			NewActor = CurrentLevel->SpawnActor<AStaticMeshActor>(Name);
-			NewActor->GetStaticMeshComponent()->SetStaticMesh(Name);
+			NewActor->GetStaticMeshComponent()->SetStaticMesh(StaticMeshPath);
 		}
 
 		if (NewActor)
