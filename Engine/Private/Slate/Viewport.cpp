@@ -45,11 +45,6 @@ void SViewport::UpdateDxViewport(const POINT& WindowSize)
 
 FRect SViewport::GetViewportPixelRect()
 {
-	UE_LOG("Viewport Info : %.2f %.2f %.2f %.2f", ViewportInfo.DxViewport.TopLeftX,
-		ViewportInfo.DxViewport.TopLeftY, ViewportInfo.DxViewport.Width,
-		ViewportInfo.DxViewport.Height);
-	UE_LOG("Rect : %.2f %.2f %.2f %.2f", GetRect().X, GetRect().Y,
-		GetRect().Width, GetRect().Height);
 	return FRect(ViewportInfo.DxViewport.TopLeftX, ViewportInfo.DxViewport.TopLeftY,
 		ViewportInfo.DxViewport.Width, ViewportInfo.DxViewport.Height);
 }

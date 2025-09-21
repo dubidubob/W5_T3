@@ -191,8 +191,6 @@ void UCamera::UpdateMatrixByPers()
 	 */
 	const float RadianFovY = FVector::GetDegreeToRadian(FovY);
 
-	float aspect = Aspect;
-
 	const float F = 1.0f / std::tanf(RadianFovY * 0.5f);
 
 	FMatrix P = FMatrix::Identity;
