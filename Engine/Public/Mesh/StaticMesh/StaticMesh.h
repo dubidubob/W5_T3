@@ -92,7 +92,7 @@ public:
 
 	FStaticMesh* GetStaticMeshAsset() const { return StaticMeshAsset; }
 	void SetStaticMeshAsset(FStaticMesh* InStaticMeshAsset) { StaticMeshAsset = InStaticMeshAsset; }
-	const FString& GetAssetPathFileName() const;
+	const FName& GetAssetPathFileName() const;
 
 private:
 	FStaticMesh* StaticMeshAsset;

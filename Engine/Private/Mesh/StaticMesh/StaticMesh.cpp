@@ -12,11 +12,11 @@ UStaticMesh::~UStaticMesh()
 {
 }
 
-const FString& UStaticMesh::GetAssetPathFileName() const
+const FName& UStaticMesh::GetAssetPathFileName() const
 {
 	if (StaticMeshAsset)
 	{
-		return StaticMeshAsset->FileName.ToString();
+		return StaticMeshAsset->FileName;
 	}
 
 	static const FString EmptyString = "";
