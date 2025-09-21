@@ -22,6 +22,7 @@ struct FStaticMaterial
 	FString DiffusePath;
 	//ID3D11ShaderResourceView* DiffuseSRV = nullptr;
 	ID3D11ShaderResourceView* TextureSRV = nullptr;
+	bool bUseTexture = false;
 
 };
 

@@ -27,6 +27,11 @@ cbuffer InstanceParams : register(b3)
 	uint Padding0;
 };
 
+cbuffer MaterialParams : register(b4)
+{
+	uint UseTexture;
+};
+
 struct InstanceData
 {
 	row_major float4x4 World;
@@ -37,10 +42,10 @@ StructuredBuffer<InstanceData> InstanceMatrices : register(t0);
 
 struct VS_INPUT
 {
-	float3 Position : POSITION;   // matches R32G32B32 in input layout
-	float3 Normal   : NORMAL;
-	float4 Color    : COLOR;
-	float2 Tex      : TEXCOORD;
+	float3 Position : POSITION; // matches R32G32B32 in input layout
+	float3 Normal : NORMAL;
+	float4 Color : COLOR;
+	float2 Tex : TEXCOORD;
 };
 
 struct PS_INPUT
@@ -52,10 +57,10 @@ struct PS_INPUT
 
 PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 {
-    PS_INPUT Output;
+	PS_INPUT Output;
 
-    float4 Position = float4(Input.Position, 1.0f);
-    float4 ShadeColor = Input.Color;
+	float4 Position = float4(Input.Position, 1.0f);
+	float4 ShadeColor = Input.Color;
 
 	if (UseInstancing != 0 && InstanceId < InstanceCount)
 	{
@@ -66,27 +71,21 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 
 	Position = mul(Position, world);
 	Position = mul(Position, ViewMatrix);
-    Position = mul(Position, ProjectionMatrix);
+	Position = mul(Position, ProjectionMatrix);
 
-    Output.Position = Position;
-    Output.Color = ShadeColor;
-    Output.Tex = Input.Tex; // pass through UVs to PS
-    return Output;
+	Output.Position = Position;
+	Output.Color = ShadeColor;
+	Output.Tex = Input.Tex; // pass through UVs to PS
+	return Output;
 }
 
 float4 MainPS(PS_INPUT Input) : SV_TARGET
 {
-	return DiffuseTexture.Sample(DiffuseSampler, Input.Tex);
-	// 텍스처 색상 샘플링
-	//float4 texColor = DiffuseTexture.Sample(DiffuseSampler, Input.Tex);
-
-    // 기존 색상과 텍스처 혼합
-	//float4 finalColor = texColor * Input.Color;
-
-    // totalColor (b2)와도 혼합
-	//finalColor = lerp(finalColor, totalColor, totalColor.a);
-
-	//return finalColor;
-	//float4 FinalColor = lerp(Input.Color, totalColor, totalColor.a);
-	//return FinalColor;
+	if (UseTexture != 0)
+	{
+        // 텍스처만 사용
+		return DiffuseTexture.Sample(DiffuseSampler, Input.Tex);
+	}
+        // 정점 색상(또는 totalColor)만 사용
+	return Input.Color;
 }

@@ -303,6 +303,13 @@ void FObjImporter::ConvertObjToStaticMesh(const FObjInfo& ObjInfo, FStaticMesh& 
 		StaticMat.SpecularPath = ObjMat.SpecularPath;
 		StaticMat.DiffusePath = ObjMat.DiffuseTexturePath;
 
+		if (!ObjMat.DiffuseTexturePath.empty())
+		{
+			StaticMat.DiffusePath = ObjMat.DiffuseTexturePath;
+			StaticMat.bUseTexture = true;	
+		}
+		//StaticMat.bUseTexture =
+		// 
 		//if (!ObjMat.DiffuseTexturePath.empty())
 		//{
 		//	//StaticMat.DiffuseSRV = UResourceManager::GetInstance().GetTexture(ObjMat.DiffuseTexturePath);
@@ -313,6 +320,17 @@ void FObjImporter::ConvertObjToStaticMesh(const FObjInfo& ObjInfo, FStaticMesh& 
 		//}
 
 		OutStaticMesh.Materials.Add(StaticMat);
+	}
+
+	// If no material groups were defined in the OBJ (no 'usemtl'),
+	// create a single default section covering the whole index range
+	if (OutStaticMesh.Sections.IsEmpty() && !OutStaticMesh.Indices.IsEmpty())
+	{
+		FStaticMeshSection DefaultSection;
+		DefaultSection.FirstIndex = 0;
+		DefaultSection.NumIndices = static_cast<uint32>(OutStaticMesh.Indices.size());
+		DefaultSection.MaterialIndex = -1; // no material -> render with vertex color
+		OutStaticMesh.Sections.Add(DefaultSection);
 	}
 
 	UE_LOG("Vertex optimization: %d indices -> %d unique vertices", ObjInfo.PositionIndices.size(), OutStaticMesh.Vertices.size());

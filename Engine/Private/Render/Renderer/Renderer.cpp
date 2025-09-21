@@ -559,18 +559,28 @@ void URenderer::RenderLevel()
         GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         GetDeviceContext()->PSSetSamplers(0, 1, &DiffuseSampler);     // s0 슬롯
 
-		for (const FStaticMeshSection& Section : MeshData->Sections)
-		{
-			FStaticMaterial& Mat = MeshData->Materials[Section.MaterialIndex];
-			if (Mat.TextureSRV == nullptr)
-			{
-				continue;
-			}
+        	for (const FStaticMeshSection& Section : MeshData->Sections)
+        	{
+                ID3D11ShaderResourceView* SRV = nullptr;
+                FMaterialParamsCB MaterialParams{};
 
-            GetDeviceContext()->PSSetShaderResources(1, 1, &Mat.TextureSRV);  // t1 슬롯
-            // 드로우 호출
-            GetDeviceContext()->DrawIndexed(Section.NumIndices, Section.FirstIndex, 0);
-        }
+                if (Section.MaterialIndex >= 0 && Section.MaterialIndex < MeshData->Materials.Num())
+                {
+        			FStaticMaterial& Mat = MeshData->Materials[Section.MaterialIndex];
+                    SRV = Mat.TextureSRV;                // may be null when no texture
+                    MaterialParams.UseTexture = Mat.bUseTexture ? 1u : 0u;
+                }
+                else
+                {
+                    MaterialParams.UseTexture = 0u;     // out-of-range material -> fallback to vertex color
+                }
+
+                // Bind SRV (can be null). Shader side branches using UseTexture flag.
+                GetDeviceContext()->PSSetShaderResources(1, 1, &SRV); 
+        		UpdateConstant(MaterialParams);
+                // Draw the section even without texture (shader uses vertex color when UseTexture==0)
+                GetDeviceContext()->DrawIndexed(Section.NumIndices, Section.FirstIndex, 0);
+        	}
 
 	}
 
@@ -930,6 +940,16 @@ void URenderer::CreateConstantBuffer()
 		Pipeline->SetConstantBuffer(4, true, ConstantBufferCharTable);
 	}
 
+	{
+		D3D11_BUFFER_DESC cbd = {};
+		cbd.Usage = D3D11_USAGE_DYNAMIC;               // 자주 갱신할 거니까 DYNAMIC
+		cbd.ByteWidth = sizeof(FMaterialParamsCB);      // 16바이트
+		cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		GetDevice()->CreateBuffer(&cbd, nullptr, &ConstantBurfferMaterialParm);
+	}
+
 	UpdateInstanceDrawConstants(false, 0, 0);
 }
 
@@ -980,6 +1000,14 @@ void URenderer::ReleaseConstantBuffer()
 		ConstantBufferCharTable->Release();
 		ConstantBufferCharTable = nullptr;
 	}
+
+
+	if (ConstantBurfferMaterialParm)
+	{
+		ConstantBurfferMaterialParm->Release();
+		ConstantBurfferMaterialParm = nullptr;
+	}
+
 }
 
 
@@ -1072,6 +1100,20 @@ void URenderer::UpdateConstant(const FVector4& Color) const
 		}
 		GetDeviceContext()->Unmap(ConstantBufferColor, 0);
 	}
+}
+
+void URenderer::UpdateConstant(const FMaterialParamsCB& InMaterialParams) const
+{
+	Pipeline->SetConstantBuffer(4, false, ConstantBurfferMaterialParm);
+
+	FMaterialParamsCB MaterialParamsData = {};
+	MaterialParamsData.UseTexture = InMaterialParams.UseTexture;
+	MaterialParamsData.Padding = FVector(0, 0, 0); // 패딩 맞추기
+
+	D3D11_MAPPED_SUBRESOURCE MappedResource = {};
+	GetDeviceContext()->Map(ConstantBurfferMaterialParm, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource);
+	memcpy(MappedResource.pData, &MaterialParamsData, sizeof(FMaterialParamsCB));
+	GetDeviceContext()->Unmap(ConstantBurfferMaterialParm, 0);
 }
 
 void URenderer::UpdateInstance(const TArray<FTextInstance>* Instance)
