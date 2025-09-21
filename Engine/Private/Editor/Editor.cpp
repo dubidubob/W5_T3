@@ -24,6 +24,12 @@ UEditor::UEditor()
 	Camera = NewObject<UCamera>();
 	ObjectPicker = NewObject<UObjectPicker>();
 	ViewportManager = NewObject<UViewportManager>();
+
+
+	const float W = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width;
+	const float H = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Height;
+	ViewportManager->Initialize(POINT(W, H));
+
 	Gizmo = NewObject<UGizmo>();
 	Grid = NewObject<UGrid>();
 	Axis = NewObject<UAxis>();
@@ -58,7 +64,7 @@ UEditor::~UEditor()
 void UEditor::Update()
 {	
 	Camera->Update();
-	ViewportManager->UpdateSubCamera(Camera);
+	ViewportManager->Update();
 
 	ProcessMouseInput(ULevelManager::GetInstance().GetCurrentLevel());
 	ProcessKeyboardInput();
@@ -167,26 +173,26 @@ void UEditor::ProcessKeyboardInput()
 void UEditor::ProcessMouseInput(ULevel* InLevel)
 {
 	const UInputManager& InputManager = UInputManager::GetInstance();
-	FVector MousePositionNdc = InputManager.GetMouseNDCPosition();
-
-	// 월드 레이 먼저 계산 (릴리즈 커밋에 사용)
-	FRay WorldRay = Camera->ConvertToWorldRay(MousePositionNdc.X, MousePositionNdc.Y);
+	FVector2 MousePositionNdc = InputManager.GetMouseNDCPosition();
 
 	// Multi Viewport Mode -> Adjust MousePosition & FRay & Cam
 	auto& Renderer = URenderer::GetInstance();
 	if (Renderer.GetDividedWindow())
 	{
-		FVector MouseInput = InputManager.GetMousePosition();
+		const float W = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width;
+		const float H = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Height;
 
-		const float W = static_cast<float>(URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width);
-		const float H = static_cast<float>(URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Height);
+		// Mouse Left : Split 이면 Drag / Click만
+		bool IsDragging = InputManager.IsKeyDown(EKeyInput::MouseLeft);
+		ViewportManager->SetSplitterMouseInput(POINT(W, H), MousePositionNdc, IsDragging);
 
-		MousePositionNdc = ViewportManager->GetSelectedViewportMousePositionNdc(POINT(W, H), POINT(MouseInput.X, MouseInput.Y));
-		UCamera* cam = ViewportManager->GetSelectedViewportCamera();
-
-		WorldRay = cam->ConvertToWorldRay(MousePositionNdc.X, MousePositionNdc.Y);
+		FVector2 MousePosition = InputManager.GetMousePosition();
+		MousePositionNdc = ViewportManager->GetViewportMouseInputNdc(POINT(W, H), MousePosition);
 	}
 
+	// UE_LOG("%.2f, %.2f", MousePositionNdc.X, MousePositionNdc.Y);
+	// 월드 레이 먼저 계산 (릴리즈 커밋에 사용)
+	FRay WorldRay = Camera->ConvertToWorldRay(MousePositionNdc.X, MousePositionNdc.Y);
 	HandleGizmo(InLevel, WorldRay);
 }
 
@@ -197,15 +203,10 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 
 	float ActorDistance = -1;
 
+	// todo : key left pressed 될 때마다 ray 쏘기
 	const UInputManager& InputManager = UInputManager::GetInstance();
 	if (InputManager.IsKeyReleased(EKeyInput::MouseLeft))
 	{
-		// 회전 모드에서 릴리즈 시 마지막 각도 커밋 (로컬/월드 동일)
-		if (Gizmo->IsDragging() && Gizmo->GetSelectedActor() && Gizmo->GetGizmoMode() == EGizmoMode::Rotate)
-		{
-			FQuat FinalQuat = GetGizmoDragRotationQuat(InWorldRay);
-			Gizmo->SetActorRotation(FinalQuat);
-		}
 		Gizmo->EndDrag();
 	}
 

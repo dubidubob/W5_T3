@@ -251,7 +251,7 @@ void FObjImporter::ConvertObjToStaticMesh(const FObjInfo& ObjInfo, FStaticMesh& 
 			}
 			else { Vertex.Tex = FVector2(0.0f, 0.0f); }
 
-			if (NormalIndex < ObjInfo.Normals.size()) { Vertex.Normal = ObjInfo.Normals[NormalIndex]; }
+			if (NormalIndex < ObjInfo.Normals.size()) { Vertex.Normal = PositionToUEBasis(ObjInfo.Normals[NormalIndex]); }
 			else { Vertex.Normal = FVector(0.0f, 0.0f, 1.0f); }
 
 			Vertex.Color = { static_cast<float>(rand()) / RAND_MAX ,

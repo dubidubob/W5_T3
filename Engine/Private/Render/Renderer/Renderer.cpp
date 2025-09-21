@@ -13,6 +13,8 @@
 #include "Mesh/StaticMesh/StaticMesh.h"
 #include "Mesh/StaticMeshComponent.h"
 #include "Manager/Viewport/ViewportManager.h"
+#include "Slate/Viewport.h"
+#include "Manager/Input/InputManager.h"
 
 namespace
 {
@@ -50,6 +52,7 @@ void URenderer::Init(HWND InWindowHandle)
 	CreateStaticMeshShader();
 	CreateDefaultShader();
 	CreateTextShader();
+	CreateSlateShader();
 	CreateLineInstancedShader();
 	CreateInstanceBuffer();
 	CreateConstantBuffer();
@@ -69,6 +72,7 @@ void URenderer::Release()
 	ReleaseStaticMeshShader();
 	ReleaseResource();
 	ReleaseTextShader();
+	ReleaseSlateShader();
 	ReleaseLineInstancedShader();
 	ReleaseInstanceBuffer();
 	ReleaseBlendState();
@@ -318,6 +322,35 @@ void URenderer::CreateTextShader()
 	PixelShaderCSO->Release();
 }
 
+void URenderer::CreateSlateShader()
+{
+	ID3DBlob* VertexShaderCSO;
+	ID3DBlob* PixelShaderCSO;
+
+	D3DCompileFromFile(L"Data/Shader/SlateShader.hlsl", nullptr, nullptr, "VS_Slate", "vs_5_0", 0, 0,
+		&VertexShaderCSO, nullptr);
+
+	GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), nullptr, &SlateVertexShader);
+
+	D3DCompileFromFile(L"Data/Shader/SlateShader.hlsl", nullptr, nullptr, "PS_Slate", "ps_5_0", 0, 0,
+		&PixelShaderCSO, nullptr);
+
+	GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
+		PixelShaderCSO->GetBufferSize(), nullptr, &SlatePixelShader);
+
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	};
+
+	GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), &SlateInputLayout);
+	VertexShaderCSO->Release();
+	PixelShaderCSO->Release();
+}
+
 void URenderer::CreateLineInstancedShader()
 {
 	ID3DBlob* VertexShaderCSO = nullptr;
@@ -424,6 +457,27 @@ void URenderer::ReleaseTextShader()
 	}
 }
 
+void URenderer::ReleaseSlateShader()
+{
+	if (SlateInputLayout)
+	{
+		SlateInputLayout->Release();
+		SlateInputLayout = nullptr;
+	}
+
+	if (SlatePixelShader)
+	{
+		SlatePixelShader->Release();
+		SlatePixelShader = nullptr;
+	}
+
+	if (SlateVertexShader)
+	{
+		SlateVertexShader->Release();
+		SlateVertexShader = nullptr;
+	}
+}
+
 void URenderer::ReleaseLineInstancedShader()
 {
 	if (LineInstancedInputLayout)
@@ -453,20 +507,23 @@ void URenderer::Update(UEditor* Editor)
 	RenderBegin();
 
 	// jft
+	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
 	if (bIsWindowDivided)
 	{
-		long windowWidth = GetDeviceResources()->GetViewportInfo().Width;
-		long windowHeight = GetDeviceResources()->GetViewportInfo().Height;
+		long WindowWidth = GetDeviceResources()->GetViewportInfo().Width;
+		long WindowHeight = GetDeviceResources()->GetViewportInfo().Height;
 
-		Editor->GetViewportManager()->UpdateViewportRects({ windowWidth, windowHeight });
-		FViewportContext* ViewportArray = Editor->GetViewportManager()->GetViewports();
-		for (int i = 0; i < 4; i++)
+		Editor->GetViewportManager()->UpdateViewportRects({ WindowWidth, WindowHeight });
+		RenderSlate(Editor);
+		for (int Idx = 0; Idx < 4; Idx++)
 		{
-			GetDeviceContext()->RSSetViewports(1, &ViewportArray[i].Viewport);
+			FViewportInfo* ViewportInfo = Editor->GetViewportManager()->GetViewportInfo(Idx);
 
-			SetViewMode(ViewportArray[i].RenderMode);
+			GetDeviceContext()->RSSetViewports(1, &ViewportInfo->DxViewport);
 
-			UpdateConstant(ViewportArray[i].Camera->GetFViewProjConstants());
+			SetViewMode(ViewportInfo->RenderMode);
+
+			UpdateConstant(ViewportInfo->Camera->GetFViewProjConstants());
 
 			DeviceResources->UpdateViewport();
 
@@ -477,7 +534,6 @@ void URenderer::Update(UEditor* Editor)
 	}
 	else
 	{
-		GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
 		DeviceResources->UpdateViewport();
 
 		RenderLevel();
@@ -734,6 +790,36 @@ void URenderer::RenderTest(const FVector& CameraLocation)
 	UpdateInstanceDrawConstants(false, 0, 0);
 }
 
+void URenderer::RenderSlate(UEditor* Editor)
+{
+	ID3D11DepthStencilState* DepthStencilState = TextDepthStencilState; // 깊이 테스트 비활성화
+	ID3D11RasterizerState* RasterizerState = GetRasterizerState(FRenderState());
+
+	FPipelineInfo PipelineInfo = { SlateInputLayout, SlateVertexShader, RasterizerState,
+		DepthStencilState, SlatePixelShader, nullptr };
+
+	Pipeline->UpdatePipeline(PipelineInfo);
+
+	for (SWindow* Window : Editor->GetViewportManager()->GetWindows())
+	{
+		FRect Rect; FVector4 Color;
+		FVector2 MouseCoord = UInputManager::GetInstance().GetMouseNDCPosition();
+		if (!Window->CanRender(Rect, Color, MouseCoord)) { continue; }
+
+		FMatrix TransformMatrix = FMatrix::ScaleMatrix(FVector(Rect.Width, Rect.Height, 1))
+			* FMatrix::TranslationMatrix(FVector(Rect.GetCenterX(), Rect.GetCenterY(), 0));
+
+		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
+		UpdateConstant(TransformMatrix);
+		Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
+		UpdateConstant(Color);
+
+		static constexpr uint32 SlateStride = sizeof(FVertex);
+		Pipeline->SetVertexBuffer(UResourceManager::GetInstance().GetVertexBuffer(EPrimitiveType::Square), SlateStride);
+		Pipeline->Draw(6, 0);
+	}
+}
+
 /**
  * @brief 스왑 체인의 백 버퍼와 프론트 버퍼를 교체하여 화면에 출력
  */
@@ -799,7 +885,6 @@ void URenderer::RenderEditorPrimitive(FEditorPrimitive& Primitive, struct FRende
 	Pipeline->SetVertexBuffer(Primitive.Vertexbuffer, Stride);
 	Pipeline->Draw(Primitive.NumVertices, 0);
 }
-
 
 void URenderer::CreateInstanceBuffer()
 {
@@ -1025,7 +1110,7 @@ void URenderer::UpdateConstant(const UPrimitiveComponent* Primitive)
 	}
 }
 
-void URenderer::UpdateConstant(const FMatrix& InMatrix) const
+void URenderer::UpdateConstant(const FMatrix& InMatrix)
 {
 	if (ConstantBufferModels)
 	{
@@ -1073,7 +1158,7 @@ void URenderer::UpdateConstant(const FViewProjConstants& InViewProjConstants) co
 		{
 			ViewProjectionConstants->View = InViewProjConstants.View;
 			ViewProjectionConstants->Projection = InViewProjConstants.Projection;
-			ViewProjectionConstants->ViewModeIndex = static_cast<uint32>(CurrentViewMode);
+			ViewProjectionConstants->ViewModeIndex = static_cast<uint32>(CurrentRenderMode);
 		}
 		GetDeviceContext()->Unmap(ConstantBufferPerFrame, 0);
 	}
@@ -1081,8 +1166,6 @@ void URenderer::UpdateConstant(const FViewProjConstants& InViewProjConstants) co
 
 void URenderer::UpdateConstant(const FVector4& Color) const
 {
-	Pipeline->SetConstantBuffer(2, false, ConstantBufferColor);
-
 	if (ConstantBufferColor)
 	{
 		D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR = {};
@@ -1164,14 +1247,14 @@ FPipelineInfo URenderer::CreatePipelineInfo(const FRenderState& InRenderState)
 {
 	FRenderState ModifiedRenderState = InRenderState;
 
-	switch (CurrentViewMode)
+	switch (CurrentRenderMode)
 	{
-	case EViewModeIndex::Wireframe:
+	case EViewportRenderMode::Wireframe:
 		ModifiedRenderState.FillMode = EFillMode::WireFrame;
 		ModifiedRenderState.CullMode = ECullMode::None;
 		break;
-	case EViewModeIndex::Lit:
-	case EViewModeIndex::Unlit:
+	case EViewportRenderMode::Lit:
+	case EViewportRenderMode::Unlit:
 	default:
 		break;
 	}
@@ -1189,14 +1272,14 @@ FPipelineInfo URenderer::CreateTextPipelineInfo(const FRenderState& InRenderStat
 {
 	FRenderState ModifiedRenderState = InRenderState;
 
-	switch (CurrentViewMode)
+	switch (CurrentRenderMode)
 	{
-	case EViewModeIndex::Wireframe:
+	case EViewportRenderMode::Wireframe:
 		ModifiedRenderState.FillMode = EFillMode::WireFrame;
 		ModifiedRenderState.CullMode = ECullMode::None;
 		break;
-	case EViewModeIndex::Lit:
-	case EViewModeIndex::Unlit:
+	case EViewportRenderMode::Lit:
+	case EViewportRenderMode::Unlit:
 	default:
 		break;
 	}

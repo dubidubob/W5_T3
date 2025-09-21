@@ -5,6 +5,7 @@
 #include "Editor/EditorPrimitive.h"
 // jft
 #include "Editor/Camera.h"
+#include "ViewportTypes.h"
 
 class UPipeline;
 class UDeviceResources;
@@ -53,6 +54,7 @@ public:
 	void CreateDefaultShader();
 	void CreateStaticMeshShader();
 	void CreateTextShader();
+	void CreateSlateShader();
 	void CreateLineInstancedShader();
 	void CreateConstantBuffer();
 	void CreateDiffuseSamplerBuffer();
@@ -61,6 +63,7 @@ public:
 	void ReleaseDefaultShader();
 	void ReleaseStaticMeshShader();
 	void ReleaseTextShader();
+	void ReleaseSlateShader();
 	void ReleaseLineInstancedShader();
 	static void ReleaseVertexBuffer(ID3D11Buffer* InVertexBuffer);
 	void ReleaseConstantBuffer();
@@ -74,9 +77,10 @@ public:
 	void RenderBegin();
 	void RenderLevel();
 	void RenderTest(const FVector& CameraLocation);
+	void RenderSlate(UEditor* Editor);
 	void RenderEnd() const;
 	void RenderEditorPrimitive(FEditorPrimitive& InPrimitive, struct FRenderState& InRenderState);
-	void RenderBoundingBox(UPrimitiveComponent* PrimitiveComponent);
+
 
 	void OnResize(uint32 Inwidth = 0, uint32 InHeight = 0);
 	bool GetIsResizing() { return bIsResizing;}
@@ -120,7 +124,7 @@ public:
 	void CreateInstanceBuffer();
 
 	void UpdateConstant(const UPrimitiveComponent* Primitive);
-	void UpdateConstant(const FMatrix& InMatrix) const;
+	void UpdateConstant(const FMatrix& InMatrix);
 	void UpdateConstant(const FVector& InPosition, const FVector& InRotation, const FVector& InScale) const;
 	void UpdateConstant(const FViewProjConstants& InViewProjConstants) const;
 	void UpdateConstant(const FVector4& Color) const;
@@ -128,8 +132,8 @@ public:
 	void UpdateInstance(const TArray<FTextInstance>* Instance);
 	void UpdateInstanceDrawConstants(bool bUseInstancing, uint32 BaseInstanceOffset, uint32 InstanceCount) const;
 
-	void SetViewMode(EViewModeIndex InViewMode) { CurrentViewMode = InViewMode; }
-	EViewModeIndex GetViewMode(EViewModeIndex InViewMode) const { return CurrentViewMode; }
+	void SetViewMode(EViewportRenderMode InViewMode) { CurrentRenderMode = InViewMode; }
+	EViewportRenderMode GetViewMode(EViewportRenderMode InViewMode) const { return CurrentRenderMode; }
 
 	/** Show Flags management */
 	void SetShowFlags(EEngineShowFlags InShowFlags) { CurrentShowFlags = InShowFlags; }
@@ -171,7 +175,7 @@ public:
 private:
 	UPipeline* Pipeline = nullptr;
 	UDeviceResources* DeviceResources = nullptr;
-	EViewModeIndex CurrentViewMode = EViewModeIndex::Lit;
+	EViewportRenderMode CurrentRenderMode = EViewportRenderMode::Lit;
 	EEngineShowFlags CurrentShowFlags = EEngineShowFlags::SF_Default;
 	TArray<UPrimitiveComponent*> PrimitiveComponents;
 
@@ -206,6 +210,10 @@ private:
 	ID3D11VertexShader* TextVertexShader = nullptr;
 	ID3D11PixelShader* TextPixelShader = nullptr;
 	ID3D11InputLayout* TextInputLayout = nullptr;
+	
+	ID3D11VertexShader* SlateVertexShader = nullptr;
+	ID3D11PixelShader* SlatePixelShader = nullptr;
+	ID3D11InputLayout* SlateInputLayout = nullptr;
 
 	ID3D11VertexShader* LineInstancedVertexShader = nullptr;
 	ID3D11PixelShader* LineInstancedPixelShader = nullptr;

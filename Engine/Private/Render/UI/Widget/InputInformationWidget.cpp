@@ -22,7 +22,7 @@ void UInputInformationWidget::Update()
 	auto& InputManager = UInputManager::GetInstance();
 
 	// 마우스 위치 업데이트
-	FVector CurrentMousePosition = InputManager.GetMousePosition();
+	FVector2 CurrentMousePosition = InputManager.GetMousePosition();
 	MouseDelta = CurrentMousePosition - LastMousePosition;
 	LastMousePosition = CurrentMousePosition;
 
@@ -152,7 +152,7 @@ void UInputInformationWidget::RenderMouseInfo() const
 	                        IM_COL32(50, 50, 50, 255));
 
 	// 마우스 위치에 Dot 표시
-	FVector MouseNDC = InputManager.GetMouseNDCPosition();
+	FVector2 MouseNDC = InputManager.GetMouseNDCPosition();
 
 	// [-1, 1] 범위를 [0, 1] 범위로 변환
 	float NormalizedX = (MouseNDC.X + 1.0f) * 0.5f;
