@@ -59,10 +59,6 @@ void USceneIOWidget::RenderWidget()
 	ImGui::Spacing();
 
 	// New Level Section
-	ImGui::Text("새로운 Scene 생성");
-	ImGui::Spacing();
-
-	ImGui::InputText("Level Name", NewLevelNameBuffer, sizeof(NewLevelNameBuffer));
 	if (ImGui::Button("Create New Scene", ImVec2(120, 25)))
 	{
 		CreateNewLevel();
@@ -154,7 +150,7 @@ void USceneIOWidget::LoadLevel(const FString& InFilePath)
 		}
 
 		ULevelManager& LevelManager = ULevelManager::GetInstance();
-		bool bSuccess = LevelManager.LoadLevel(LevelName, InFilePath);
+		bool bSuccess = LevelManager.LoadLevel(InFilePath);
 
 		if (bSuccess)
 		{
@@ -184,23 +180,14 @@ void USceneIOWidget::CreateNewLevel()
 {
 	try
 	{
-		FString LevelName = FString(NewLevelNameBuffer, NewLevelNameBuffer + strlen(NewLevelNameBuffer));
-
-		if (LevelName.empty())
-		{
-			StatusMessage = "Please Enter A Level Name!";
-			StatusMessageTimer = STATUS_MESSAGE_DURATION;
-			return;
-		}
-
 		ULevelManager& LevelManager = ULevelManager::GetInstance();
-		bool bSuccess = LevelManager.CreateNewLevel(LevelName);
+		bool bSuccess = LevelManager.CreateNewLevel();
 
 		if (bSuccess)
 		{
-			StatusMessage = "New Level Created Successfully!";
-			StatusMessageTimer = STATUS_MESSAGE_DURATION;
-			UE_LOG("SceneIO: New Level Created: %s", FString(NewLevelNameBuffer).c_str());
+			//StatusMessage = "New Level Created Successfully!";
+			//StatusMessageTimer = STATUS_MESSAGE_DURATION;
+			//UE_LOG("SceneIO: New Level Created");
 		}
 		else
 		{

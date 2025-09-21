@@ -21,7 +21,6 @@ private:
 	static path OpenSaveFileDialog();
 	static path OpenLoadFileDialog();
 
-	char NewLevelNameBuffer[256] = "Default";
 	FString StatusMessage;
 	float StatusMessageTimer = 0.0f;
 

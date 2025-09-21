@@ -12,26 +12,26 @@ class ULevelManager : public UObject
 
 public:
 	void Update() const;
-	void CreateDefaultLevel(UCamera* InCamera);
-	void RegisterLevel(const FString& InName, ULevel* InLevel);
-	void LoadLevel(const FString& InName);
 	void Shutdown();
 
 	// Getter
 	ULevel* GetCurrentLevel() const { return CurrentLevel; }
 
-	// Save & Load System
+	// Level Operations
+	bool Init(UCamera* InCamera);
+	bool CreateNewLevel();
+	bool LoadLevel(const FString& InFilePath);
 	bool SaveCurrentLevel(const FString& InFilePath) const;
-	bool LoadLevel(const FString& InLevelName, const FString& InFilePath);
-	bool CreateNewLevel(const FString& InLevelName);
+
+	// Utility
 	static path GetLevelDirectory();
 	static path GenerateLevelFilePath(const FString& InLevelName);
 
+private:
 	// Metadata Conversion Functions
 	static FLevelMetadata ConvertLevelToMetadata(ULevel* InLevel);
 	static bool LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata& InMetadata);
 
 private:
-	ULevel* CurrentLevel;
-	TMap<FString, ULevel*> Levels;
+	ULevel* CurrentLevel = nullptr;
 };

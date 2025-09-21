@@ -71,8 +71,7 @@ void ULevel::Render()
 void ULevel::Cleanup()
 {
 	// 현재 레벨의 액터 배열을 순회하며 메모리 해제
-	TArray<AActor*> Actors = LevelActors;
-	for (auto Actor : Actors)
+	for (auto Actor : LevelActors)
 	{
 		SafeDelete(Actor);
 	}
