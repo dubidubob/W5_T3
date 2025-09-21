@@ -327,10 +327,10 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 		else if (AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(Actor))
 		{
 			PrimitiveMeta.Type = EPrimitiveType::StaticMeshComp;
-			UStaticMeshComponent* StaticMeshComponent = StaticMeshActor->GetStaticMeshCompoent();
+			UStaticMeshComponent* StaticMeshComponent = StaticMeshActor->GetStaticMeshComponent();
 			if (StaticMeshComponent && StaticMeshComponent->GetStaticMesh())
 			{
-				PrimitiveMeta.ObjStaticMeshAsset = StaticMeshComponent->GetStaticMesh()->GetAssetPathFileName();
+				PrimitiveMeta.ObjStaticMeshAsset = StaticMeshComponent->GetStaticMesh()->GetAssetPathFileName().ToString();
 			}
 		}
 		else
@@ -408,7 +408,7 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 			if (StaticMeshActor)
 			{
 				// TODO: GetStaticMeshComponent로 바꿔달라 요청할 것.
-				UStaticMeshComponent* StaticMeshComponent = StaticMeshActor->GetStaticMeshCompoent();
+				UStaticMeshComponent* StaticMeshComponent = StaticMeshActor->GetStaticMeshComponent();
 				StaticMeshComponent->SetStaticMesh(PrimitiveMeta.ObjStaticMeshAsset);
 			}
 			break;
