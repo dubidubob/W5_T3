@@ -22,8 +22,8 @@ FStaticMesh* FObjImporter::ParseAndConvert(const FString& FileName)
 bool FObjImporter::ParseObjFile(const FString& FileName, FObjInfo& OutObjInfo)
 {
 
-	FString ObjFilePath = FileName + ".obj";
-	const path FilePath = UPathManager::GetInstance().GetDataPath() / ObjFilePath;
+	//FString ObjFilePath = FileName;
+	const path FilePath = UPathManager::GetInstance().GetDataPath() / FileName;
 	std::ifstream File(FilePath);
 	if (!File.is_open())
 	{
