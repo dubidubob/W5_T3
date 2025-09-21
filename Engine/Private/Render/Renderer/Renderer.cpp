@@ -567,18 +567,16 @@ void URenderer::RenderLevel()
                 if (Section.MaterialIndex >= 0 && Section.MaterialIndex < MeshData->Materials.Num())
                 {
         			FStaticMaterial& Mat = MeshData->Materials[Section.MaterialIndex];
-                    SRV = Mat.TextureSRV;                // may be null when no texture
-                    MaterialParams.UseTexture = Mat.bUseTexture ? 1u : 0u;
+                    SRV = Mat.TextureSRV;                
+					MaterialParams.UseTexture = Mat.bUseTexture;
                 }
                 else
                 {
-                    MaterialParams.UseTexture = 0u;     // out-of-range material -> fallback to vertex color
+					MaterialParams.UseTexture = 0;     // out-of-range material -> fallback to vertex color
                 }
 
-                // Bind SRV (can be null). Shader side branches using UseTexture flag.
                 GetDeviceContext()->PSSetShaderResources(1, 1, &SRV); 
         		UpdateConstant(MaterialParams);
-                // Draw the section even without texture (shader uses vertex color when UseTexture==0)
                 GetDeviceContext()->DrawIndexed(Section.NumIndices, Section.FirstIndex, 0);
         	}
 
