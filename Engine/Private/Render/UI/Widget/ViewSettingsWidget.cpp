@@ -4,6 +4,7 @@
 #include "Manager/Viewport/ViewportManager.h"
 #include "ViewportTypes.h"
 #include "Editor/Grid.h"
+#include "Slate/Viewport.h"
 
 IMPLEMENT_CLASS(UViewSettingsWidget, UWidget)
 
@@ -28,25 +29,25 @@ void UViewSettingsWidget::RenderWidget()
 	}
 	if (bIsWindowDivided)
 	{
-		FViewportContext* ViewportArray = ViewportManager->GetViewports();
 
-		for (int i = 0; i < 4; i++)
+		for (uint32 Idx = 0; Idx < 4; Idx++)
 		{
-			ImGui::PushID(i);
-			ImGui::Text("Viewport %d", i);
-			int ViewTypeIdx = static_cast<int>(ViewportArray[i].ViewType);
-			int RenderModeIdx = static_cast<int>(ViewportArray[i].RenderMode);
+			FViewportInfo* Viewport = ViewportManager->GetViewportInfo(Idx);
+			ImGui::PushID(Idx);
+			ImGui::Text("Viewport %d", Idx);
+			int32 ViewTypeIdx = static_cast<int32>(Viewport->ViewType);
+			int32 RenderModeIdx = static_cast<int32>(Viewport->RenderMode);
 
 			if (ImGui::Combo("Projection", &ViewTypeIdx, ViewportUI::ViewTypeLabels.data(), static_cast<int>(ViewportUI::ViewTypeLabels.size())))
 			{
 				auto NewType = static_cast<EViewportViewType>(ViewTypeIdx);
-				ViewportManager->SetProjectionMode(i, NewType);
+				ViewportManager->SetProjectionMode(Idx, NewType);
 			}
 
 			if (ImGui::Combo("Render Mode", &RenderModeIdx, ViewportUI::RenderModeLabels.data(), static_cast<int>(ViewportUI::RenderModeLabels.size())))
 			{
 				auto NewMode = static_cast<EViewportRenderMode>(RenderModeIdx);
-				ViewportManager->SetViewMode(i, NewMode);
+				ViewportManager->SetViewMode(Idx, NewMode);
 			}
 			ImGui::Spacing();
 			ImGui::Separator();
