@@ -20,6 +20,7 @@ public:
 	const path& GetAudioPath() const { return AudioPath; }
 	const path& GetWorldPath() const { return WorldPath; }
 	const path& GetConfigPath() const { return ConfigPath; }
+	const path& GetEditorIniPath() const { return EditorIniPath; }
 	const path& GetFontPath() const { return FontPath; }
 
 private:
@@ -31,6 +32,7 @@ private:
 	path AudioPath;
 	path WorldPath;
 	path ConfigPath;
+	path EditorIniPath;
 	path FontPath;
 
 	void InitializeRootPath();
