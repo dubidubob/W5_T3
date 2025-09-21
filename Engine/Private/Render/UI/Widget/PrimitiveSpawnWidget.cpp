@@ -93,7 +93,7 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 
 		if (!Name.empty())
 		{
-			NewActor = CurrentLevel->SpawnActor<AStaticMeshActor>(Name);
+			NewActor = CurrentLevel->SpawnActor<AStaticMeshActor>();
 			NewActor->GetStaticMeshComponent()->SetStaticMesh(StaticMeshPath);
 		}
 
