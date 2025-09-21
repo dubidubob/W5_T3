@@ -240,6 +240,12 @@ bool ULevelManager::CreateNewLevel(const FString& InLevelName)
 	NewLevel->SetName(InLevelName);
 	NewLevel->SetCamera(CurrentLevel->GetCamera());
 
+	// 새 씬을 만들었으므로 카메라를 리셋
+	if (UCamera* Camera = NewLevel->GetCamera())
+	{
+		Camera->Reset();
+	}
+
 	// 레벨 등록 및 활성화
 	RegisterLevel(InLevelName, NewLevel);
 

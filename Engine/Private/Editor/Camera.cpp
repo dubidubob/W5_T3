@@ -8,6 +8,19 @@
 
 IMPLEMENT_CLASS(UCamera, UObject)
 
+void UCamera::Reset()
+{
+	RelativeLocation = FVector(-10.0f, 0.0f, 0.0f);
+	RelativeRotation = FVector(0, 0, 0);
+	FovY = 90.f;
+	NearZ = 0.1f;
+	FarZ = 100.f;
+	CameraViewType = EViewportViewType::Perspective;
+	
+	// Aspect는 현재 뷰포트 크기에 따라 계속 업데이트되므로 Reset에서 제외
+	// Aspect = float(Render::INIT_SCREEN_WIDTH) / Render::INIT_SCREEN_HEIGHT;
+}
+
 void UCamera::Update()
 {
 	if (!URenderer::GetInstance().GetDividedWindow() && !bIsSingleVP)

@@ -18,6 +18,7 @@ public:
 	}
 	~UCamera() override {}
 
+	void Reset();
 	void Update();
 	void Manipulate();
 	void UpdateMatrixByPers();
