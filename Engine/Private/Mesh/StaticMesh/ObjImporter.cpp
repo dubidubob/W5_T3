@@ -7,6 +7,7 @@
 FStaticMesh* FObjImporter::ParseAndConvert(const FString& FileName)
 {
 	FObjInfo RawData;
+
 	if (!ParseObjFile(FileName, RawData))
 	{
 		return nullptr;
@@ -14,13 +15,15 @@ FStaticMesh* FObjImporter::ParseAndConvert(const FString& FileName)
 
 	FStaticMesh* CookedData = new FStaticMesh();
 	ConvertObjToStaticMesh(RawData, *CookedData);
-
+	CookedData->FileName = FileName;
 	return CookedData;
 }
 
 bool FObjImporter::ParseObjFile(const FString& FileName, FObjInfo& OutObjInfo)
 {
-	const path FilePath = UPathManager::GetInstance().GetDataPath() / FileName;
+
+	FString ObjFilePath = FileName + ".obj";
+	const path FilePath = UPathManager::GetInstance().GetDataPath() / ObjFilePath;
 	std::ifstream File(FilePath);
 	if (!File.is_open())
 	{
@@ -80,7 +83,7 @@ bool FObjImporter::ParseObjFile(const FString& FileName, FObjInfo& OutObjInfo)
 			{
 				MatIndex = std::distance(OutObjInfo.Materials.begin(), It);
 			}
-
+			//인덱스 찾음 
 			FObjInfo::FMaterialGroup NewGroup;
 			NewGroup.MaterialIndex = MatIndex;
 			NewGroup.FirstFaceIndex = FaceCount;
@@ -137,6 +140,7 @@ bool FObjImporter::ParseObjFile(const FString& FileName, FObjInfo& OutObjInfo)
 
 bool FObjImporter::ParseMtlFile(const path& FilePath, TArray<FObjMaterialInfo>& OutMaterials)
 {
+
 	std::ifstream File(FilePath);
 	if (!File.is_open())
 	{
@@ -147,6 +151,7 @@ bool FObjImporter::ParseMtlFile(const path& FilePath, TArray<FObjMaterialInfo>& 
 	FObjMaterialInfo CurrentMaterial;
 	bool bFirstMaterial = true;
 	FString Line;
+
 	while (std::getline(File, Line))
 	{
 		std::stringstream Stream(Line);
@@ -155,27 +160,23 @@ bool FObjImporter::ParseMtlFile(const path& FilePath, TArray<FObjMaterialInfo>& 
 
 		if (Prefix == "newmtl")
 		{
-			if (!bFirstMaterial)
+			// 이전 머티리얼 저장 (중복 체크)
+			if (!CurrentMaterial.Name.empty())
 			{
-				UE_LOG("--- Parsed Material: %s ---", CurrentMaterial.Name.c_str());
-				UE_LOG("  - Ka: %.2f %.2f %.2f", CurrentMaterial.AmbientColor.X, CurrentMaterial.AmbientColor.Y, CurrentMaterial.AmbientColor.Z);
-				UE_LOG("  - Kd: %.2f %.2f %.2f", CurrentMaterial.DiffuseColor.X, CurrentMaterial.DiffuseColor.Y, CurrentMaterial.DiffuseColor.Z);
-				UE_LOG("  - Ks: %.2f %.2f %.2f", CurrentMaterial.SpecularColor.X, CurrentMaterial.SpecularColor.Y, CurrentMaterial.SpecularColor.Z);
-				UE_LOG("  - Ns: %.2f", CurrentMaterial.SpecularExponent);
-				UE_LOG("  - Alpha: %.2f", CurrentMaterial.Alpha);
-				if (!CurrentMaterial.DiffuseTexturePath.empty())
+				auto It = std::find_if(OutMaterials.begin(), OutMaterials.end(),
+					[&](const FObjMaterialInfo& Info) {
+						return Info.Name == CurrentMaterial.Name;
+					});
+
+				if (It == OutMaterials.end()) // 없으면 추가
 				{
-					UE_LOG("  - Diffuse Map: %s", CurrentMaterial.DiffuseTexturePath.c_str());
+					OutMaterials.Add(CurrentMaterial);
 				}
-				if (!CurrentMaterial.NormalTexturePath.empty())
-				{
-					UE_LOG("  - Normal Map: %s", CurrentMaterial.NormalTexturePath.c_str());
-				}
-				OutMaterials.Add(CurrentMaterial);
 			}
-			bFirstMaterial = false;
+
+			// 새 머티리얼 초기화
 			CurrentMaterial = FObjMaterialInfo();
-			Stream >> CurrentMaterial.Name;
+			Stream >> CurrentMaterial.Name;   // 이름 저장
 		}
 		else if (Prefix == "Ka")
 		{
@@ -205,27 +206,17 @@ bool FObjImporter::ParseMtlFile(const path& FilePath, TArray<FObjMaterialInfo>& 
 		{
 			Stream >> CurrentMaterial.DiffuseTexturePath;
 		}
+		else if (Prefix == "map_Ks")
+		{
+			Stream >> CurrentMaterial.SpecularPath;
+		}
 	}
 
-	if (!bFirstMaterial)
+	// 마지막 머티리얼 저장 (하나만 있는 경우 포함)
+	if (!CurrentMaterial.Name.empty())
 	{
-		UE_LOG("--- Parsed Material: %s ---", CurrentMaterial.Name.c_str());
-		UE_LOG("  - Ka: %.2f %.2f %.2f", CurrentMaterial.AmbientColor.X, CurrentMaterial.AmbientColor.Y, CurrentMaterial.AmbientColor.Z);
-		UE_LOG("  - Kd: %.2f %.2f %.2f", CurrentMaterial.DiffuseColor.X, CurrentMaterial.DiffuseColor.Y, CurrentMaterial.DiffuseColor.Z);
-		UE_LOG("  - Ks: %.2f %.2f %.2f", CurrentMaterial.SpecularColor.X, CurrentMaterial.SpecularColor.Y, CurrentMaterial.SpecularColor.Z);
-		UE_LOG("  - Ns: %.2f", CurrentMaterial.SpecularExponent);
-		UE_LOG("  - Alpha: %.2f", CurrentMaterial.Alpha);
-		if (!CurrentMaterial.DiffuseTexturePath.empty())
-		{
-			UE_LOG("  - Diffuse Map: %s", CurrentMaterial.DiffuseTexturePath.c_str());
-		}
-		if (!CurrentMaterial.NormalTexturePath.empty())
-		{
-			UE_LOG("  - Normal Map: %s", CurrentMaterial.NormalTexturePath.c_str());
-		}
 		OutMaterials.Add(CurrentMaterial);
 	}
-
 	return true;
 }
 
@@ -252,9 +243,12 @@ void FObjImporter::ConvertObjToStaticMesh(const FObjInfo& ObjInfo, FStaticMesh& 
 		else
 		{
 			FNormalVertex Vertex;
-			Vertex.Pos = PositionToUEBasis(ObjInfo.Positions[PosIndex]);
+			//Vertex.Pos = ObjInfo.Positions[PosIndex];
+			Vertex.Pos = { ObjInfo .Positions[PosIndex].X,-ObjInfo.Positions[PosIndex].Y,ObjInfo.Positions[PosIndex].Z};
 
-			if (UVIndex < ObjInfo.UVs.size()) { Vertex.Tex = UVToUEBasis(ObjInfo.UVs[UVIndex]); }
+			if (UVIndex < ObjInfo.UVs.size()) {
+				Vertex.Tex = { ObjInfo.UVs[UVIndex].X, 1.0f - ObjInfo.UVs[UVIndex].Y };
+			}
 			else { Vertex.Tex = FVector2(0.0f, 0.0f); }
 
 			if (NormalIndex < ObjInfo.Normals.size()) { Vertex.Normal = PositionToUEBasis(ObjInfo.Normals[NormalIndex]); }
@@ -300,23 +294,44 @@ void FObjImporter::ConvertObjToStaticMesh(const FObjInfo& ObjInfo, FStaticMesh& 
 	for (const FObjMaterialInfo& ObjMat : ObjInfo.Materials)
 	{
 		FStaticMaterial StaticMat;
+		StaticMat.Name = ObjMat.Name;
 		StaticMat.AmbientColor = ObjMat.AmbientColor;
 		StaticMat.DiffuseColor = ObjMat.DiffuseColor;
 		StaticMat.SpecularColor = ObjMat.SpecularColor;
 		StaticMat.SpecularExponent = ObjMat.SpecularExponent;
 		StaticMat.Alpha = ObjMat.Alpha;
+		StaticMat.SpecularPath = ObjMat.SpecularPath;
+		StaticMat.DiffusePath = ObjMat.DiffuseTexturePath;
 
 		if (!ObjMat.DiffuseTexturePath.empty())
 		{
-			StaticMat.DiffuseSRV = UResourceManager::GetInstance().GetTexture(ObjMat.DiffuseTexturePath);
+			StaticMat.DiffusePath = ObjMat.DiffuseTexturePath;
+			StaticMat.bUseTexture = true;	
 		}
-		if (!ObjMat.NormalTexturePath.empty())
-		{
-			StaticMat.NormalSRV = UResourceManager::GetInstance().GetTexture(ObjMat.NormalTexturePath);
-		}
+		//StaticMat.bUseTexture =
+		// 
+		//if (!ObjMat.DiffuseTexturePath.empty())
+		//{
+		//	//StaticMat.DiffuseSRV = UResourceManager::GetInstance().GetTexture(ObjMat.DiffuseTexturePath);
+		//}
+		//if (!ObjMat.NormalTexturePath.empty())
+		//{
+		//	//StaticMat.NormalSRV = UResourceManager::GetInstance().GetTexture(ObjMat.NormalTexturePath);
+		//}
 
 		OutStaticMesh.Materials.Add(StaticMat);
 	}
 
-	UE_LOG("Vertex optimization: %d indices -> %d unique vertices",	ObjInfo.PositionIndices.size(), OutStaticMesh.Vertices.size());
+	// If no material groups were defined in the OBJ (no 'usemtl'),
+	// create a single default section covering the whole index range
+	if (OutStaticMesh.Sections.IsEmpty() && !OutStaticMesh.Indices.IsEmpty())
+	{
+		FStaticMeshSection DefaultSection;
+		DefaultSection.FirstIndex = 0;
+		DefaultSection.NumIndices = static_cast<uint32>(OutStaticMesh.Indices.size());
+		DefaultSection.MaterialIndex = -1; // no material -> render with vertex color
+		OutStaticMesh.Sections.Add(DefaultSection);
+	}
+
+	UE_LOG("Vertex optimization: %d indices -> %d unique vertices", ObjInfo.PositionIndices.size(), OutStaticMesh.Vertices.size());
 }

@@ -10,6 +10,7 @@ public:
 
 	void Release();
 
+
 	TArray<FVertex>* GetVertexData(EPrimitiveType Type);
 	ID3D11Buffer* GetVertexBuffer(EPrimitiveType Type);
 	uint32 GetVertexNum(EPrimitiveType Type);

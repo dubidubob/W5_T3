@@ -17,6 +17,11 @@ struct FViewProjConstants
 	uint32 ViewModeIndex;
 };
 
+struct FMaterialParamsCB
+{
+	UINT UseTexture;
+	FVector Padding; // 12바이트
+};
 
 struct FVertex
 {

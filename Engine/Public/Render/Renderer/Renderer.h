@@ -48,7 +48,6 @@ class URenderer : public UObject
 public:
 	void Init(HWND InWindowHandle);
 	void Release();
-
 	void CreateRasterizerState();
 	void CreateDepthStencilState();
 	void CreateBlendState();
@@ -58,7 +57,9 @@ public:
 	void CreateSlateShader();
 	void CreateLineInstancedShader();
 	void CreateConstantBuffer();
+	void CreateDiffuseSamplerBuffer();
 
+	void ReleaseDiffuseSamplerBuffer();
 	void ReleaseDefaultShader();
 	void ReleaseStaticMeshShader();
 	void ReleaseTextShader();
@@ -127,6 +128,7 @@ public:
 	void UpdateConstant(const FVector& InPosition, const FVector& InRotation, const FVector& InScale) const;
 	void UpdateConstant(const FViewProjConstants& InViewProjConstants) const;
 	void UpdateConstant(const FVector4& Color) const;
+	void UpdateConstant(const FMaterialParamsCB& MaterialParams) const;
 	void UpdateInstance(const TArray<FTextInstance>* Instance);
 	void UpdateInstanceDrawConstants(bool bUseInstancing, uint32 BaseInstanceOffset, uint32 InstanceCount) const;
 
@@ -187,7 +189,11 @@ private:
 	ID3D11Buffer* ConstantBufferColor = nullptr;
 	ID3D11Buffer* ConstantBufferCharTable = nullptr;
 	ID3D11Buffer* ConstantBufferInstance = nullptr;
+
+	ID3D11Buffer* ConstantBurfferMaterialParm = nullptr;
 	//////////////////////////////////////
+
+	ID3D11SamplerState* DiffuseSampler = nullptr;
 
 	ID3D11Buffer* TextInstanceBuffer = nullptr;
 	/////////////////////////////////////

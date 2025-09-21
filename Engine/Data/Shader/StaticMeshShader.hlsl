@@ -1,3 +1,6 @@
+Texture2D DiffuseTexture : register(t1);
+SamplerState DiffuseSampler : register(s0);
+
 cbuffer constants : register(b0)
 {
 	row_major float4x4 world;
@@ -24,6 +27,11 @@ cbuffer InstanceParams : register(b3)
 	uint Padding0;
 };
 
+cbuffer MaterialParams : register(b4)
+{
+	uint UseTexture;
+};
+
 struct InstanceData
 {
 	row_major float4x4 World;
@@ -34,7 +42,7 @@ StructuredBuffer<InstanceData> InstanceMatrices : register(t0);
 
 struct VS_INPUT
 {
-	float4 Position : POSITION;
+	float3 Position : POSITION; // matches R32G32B32 in input layout
 	float3 Normal : NORMAL;
 	float4 Color : COLOR;
 	float2 Tex : TEXCOORD;
@@ -44,13 +52,14 @@ struct PS_INPUT
 {
 	float4 Position : SV_POSITION;
 	float4 Color : COLOR;
+	float2 Tex : TEXCOORD;
 };
 
 PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 {
 	PS_INPUT Output;
 
-	float4 Position = Input.Position;
+	float4 Position = float4(Input.Position, 1.0f);
 	float4 ShadeColor = Input.Color;
 
 	if (UseInstancing != 0 && InstanceId < InstanceCount)
@@ -66,11 +75,17 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 
 	Output.Position = Position;
 	Output.Color = ShadeColor;
+	Output.Tex = Input.Tex; // pass through UVs to PS
 	return Output;
 }
 
 float4 MainPS(PS_INPUT Input) : SV_TARGET
 {
-	float4 FinalColor = lerp(Input.Color, totalColor, totalColor.a);
-	return FinalColor;
+	if (UseTexture != 0)
+	{
+        // 텍스처만 사용
+		return DiffuseTexture.Sample(DiffuseSampler, Input.Tex);
+	}
+        // 정점 색상(또는 totalColor)만 사용
+	return Input.Color;
 }

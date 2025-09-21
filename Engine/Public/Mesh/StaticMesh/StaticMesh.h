@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/Object.h"
+class UMaterial;
 
 struct FNormalVertex
 {
@@ -11,14 +12,18 @@ struct FNormalVertex
 
 struct FStaticMaterial
 {
+	FString Name;
 	FVector AmbientColor;
 	FVector DiffuseColor;
 	FVector SpecularColor;
 	float SpecularExponent;
 	float Alpha;
+	FString SpecularPath;
+	FString DiffusePath;
+	//ID3D11ShaderResourceView* DiffuseSRV = nullptr;
+	ID3D11ShaderResourceView* TextureSRV = nullptr;
+	bool bUseTexture = false;
 
-	ID3D11ShaderResourceView* DiffuseSRV = nullptr;
-	ID3D11ShaderResourceView* NormalSRV = nullptr;
 };
 
 struct FStaticMeshSection
@@ -76,6 +81,11 @@ public:
 
 private:
 	FStaticMesh* StaticMeshAsset;
+
+	// 이거 두개 맵핑 되어야한다 .
+	TArray<FStaticMeshSection> Sections;  // 메시 파츠
+	TArray<FStaticMaterial> Materials;
+	//TArray<UMaterial*> MaterialSlots;     // 섹션별로 참조하는 머티리얼
 };
 
 
