@@ -1,4 +1,4 @@
-# Blender 4.5.3 LTS MTL File: 'None'
+# Blender 4.5.2 LTS MTL File: 'None'
 # www.blender.org
 
 newmtl M_Body.001
@@ -8,5 +8,5 @@ Ks 0.400000 0.400000 0.400000
 Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 illum 2
-map_Kd T_DemonBoss_Body_Rd_D.png
-map_d T_DemonBoss_Body_Rd_D.png
+map_Kd Texture/T_DemonBoss_Body_Rd_D.png
+map_d Texture/T_DemonBoss_Body_Rd_D.png

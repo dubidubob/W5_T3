@@ -1,10 +1,19 @@
 #pragma once
 #include "Widget.h"
 
-class UPrimitiveSpawnWidget	: public UWidget
+class UPrimitiveSpawnWidget : public UWidget
 {
 	DECLARE_CLASS(UPrimitiveSpawnWidget, UWidget)
 public:
+	//inline static const char* PrimitiveTypes[] = {
+	//"Cube",
+	//"Sphere",
+	//"Triangle",
+	//"Square",
+	//"Demon",
+	//"Car"
+	//};
+	TArray<const char*> PrimitiveTypes { "Cube" ,"Sphere" ,"Triangle" ,"Square" ,"Demon" ,"Car" };
 	void Initialize() override;
 	void Update() override;
 	void RenderWidget() override;

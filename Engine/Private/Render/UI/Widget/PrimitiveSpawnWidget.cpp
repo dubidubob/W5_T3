@@ -31,19 +31,13 @@ void UPrimitiveSpawnWidget::RenderWidget()
 {
 	ImGui::Text("Primitive Actor 생성");
 	ImGui::Spacing();
-
-	// Primitive 타입 선택 DropDown
-	const char* PrimitiveTypes[] = {
-		"Cube",
-		"Sphere",
-		"Triangle",
-		"Square"
-	};
-
 	ImGui::Text("Primitive Type:");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(120);
-	ImGui::Combo("##PrimitiveType", &SelectedPrimitiveType, PrimitiveTypes, 4);
+	ImGui::Combo("##PrimitiveType",
+		&SelectedPrimitiveType,
+		PrimitiveTypes.data(),
+		PrimitiveTypes.Num());
 
 	// Spawn 버튼과 개수 입력
 	ImGui::Text("Number of Spawn:");
@@ -90,30 +84,16 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 
 	// 지정된 개수만큼 액터 생성
 	for (int32 i = 0; i < NumberOfSpawn; i++)
+
 	{
 		AStaticMeshActor* NewActor = nullptr;
 
-		// 타입에 따라 액터 생성
-		if (SelectedPrimitiveType == 0) // Cube
+		FString Name = PrimitiveTypes[SelectedPrimitiveType];
+		if (!Name.empty())
 		{
-			FString Name = "Car";
 			NewActor = CurrentLevel->SpawnActor<AStaticMeshActor>(Name);
-			//TODO : FName 으로 변경 
 			NewActor->GetStaticMeshComponent()->SetStaticMesh(Name);
-			//NewActor->GetStaticMeshCompoent()->SetStaticMesh("Cube.obj");
 		}
-		//else if (SelectedPrimitiveType == 1) // Sphere
-		//{
-		//	NewActor = CurrentLevel->SpawnActor<ASphereActor>();
-		//}
-		//else if (SelectedPrimitiveType == 2)
-		//{
-		//	NewActor = CurrentLevel->SpawnActor<ATriangleActor>();
-		//}
-		//else if (SelectedPrimitiveType == 3)
-		//{
-		//	NewActor = CurrentLevel->SpawnActor<ASquareActor>();
-		//}
 
 		if (NewActor)
 		{
