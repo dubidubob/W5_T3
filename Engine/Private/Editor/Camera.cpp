@@ -356,7 +356,7 @@ FVector UCamera::CalculatePlaneNormal(const FVector& Axis)
 
 void UCamera::SaveCameraSettings() const
 {
-	const path ConfigFilePath = UPathManager::GetInstance().GetConfigPath() / "editor.ini";
+	const path ConfigFilePath = UPathManager::GetInstance().GetEditorIniPath();
 
 	WritePrivateProfileStringA(
 		"Camera",
@@ -375,7 +375,7 @@ void UCamera::SaveCameraSettings() const
 
 void UCamera::LoadCameraSettings()
 {
-	const path ConfigFilePath = UPathManager::GetInstance().GetConfigPath() / "editor.ini";
+	const path ConfigFilePath = UPathManager::GetInstance().GetEditorIniPath();
 
 	// Check if config file exists
 	if (!std::filesystem::exists(ConfigFilePath))

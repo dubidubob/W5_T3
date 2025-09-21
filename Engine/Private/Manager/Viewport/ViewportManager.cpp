@@ -91,6 +91,26 @@ void UViewportManager::Initialize(const POINT& InWindowSize)
 
 	RootWindow = RootBox;
 	Viewports.Add(TopLeft); Viewports.Add(TopRight); Viewports.Add(BottomLeft); Viewports.Add(BottomRight);
+
+	FVector2 DragInfo;
+	SplitterH->SetLabel("SplitterH");
+	if (SplitterH->TryLoadDragInfo(DragInfo))
+	{
+		SplitterH->Drag(DragInfo);
+		SplitterH->DragEnd();
+	}
+	TopSplitterV->SetLabel("TopSplitterV");
+	if (TopSplitterV->TryLoadDragInfo(DragInfo))
+	{
+		TopSplitterV->Drag(DragInfo);
+		TopSplitterV->DragEnd();
+	}
+	BottomSplitterV->SetLabel("BottomSplitterV");
+	if (BottomSplitterV->TryLoadDragInfo(DragInfo))
+	{
+		BottomSplitterV->Drag(DragInfo);
+		BottomSplitterV->DragEnd();
+	}
 }
 
 void UViewportManager::SetSubCamera(UCamera* InCamera)
