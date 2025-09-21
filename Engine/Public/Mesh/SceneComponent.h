@@ -57,9 +57,11 @@ class UPrimitiveComponent : public USceneComponent
 public:
 	UPrimitiveComponent();
 
-	const TArray<FVertex>* GetVerticesData() const;
-	const TArray<FVertex>* GetReducedVerticesData() const;
-	const TArray<uint32>* GetIndicesData() const;
+	virtual const void* GetRawVertexData() const;
+	virtual uint32 GetVertexCount() const;
+	virtual uint32 GetVertexStride() const;
+	virtual uint32 GetVertexPositionOffset() const;
+	virtual const TArray<uint32>* GetIndicesData() const;
 
 	ID3D11Buffer* GetVertexBuffer() const { return VertexBuffer; }
 	ID3D11Buffer* GetReducedVertexBuffer() const { return ReducedVertexBuffer; }

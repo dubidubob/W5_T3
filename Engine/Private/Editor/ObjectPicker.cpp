@@ -172,29 +172,44 @@ void UObjectPicker::PickGizmo( const FRay& WorldRay, UGizmo* Gizmo, FVector& Col
 
 //개별 primitive와 ray 충돌 검사
 bool UObjectPicker::IsRayPrimitiveCollided(const FRay& ModelRay, UPrimitiveComponent* Primitive, const FMatrix& ModelMatrix, float* ShortestDistance)
-
 {
-	//FRay ModelRay = GetModelRay(Ray, Primitive);
+	const void* RawVertices = Primitive->GetRawVertexData();
+	const uint32 VertexCount = Primitive->GetVertexCount();
+	const uint32 VertexStride = Primitive->GetVertexStride();
+	const uint32 PositionOffset = Primitive->GetVertexPositionOffset();
 
-	const TArray<FVertex>* Vertices = Primitive->GetVerticesData();
+	const TArray<uint32>* Indices = Primitive->GetIndicesData();
+	const uint32 IndicesCount = Indices->Num();
 
-	float Distance = D3D11_FLOAT32_MAX; //Distance 초기화
+	if (!RawVertices || !Indices) { return false; }
+
 	bool bIsHit = false;
-	for (int32 a = 0; a < Vertices->size(); a = a + 3) //삼각형 단위로 Vertex 위치정보 읽음
+	float CurrentDistance = D3D11_FLOAT32_MAX;
+
+	for (uint32 Idx = 0; Idx < IndicesCount; Idx += 3)
 	{
-		const FVector& Vertex1 = (*Vertices)[a].Position;
-		const FVector& Vertex2 = (*Vertices)[a + 1].Position;
-		const FVector& Vertex3 = (*Vertices)[a + 2].Position;
+		const uint32 Index1 = (*Indices)[Idx];
+		const uint32 Index2 = (*Indices)[Idx + 1];
+		const uint32 Index3 = (*Indices)[Idx + 2];
 
-		if (IsRayTriangleCollided(ModelRay, Vertex1, Vertex2, Vertex3, ModelMatrix, &Distance)) //Ray와 삼각형이 충돌하면 거리 비교 후 최단거리 갱신
+		const FVector& Vertex1 = *reinterpret_cast<const FVector*>(static_cast<const char*>(RawVertices) + (Index1 * VertexStride) + PositionOffset);
+		const FVector& Vertex2 = *reinterpret_cast<const FVector*>(static_cast<const char*>(RawVertices) + (Index2 * VertexStride) + PositionOffset);
+		const FVector& Vertex3 = *reinterpret_cast<const FVector*>(static_cast<const char*>(RawVertices) + (Index3 * VertexStride) + PositionOffset);
 
+		float TriangleDistance = 0.0f;
+		if (IsRayTriangleCollided(ModelRay, Vertex1, Vertex2, Vertex3, ModelMatrix, &TriangleDistance))
 		{
 			bIsHit = true;
-			if (Distance < *ShortestDistance)
+			if (TriangleDistance < CurrentDistance)
 			{
-				*ShortestDistance = Distance;
+				CurrentDistance = TriangleDistance;
 			}
 		}
+	}
+
+	if (bIsHit)
+	{
+		*ShortestDistance = CurrentDistance;
 	}
 
 	return bIsHit;
@@ -206,8 +221,6 @@ bool UObjectPicker::IsRayTriangleCollided(const FRay& Ray, const FVector& Vertex
 	FVector CameraForward = Camera->GetForward(); //카메라 정보 필요
 	float NearZ = Camera->GetNearZ();
 	float FarZ = Camera->GetFarZ();
-	FMatrix ModelTransform; //Primitive로부터 얻어내야함.(카메라가 처리하는게 나을듯)
-
 
 	//삼각형 내의 점은 E1*V + E2*U + Vertex1.Position으로 표현 가능( 0<= U + V <=1,  Y>=0, V>=0 )
 	//Ray.Direction * T + Ray.Origin = E1*V + E2*U + Vertex1.Position을 만족하는 T U V값을 구해야 함.

@@ -16,6 +16,13 @@ public:
 	void SetStaticMesh(const FString& InMeshFName);
 	virtual FAABB GetWorldBounds() const;
 	UStaticMesh* GetStaticMesh() { return StaticMesh; }
+
+	// Override
+	virtual const void* GetRawVertexData() const;
+	virtual uint32 GetVertexCount() const;
+	virtual uint32 GetVertexStride() const;
+	virtual uint32 GetVertexPositionOffset() const;
+	virtual const TArray<uint32>* GetIndicesData() const;
 private:
 	UStaticMesh* StaticMesh;
 };

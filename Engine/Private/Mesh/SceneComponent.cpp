@@ -155,16 +155,26 @@ const FMatrix& USceneComponent::GetWorldTransformMatrixInverse() const
 	return WorldTransformMatrixInverse;
 }
 
-const TArray<FVertex>* UPrimitiveComponent::GetVerticesData() const
+const void* UPrimitiveComponent::GetRawVertexData() const
 {
     UResourceManager& ResourceManager = UResourceManager::GetInstance();
-    return ResourceManager.GetVertexData(Type);
+	return ResourceManager.GetVertexData(Type)->data();
 }
 
-const TArray<FVertex>* UPrimitiveComponent::GetReducedVerticesData() const
+uint32 UPrimitiveComponent::GetVertexCount() const
 {
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
-	return ResourceManager.GetReducedVertexData(Type);
+	return ResourceManager.GetVertexData(Type)->Num();
+}
+
+uint32 UPrimitiveComponent::GetVertexStride() const
+{
+	return sizeof(FVertex);
+}
+
+uint32 UPrimitiveComponent::GetVertexPositionOffset() const
+{
+	return 0;
 }
 
 const TArray<uint32>* UPrimitiveComponent::GetIndicesData() const

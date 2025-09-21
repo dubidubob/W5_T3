@@ -27,3 +27,49 @@ FAABB UStaticMeshComponent::GetWorldBounds() const
 	}
 	return Bounds;
 }
+
+const void* UStaticMeshComponent::GetRawVertexData() const
+{
+	if (UStaticMesh* StaticMesh = GetStaticMesh())
+	{
+		if (FStaticMesh* StaticMeshAsset = StaticMesh->GetStaticMeshAsset())
+		{
+			return StaticMeshAsset->Vertices.data();
+		}
+	}
+	return nullptr;
+}
+
+uint32 UStaticMeshComponent::GetVertexCount() const
+{
+	if (UStaticMesh* StaticMesh = GetStaticMesh())
+	{
+		if (FStaticMesh* StaticMeshAsset = StaticMesh->GetStaticMeshAsset())
+		{
+			return StaticMeshAsset->Vertices.Num();
+		}
+	}
+	return 0;
+}
+
+uint32 UStaticMeshComponent::GetVertexStride() const
+{
+	return sizeof(FNormalVertex);
+}
+
+uint32 UStaticMeshComponent::GetVertexPositionOffset() const
+{
+	return offsetof(FNormalVertex, Pos);
+}
+
+const TArray<uint32>* UStaticMeshComponent::GetIndicesData() const
+{
+	if (UStaticMesh* StaticMesh = GetStaticMesh())
+	{
+		if (FStaticMesh* StaticMeshAsset = StaticMesh->GetStaticMeshAsset())
+		{
+			return &StaticMeshAsset->Indices;
+		}
+	}
+	return nullptr;
+}
