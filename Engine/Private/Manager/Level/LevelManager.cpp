@@ -238,6 +238,7 @@ bool ULevelManager::CreateNewLevel(const FString& InLevelName)
 	// 새 레벨 생성
 	ULevel* NewLevel = NewObject<ULevel>();
 	NewLevel->SetName(InLevelName);
+	NewLevel->SetCamera(CurrentLevel->GetCamera());
 
 	// 레벨 등록 및 활성화
 	RegisterLevel(InLevelName, NewLevel);
@@ -399,15 +400,12 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 		// case EPrimitiveType::Triangle:
 		// 	NewActor = InLevel->SpawnActor<ATriangleActor>();
 		// 	break;
-
-		// TODO: StaticMeshComp type이면 StaticMeshComp용 액터 생성
 		case EPrimitiveType::StaticMeshComp:
 		{
 			AStaticMeshActor* StaticMeshActor = InLevel->SpawnActor<AStaticMeshActor>();
 			NewActor = StaticMeshActor;
 			if (StaticMeshActor)
 			{
-				// TODO: GetStaticMeshComponent로 바꿔달라 요청할 것.
 				UStaticMeshComponent* StaticMeshComponent = StaticMeshActor->GetStaticMeshComponent();
 				StaticMeshComponent->SetStaticMesh(PrimitiveMeta.ObjStaticMeshAsset);
 			}
