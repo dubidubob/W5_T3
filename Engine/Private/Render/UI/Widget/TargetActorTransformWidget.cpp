@@ -57,7 +57,7 @@ void UTargetActorTransformWidget::RenderWidget()
 
 	ImGui::Text("Transform");
 
-	if (SelectedActor)
+	if (SelectedActor && IsValid(SelectedActor))
 	{
 		bPositionChanged |= ImGui::DragFloat3("Location", &EditLocation.X, 0.1f);
 		bRotationChanged |= ImGui::DragFloat3("Rotation", &EditRotation.X, 0.1f);

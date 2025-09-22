@@ -64,12 +64,12 @@ T* Cast(UObject* Object)
 	return nullptr;
 }
 
-bool IsValid(UObject* Object)
+inline bool IsValid(UObject* Object)
 {
 	if(Object && Object->GetInternalIndex() >= GUObjectArray.Num())
 	{
 		return false;
 	}
 
-	return GUObjectArray[Object->GetInternalIndex()] == Object;
+	return (GUObjectArray[Object->GetInternalIndex()] == Object);
 }

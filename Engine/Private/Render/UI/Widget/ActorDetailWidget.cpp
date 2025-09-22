@@ -71,19 +71,19 @@ void UActorDetailWidget::RenderWidget()
 
 void UActorDetailWidget::RenderActorInfo()
 {
-	if (!SelectedActor)
-		return;
+	if (SelectedActor && IsValid(SelectedActor))
+	{
+		UClass* ActorClass = SelectedActor->GetClass();
+		FString ClassName = ActorClass ? ActorClass->GetName() : "Unknown";
 
-	UClass* ActorClass = SelectedActor->GetClass();
-	FString ClassName = ActorClass ? ActorClass->GetName() : "Unknown";
+		ImGui::Text("Class: %s", ClassName.c_str());
 
-	ImGui::Text("Class: %s", ClassName.c_str());
+		void* ActorPtr = static_cast<void*>(SelectedActor);
+		ImGui::Text("Address: %p", ActorPtr);
 
-	void* ActorPtr = static_cast<void*>(SelectedActor);
-	ImGui::Text("Address: %p", ActorPtr);
-
-	uint64 MemoryUsage = SelectedActor->GetAllocatedBytes();
-	ImGui::Text("Memory: %llu bytes", MemoryUsage);
+		uint64 MemoryUsage = SelectedActor->GetAllocatedBytes();
+		ImGui::Text("Memory: %llu bytes", MemoryUsage);
+	}
 }
 
 void UActorDetailWidget::RenderNameField()
@@ -131,7 +131,7 @@ void UActorDetailWidget::RenderDropListUI()
 	}
 
 	// 2) 현재 Actor의 Mesh가 있으면 맨 앞으로 이동
-	if (SelectedActor)
+	if (SelectedActor && IsValid(SelectedActor))
 	{
 		if (AStaticMeshActor* SMActor = Cast<AStaticMeshActor>(SelectedActor))
 		{
