@@ -116,7 +116,7 @@ void UViewportManager::Initialize(const POINT& InWindowSize)
 void UViewportManager::SetSubCamera(UCamera* InCamera)
 {
 	MainCamera = InCamera;
-	int32 CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
+	int32 CameraCnt = Viewports.Num();
 	for (int32 Idx = 0; Idx < CameraCnt; Idx++)
 	{
 		if (Viewports[Idx])
