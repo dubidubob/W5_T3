@@ -70,7 +70,7 @@ void UEditor::Update()
 	ProcessKeyboardInput();
 
 	auto& Renderer = URenderer::GetInstance();
-	Renderer.UpdateConstant(Camera->GetFViewProjConstants());
+	Renderer.UpdateViewProjConstants(Camera->GetFViewProjConstants());
 }
 
 // void UEditor::RenderEditor()

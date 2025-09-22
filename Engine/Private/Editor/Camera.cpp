@@ -58,9 +58,6 @@ void UCamera::Update()
 		UpdateMatrixByOrth();
 		break;
 	}
-
-	// TEST CODE
-	URenderer::GetInstance().UpdateConstant(ViewProjConstants);
 }
 
 /**
