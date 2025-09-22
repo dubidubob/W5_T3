@@ -320,7 +320,7 @@ TArray<UPrimitiveComponent*> UEditor::FindCandidatePrimitives(ULevel* InLevel)
 FVector UEditor::GetGizmoDragLocation(const FRay& WorldRay)
 {
 	FVector MouseWorld;
-	FVector PlaneOrigin{Gizmo->GetGizmoLocation()};
+	FVector PlaneOrigin{ Gizmo->GetGizmoLocation() };
 	const FVector AxisLocal = Gizmo->GetGizmoAxis(); // (1,0,0) or (0,1,0) or (0,0,1)
 	FVector GizmoAxis = AxisLocal;
 
@@ -331,8 +331,30 @@ FVector UEditor::GetGizmoDragLocation(const FRay& WorldRay)
 		GizmoAxis = QuatDragStart.RotateVector(AxisLocal);
 	}
 
-	if (ObjectPicker->IsRayCollideWithPlane(WorldRay, PlaneOrigin,
-	                                       Camera->CalculatePlaneNormal(GizmoAxis).Cross(GizmoAxis), MouseWorld))
+	// 드래그 평면의 법선 벡터 계산
+	FVector PlaneNormal;
+	FVector CameraForward = Camera->GetForward();
+
+	// 카메라 전방 벡터와 기즈모 축이 거의 평행한지 확인 (외적 결과가 0이 되는 상황 방지)
+	if (fabs(CameraForward.Dot(GizmoAxis)) > 0.999f)
+	{
+		// 평행할 경우, 카메라의 Up 벡터를 사용하여 평면 법선 계산
+		PlaneNormal = GizmoAxis.Cross(Camera->GetUp());
+	}
+	else
+	{
+		// 평행하지 않을 경우, 카메라의 전방 벡터를 사용하여 평면 법선 계산
+		PlaneNormal = CameraForward.Cross(GizmoAxis);
+	}
+
+	if (PlaneNormal.Length() < 0.001f)
+	{
+		PlaneNormal = (GizmoAxis.Cross(Camera->GetRight()));
+	}
+	PlaneNormal.Normalize();
+
+
+	if (ObjectPicker->IsRayCollideWithPlane(WorldRay, PlaneOrigin, PlaneNormal, MouseWorld))
 	{
 		FVector MouseDistance = MouseWorld - Gizmo->GetDragStartMouseLocation();
 		return Gizmo->GetDragStartActorLocation() + GizmoAxis * MouseDistance.Dot(GizmoAxis);
