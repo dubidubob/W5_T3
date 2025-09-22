@@ -115,7 +115,7 @@ void UViewportManager::Initialize(const POINT& InWindowSize)
 
 void UViewportManager::SetSubCamera(UCamera* InCamera)
 {
-	Camera = InCamera;
+	MainCamera = InCamera;
 	int32 CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
 	for (int32 Idx = 0; Idx < CameraCnt; Idx++)
 	{
@@ -151,8 +151,8 @@ void UViewportManager::SetMainCamera()
 {
 	// jft 이때서야 Candidate Viewport Idx 비로소 반영 todo : ray update를 click 때마다 하기
 	SelectedViewportIdx = CandidateViewportIdx;
-	Camera->CopyFrom(*Viewports[SelectedViewportIdx]->GetViewportInfo()->Camera);
-	Camera->SetCameraType(Viewports[SelectedViewportIdx]->GetViewportInfo()->ViewType);
+	MainCamera->CopyFrom(*Viewports[SelectedViewportIdx]->GetViewportInfo()->Camera);
+	MainCamera->SetCameraType(Viewports[SelectedViewportIdx]->GetViewportInfo()->ViewType);
 }
 
 void UViewportManager::UpdateSubCamera()
@@ -163,14 +163,14 @@ void UViewportManager::UpdateSubCamera()
 		if (Viewports[SelectedViewportIdx]->GetViewportInfo()->ViewType == EViewportViewType::Perspective)
 		{
 			if (Idx != SelectedViewportIdx) continue;
-			Viewports[Idx]->GetViewportInfo()->Camera->CopyFrom(*Camera);
+			Viewports[Idx]->GetViewportInfo()->Camera->CopyFrom(*MainCamera);
 		}
 		else
 		{
 			// jft
 			if (bOrthoManipulating && Viewports[Idx]->GetViewportInfo()->ViewType != EViewportViewType::Perspective)
 			{				
-				FVector NewLocation = Viewports[Idx]->GetViewportInfo()->Camera->GetLocation() + Camera->GetOrthoMoveDelta();
+				FVector NewLocation = Viewports[Idx]->GetViewportInfo()->Camera->GetLocation() + MainCamera->GetOrthoMoveDelta();
 				Viewports[Idx]->GetViewportInfo()->Camera->SetLocation(NewLocation);
 				Viewports[Idx]->GetViewportInfo()->Camera->RefreshViewMatrices();
 			}
@@ -258,4 +258,13 @@ UCamera* UViewportManager::GetSelectedViewportCamera()
 		return Viewports[SelectedViewportIdx]->GetViewportInfo()->Camera;
 	}
 	return nullptr;
+}
+
+FRect UViewportManager::GetSelectedViewportRect()
+{
+	if (SelectedViewportIdx >= 0 && Viewports[SelectedViewportIdx])
+	{
+		return Viewports[SelectedViewportIdx]->GetViewportPixelRect();
+	}
+	return FRect();
 }

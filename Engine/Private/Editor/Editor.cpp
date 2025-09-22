@@ -16,6 +16,7 @@
 #include "Render/UI/Widget/ViewSettingsWidget.h"
 #include "Mesh/StaticMeshComponent.h"
 #include "Manager/Viewport/ViewportManager.h"
+#include "Slate/Viewport.h"
 
 IMPLEMENT_CLASS(UEditor, UObject)
 
@@ -180,12 +181,15 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 	const UInputManager& InputManager = UInputManager::GetInstance();
 	FVector2 MousePositionNdc = InputManager.GetMouseNDCPosition();
 
+	float Aspect = 0;
 	// Multi Viewport Mode -> Adjust MousePosition & FRay & Cam
 	auto& Renderer = URenderer::GetInstance();
 	if (Renderer.GetDividedWindow())
 	{
-		const float W = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width;
-		const float H = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Height;
+		FRect SelectedRect = ViewportManager->GetSelectedViewportRect();
+		const float W = SelectedRect.Width;
+		const float H = SelectedRect.Height;
+		Aspect = W / H;
 
 		// Mouse Left : Split 이면 Drag / Click만
 		bool IsDragging = InputManager.IsKeyDown(EKeyInput::MouseLeft);
@@ -195,8 +199,9 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 		MousePositionNdc = ViewportManager->GetViewportMouseInputNdc(POINT(W, H), MousePosition);
 	}
 
-	// UE_LOG("%.2f, %.2f", MousePositionNdc.X, MousePositionNdc.Y);
 	// 월드 레이 먼저 계산 (릴리즈 커밋에 사용)
+	if(Aspect!=0)
+		Camera->SetAspect(Aspect);
 	FRay WorldRay = Camera->ConvertToWorldRay(MousePositionNdc.X, MousePositionNdc.Y);
 	HandleGizmo(InLevel, WorldRay);
 }

@@ -26,7 +26,8 @@ public:
 	void SetSplitterMouseInput(const POINT& WindowSize, const FVector2& InMouseNDC, bool bIsDragging);
 	FVector2 GetViewportMouseInputNdc(const POINT& WindowSize, const FVector2& InMouse);
 
-	class UCamera* GetSelectedViewportCamera();
+	UCamera* GetSelectedViewportCamera();
+	FRect GetSelectedViewportRect();
 
 	const TArray<class SWindow*>& GetWindows() { return Windows; }
 
@@ -36,7 +37,7 @@ private:
 	bool bSelectUpdated;
 	bool bOrthoManipulating;
 
-	UCamera* Camera;
+	UCamera* MainCamera;
 	int32 SelectedViewportIdx = 0;
 	class SWindow* RootWindow = nullptr;
 	class SWindow* DraggingWindow = nullptr;
