@@ -51,6 +51,10 @@ public:
 
 private:
 	/**
+	* @brief Found Binary Static Mesh Asset
+	*/
+	static FStaticMesh* LoadStaticMeshFromBinary(const FString& FileName);
+	/**
 	* @brief Parsing Obj File, To FObjInfo
 	*/
 	static bool ParseObjFile(const FString& FileName, FObjInfo& OutObjInfo);

@@ -1,6 +1,7 @@
 #pragma once
 #include "Core/Object.h"
 class UMaterial;
+class FArchive;
 
 struct FNormalVertex
 {
@@ -8,7 +9,10 @@ struct FNormalVertex
 	FVector Normal;
 	FVector4 Color;
 	FVector2 Tex;
+
+	void Serialize(class FArchive& Ar);
 };
+inline FArchive& operator<<(FArchive& Ar, FNormalVertex& Vertex);
 
 struct FStaticMaterial
 {
@@ -20,18 +24,26 @@ struct FStaticMaterial
 	float Alpha;
 	FString SpecularPath;
 	FString DiffusePath;
+
+	// -- Do not need to Serialize --
 	//ID3D11ShaderResourceView* DiffuseSRV = nullptr;
 	ID3D11ShaderResourceView* TextureSRV = nullptr;
 	bool bUseTexture = false;
+	// -- Do not need to Serialize --
 
+	void Serialize(class FArchive& Ar);
 };
+inline FArchive& operator<<(FArchive& Ar, FStaticMaterial& StaticMaterial);
 
 struct FStaticMeshSection
 {
 	uint32 FirstIndex;
 	uint32 NumIndices;
 	int32 MaterialIndex;
+
+	void Serialize(class FArchive& Ar);
 };
+inline FArchive& operator<<(FArchive& Ar, FStaticMeshSection& StaticMeshSection);
 
 /**
 * @brief 렌더링에 필요한 모든 데이터를 담는 구조체
@@ -42,14 +54,17 @@ struct FStaticMesh
 	TArray<FNormalVertex> Vertices;
 	TArray<uint32> Indices;
 
-	ID3D11Buffer* VertexBuffer = nullptr; 
+	TArray<FStaticMaterial> Materials;
+	TArray<FStaticMeshSection> Sections;
+
+	// -- Do not need to Serialize --
+	ID3D11Buffer* VertexBuffer = nullptr;
 	ID3D11Buffer* IndexBuffer = nullptr;
 
 	uint32 VertexCount = 0;
 	uint32 IndexCount = 0;
 	uint32 ByteWidth = 0;
-	TArray<FStaticMaterial> Materials;
-	TArray<FStaticMeshSection> Sections;
+	// -- Do not need to Serialize --
 
 	FStaticMesh() = default;
 	~FStaticMesh()
@@ -80,6 +95,7 @@ struct FStaticMesh
 		return FullName; 
 	}
 
+	void Serialize(class FArchive& Ar);
 };
 
 class UStaticMesh : public UObject

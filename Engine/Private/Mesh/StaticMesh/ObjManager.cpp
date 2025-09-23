@@ -176,10 +176,10 @@ void FObjManager::CreateTextureBuffer(FStaticMesh* OutStaticMesh)
 
 	for (FStaticMaterial& Mat : OutStaticMesh->Materials)
 	{
-
 		if (!Mat.DiffusePath.empty())
 		{
 			Mat.TextureSRV = LoadTexture(Device, Context, Mat.DiffusePath);
+			Mat.bUseTexture = true;
 		}
 	}
 }
