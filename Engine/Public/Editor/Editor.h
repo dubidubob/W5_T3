@@ -51,4 +51,6 @@ private:
 	UGizmo* Gizmo;
 	UAxis* Axis;
 	UGrid* Grid;
+
+	FVector2 LastMousePosition = FVector2(0.0f, 0.0f);
 };

@@ -181,7 +181,6 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 	const UInputManager& InputManager = UInputManager::GetInstance();
 	FVector2 MousePositionNdc = InputManager.GetMouseNDCPosition();
 
-	float Aspect = 0;
 	// Multi Viewport Mode -> Adjust MousePosition & FRay & Cam
 	auto& Renderer = URenderer::GetInstance();
 	if (Renderer.GetDividedWindow())
@@ -189,21 +188,27 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 		FRect SelectedRect = ViewportManager->GetSelectedViewportRect();
 		const float W = SelectedRect.Width;
 		const float H = SelectedRect.Height;
-		Aspect = W / H;
+		Camera->SetAspect(W / H);
 
 		// Mouse Left : Split 이면 Drag / Click만
 		bool IsDragging = InputManager.IsKeyDown(EKeyInput::MouseLeft);
 		ViewportManager->SetSplitterMouseInput(POINT(W, H), MousePositionNdc, IsDragging);
 
+		// Viewport는 Viewport의 NDC를 따로 구해야함
 		FVector2 MousePosition = InputManager.GetMousePosition();
 		MousePositionNdc = ViewportManager->GetViewportMouseInputNdc(POINT(W, H), MousePosition);
 	}
 
 	// 월드 레이 먼저 계산 (릴리즈 커밋에 사용)
-	if(Aspect!=0)
-		Camera->SetAspect(Aspect);
-	FRay WorldRay = Camera->ConvertToWorldRay(MousePositionNdc.X, MousePositionNdc.Y);
-	HandleGizmo(InLevel, WorldRay);
+	const bool bMouseButtonStateChanged = InputManager.IsKeyPressed(EKeyInput::MouseLeft) || InputManager.IsKeyReleased(EKeyInput::MouseLeft);
+	const bool bMousePositionChanged = (LastMousePosition - MousePositionNdc).Length() > 1e-6f;
+	const bool  bIsMouseOverViewport = !ImGui::GetIO().WantCaptureMouse;
+	if (bMouseButtonStateChanged || (bIsMouseOverViewport&& bMousePositionChanged))
+	{
+		LastMousePosition = MousePositionNdc;
+		FRay WorldRay = Camera->ConvertToWorldRay(MousePositionNdc.X, MousePositionNdc.Y);
+		HandleGizmo(InLevel, WorldRay);
+	}	
 }
 
 void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
