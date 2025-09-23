@@ -18,8 +18,8 @@ void UPathManager::Init()
 	ValidateAndCreateDirectories();
 
 	UE_LOG("PathManager: Initialized Successfully");
-	UE_LOG("PathManager: Solution Path: %s", RootPath.string().c_str());
-	UE_LOG("PathManager: Asset Path: %s", DataPath.string().c_str());
+	UE_LOG("PathManager: Solution Path: %s", RootPath.c_str());
+	UE_LOG("PathManager: Asset Path: %s", DataPath.c_str());
 }
 
 /**
@@ -51,6 +51,7 @@ void UPathManager::GetEssentialPath()
 	ConfigPath = DataPath / "Config";
 	EditorIniPath = ConfigPath / "editor.ini";
 	FontPath = DataPath / "Font";
+	BinaryPath = DataPath / "Binary";
 }
 
 /**
@@ -66,7 +67,8 @@ void UPathManager::ValidateAndCreateDirectories() const
 		AudioPath,
 		WorldPath,
 		ConfigPath,
-		FontPath
+		FontPath,
+		BinaryPath
 	};
 
 	for (const auto& Directory : DirectoriesToCreate)
@@ -76,16 +78,16 @@ void UPathManager::ValidateAndCreateDirectories() const
 			if (!exists(Directory))
 			{
 				create_directories(Directory);
-				UE_LOG("PathManager: Created Directory: %s", Directory.string().c_str());
+				UE_LOG("PathManager: Created Directory: %s", Directory.c_str());
 			}
 			else
 			{
-				UE_LOG("PathManager: Directory Exists: %s", Directory.string().c_str());
+				UE_LOG("PathManager: Directory Exists: %s", Directory.c_str());
 			}
 		}
 		catch (const filesystem::filesystem_error& e)
 		{
-			UE_LOG("PathManager:  Failed To Create Directory %s: %s", Directory.string().c_str(), e.what());
+			UE_LOG("PathManager:  Failed To Create Directory %s: %s", Directory.c_str(), e.what());
 			assert(!"Asset 경로 생성 에러 발생");
 		}
 	}

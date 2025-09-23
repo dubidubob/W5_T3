@@ -13,6 +13,7 @@
     <FxCompile Include="Asset\Shader\TextShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Data\Shader\SlateShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Private\\Core\\Object.cpp" />
@@ -94,7 +95,6 @@
     <ClCompile Include="Private\Mesh\StaticMesh\ObjImporter.cpp" />
     <ClCompile Include="Private\Mesh\StaticMesh\ObjManager.cpp" />
     <ClCompile Include="Private\Mesh\StaticMesh\StaticMesh.cpp" />
-    <ClCompile Include="Private\Slate\Panel.cpp" />
     <ClCompile Include="Private\Slate\Splitter.cpp" />
     <ClCompile Include="Private\Slate\SplitterH.cpp" />
     <ClCompile Include="Private\Slate\SplitterV.cpp" />
@@ -125,6 +125,11 @@
     <ClCompile Include="Private\\Render\UI\ImGui\\ImGuiHelper.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="Private\Mesh\Material\Material.cpp" />
+    <ClCompile Include="Private\Slate\Box.cpp" />
+    <ClCompile Include="Private\Slate\HorizontalBox.cpp" />
+    <ClCompile Include="Private\Slate\VerticalBox.cpp" />
+    <ClCompile Include="Private\Archive\Archive.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\\Core\\Object.h" />
@@ -217,7 +222,6 @@
     <ClInclude Include="Public\Mesh\StaticMesh\ObjImporter.h" />
     <ClInclude Include="Public\Mesh\StaticMesh\ObjManager.h" />
     <ClInclude Include="Public\Mesh\StaticMesh\StaticMesh.h" />
-    <ClInclude Include="Public\Slate\Panel.h" />
     <ClInclude Include="Public\Slate\Splitter.h" />
     <ClInclude Include="Public\Slate\SplitterH.h" />
     <ClInclude Include="Public\Slate\SplitterV.h" />
@@ -260,6 +264,11 @@
     <ClInclude Include="ImGui\imstb_truetype.h">
       <Filter>ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="Public\Mesh\Material\Material.h" />
+    <ClInclude Include="Public\Slate\Box.h" />
+    <ClInclude Include="Public\Slate\HorizontalBox.h" />
+    <ClInclude Include="Public\Slate\VerticalBox.h" />
+    <ClInclude Include="Public\Archive\Archive.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />

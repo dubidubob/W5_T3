@@ -3,19 +3,46 @@
 #include "Public/Mesh/StaticMesh/StaticMesh.h"
 #include "Public/Manager/Path/PathManager.h"
 #include "Mesh/ResourceManager.h"
+#include "Archive/Archive.h"
 
 FStaticMesh* FObjImporter::ParseAndConvert(const FString& FileName)
 {
-	FObjInfo RawData;
+	FStaticMesh* CookedData = new FStaticMesh();
 
+	FString BaseFileName = FileName;
+	size_t DotPos = FileName.find_last_of('.');
+	if (DotPos != FString::npos) { BaseFileName = FileName.substr(0, DotPos); }
+
+	path BinaryFilePath = UPathManager::GetInstance().GetBinaryPath() / (BaseFileName + ".bin");
+
+	// 바이너리 파일이 이미 존재하는지 확인
+	std::ifstream BinaryFile(BinaryFilePath.c_str());
+	if (BinaryFile.good())
+	{
+		UE_LOG("Binary file found. Loading from binary: %s", BinaryFilePath.c_str());
+		FWindowsBinReader Reader(BinaryFilePath);
+
+		CookedData->Serialize(Reader);
+		return CookedData;
+	}
+
+	// 바이너리 파일이 없으면 OBJ 파일 파싱 및 바이너리 파일 생성
+	UE_LOG("Binary file not found. Parsing OBJ and baking to binary: %s", FileName);
+
+	FObjInfo RawData;
 	if (!ParseObjFile(FileName, RawData))
 	{
 		return nullptr;
 	}
 
-	FStaticMesh* CookedData = new FStaticMesh();
 	ConvertObjToStaticMesh(RawData, *CookedData);
 	CookedData->FileName = FileName;
+
+	// 파싱 완료된 데이터를 바이너리 파일로 저장 (Bake)
+	FWindowsBinWriter Writer(BinaryFilePath);
+	CookedData->Serialize(Writer);
+	UE_LOG("Successfully baked mesh to binary file: %s", BinaryFilePath.c_str());
+
 	return CookedData;
 }
 
@@ -306,7 +333,6 @@ void FObjImporter::ConvertObjToStaticMesh(const FObjInfo& ObjInfo, FStaticMesh& 
 		if (!ObjMat.DiffuseTexturePath.empty())
 		{
 			StaticMat.DiffusePath = ObjMat.DiffuseTexturePath;
-			StaticMat.bUseTexture = true;	
 		}
 		//StaticMat.bUseTexture =
 		// 
