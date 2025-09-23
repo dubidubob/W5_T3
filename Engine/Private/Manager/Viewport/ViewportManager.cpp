@@ -31,6 +31,16 @@ void UViewportManager::Initialize(UCamera* InCamera)
 	InitializeSplitter();
 	InitializeSubCamera(InCamera);
 }
+void UViewportManager::InitializeGizmoScale(float InScale)
+{
+	if (bIsGizmoScaleInitialized) return;
+	bIsGizmoScaleInitialized = true;
+
+	for (int i = 0; i < Viewports.size(); i++)
+	{
+		GetViewportInfo(i)->GizmoScale = InScale;
+	}
+}
 void UViewportManager::InitializeSplitter()
 {
 	/* Splitter 초기화*/

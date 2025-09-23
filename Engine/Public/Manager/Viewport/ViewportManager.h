@@ -10,6 +10,7 @@ public:
 	~UViewportManager();
 
 	void Initialize(UCamera* InCamera);
+	void InitializeGizmoScale(float InScale);
 
 	void Update(); /*Editor 호출*/
 	FVector2 UpdateMouseInputNdcInViewports(FVector2 MousePositionNdc); /*Editor Mouse Input 호출*/
@@ -41,6 +42,9 @@ private:
 private:
 	bool bOrthoManipulating;
 	bool bIsWindowDivided = false;
+
+	// jft
+	bool bIsGizmoScaleInitialized = false;
 
 	UCamera* MainCamera;
 

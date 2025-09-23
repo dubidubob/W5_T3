@@ -131,14 +131,20 @@ void UEditor::RenderEditorBatched(int Idx)
 	{
 		float CacheScale;
 		Gizmo->RenderGizmo(ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor(), Camera->GetLocation(), true, 0, CacheScale);
-		ViewportManager->GetViewportInfo(Idx)->GizmoScale = CacheScale;
+
+		if (ViewportManager->GetIsWindowDivided() && CacheScale > 0 && CacheScale < 2000) /*jft 쓰레기값 방지 부등호*/
+		{
+			ViewportManager->GetViewportInfo(Idx)->GizmoScale = CacheScale;
+			ViewportManager->InitializeGizmoScale(CacheScale);
+		}
 	}
 	else
 	{
-		float CachedScale = ViewportManager->GetViewportInfo(Idx)->GizmoScale;
-		Gizmo->RenderGizmo(ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor(), Camera->GetLocation(), false, CachedScale, CachedScale);
-	}
 
+		float CachedScale = ViewportManager->GetViewportInfo(Idx)->GizmoScale;
+		if(CachedScale > 0 && CachedScale<2000)
+			Gizmo->RenderGizmo(ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor(), Camera->GetLocation(), false, CachedScale, CachedScale);
+	}
 }
 
 
