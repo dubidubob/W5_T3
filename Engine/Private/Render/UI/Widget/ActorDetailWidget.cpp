@@ -178,19 +178,21 @@ void UActorDetailWidget::RenderDropListUI()
 		(void*)&MeshNamesDisplay,
 		MeshNamesDisplay.Num()))
 	{
-		if (SelectedActor)
-		{
-			if (AStaticMeshActor* SMActor = Cast<AStaticMeshActor>(SelectedActor))
-			{
-				if (UStaticMeshComponent* MeshComp = SMActor->GetStaticMeshComponent())
-				{
-					FString SelectedFullName = MeshNamesFull[CurrentMeshIndex];
-					MeshComp->SetStaticMesh(SelectedFullName);
+		if (!SelectedActor)
+			return;
 
-					UE_LOG("Changed mesh to: %s", SelectedFullName.c_str());
-				}
-			}
-		}
+		AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(SelectedActor);
+		if (!StaticMeshActor)
+			return;
+
+		UStaticMeshComponent* MeshComp = StaticMeshActor->GetStaticMeshComponent();
+		if (!MeshComp)
+			return;
+
+		const FString& SelectedFullName = MeshNamesFull[CurrentMeshIndex];
+		MeshComp->SetStaticMesh(SelectedFullName);
+
+		UE_LOG("Changed mesh to: %s", SelectedFullName.c_str());
 	}
 }
 
