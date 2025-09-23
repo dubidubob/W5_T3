@@ -16,6 +16,10 @@ public:
 	void SetStaticMesh(const FString& InMeshFName);
 	void SetUseUVScroll(bool bEnable);
 	bool GetUseUVScroll () const { return bUseUVScroll; }
+
+	// UV 스크롤 속도(U,V) 제어
+	void SetUVScrollSpeed(const FVector2& InSpeed) { UVScrollSpeed = InSpeed; }
+	FVector2 GetUVScrollSpeed() const { return UVScrollSpeed; }
 	// 현재 프레임에서 셰이더에 넘길 UV 스크롤 시간(누적 + 진행)
 	float GetUVScrollTimeForShader() const;
 	virtual FAABB GetWorldBounds() const;
@@ -35,5 +39,7 @@ private:
 	float LastUVScrollUpdateTime = 0.0f;
 	// 스크롤 정지 시 마지막 상태를 유지하기 위한 누적 시간
 	float UVScrollAccumTime = 0.0f;
+	// UV 스크롤 속도 (U,V)
+	FVector2 UVScrollSpeed = FVector2(0.0f, -0.9f);
 };
 

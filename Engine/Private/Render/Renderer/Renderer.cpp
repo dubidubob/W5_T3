@@ -455,9 +455,9 @@ void URenderer::SetupMaterialForSection(const UStaticMeshComponent* OwnerCompone
         SRV = Material.TextureSRV;
         MaterialParams.UseTexture = Material.bUseTexture;
 
-        // 항상 동일한 스크롤 속도를 사용하고, 시간만 누적/고정값을 전송하여
+        // 컴포넌트가 보유한 속도를 사용하고, 시간은 누적/고정값을 전송하여
         // 스크롤 OFF 시 마지막 프레임 상태로 고정되도록 한다.
-        MaterialParams.UVScrollSpeed = FVector2(0.0f, -0.9f); // V 방향으로 스크롤
+        MaterialParams.UVScrollSpeed = OwnerComponent->GetUVScrollSpeed();
         MaterialParams.Time = OwnerComponent->GetUVScrollTimeForShader();
     }
 	GetDeviceContext()->PSSetShaderResources(1, 1, &SRV);

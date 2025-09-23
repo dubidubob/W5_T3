@@ -212,4 +212,11 @@ void UActorDetailWidget::RenderUVScrollBox()
 		// 값이 바뀌면 컴포넌트 통해 반영
 		MeshComp->SetUseUVScroll(bUseUVScroll);
 	}
+
+	FVector2 Speed = MeshComp->GetUVScrollSpeed();
+	float SpeedArr[2] = { Speed.X, Speed.Y };
+	if (ImGui::DragFloat2("UV Speed (U, V)", SpeedArr, 0.01f, -5.0f, 5.0f, "%.3f"))
+	{
+		MeshComp->SetUVScrollSpeed(FVector2(SpeedArr[0], SpeedArr[1]));
+	}
 }
