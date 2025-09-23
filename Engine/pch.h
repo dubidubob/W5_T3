@@ -84,3 +84,8 @@ using filesystem::create_directories;
 #define TIME_MANAGER
 #include "Manager/Time/TimeManager.h"
 #endif // _TIME_MANAGER
+
+// Object Viewer Build Macro Initialize
+#ifndef IS_OBJ_VIEWER
+#define IS_OBJ_VIEWER 0
+#endif

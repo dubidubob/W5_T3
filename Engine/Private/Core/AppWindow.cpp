@@ -10,6 +10,11 @@
 FAppWindow::FAppWindow(FClientApp* InOwner)
 	: Owner(InOwner), InstanceHandle(nullptr), MainWindowHandle(nullptr)
 {
+#if IS_OBJ_VIEWER
+	UE_LOG("Starting in OBJ Viewer Mode");
+#else
+	UE_LOG("Starting in Editor Mode");
+#endif
 }
 
 FAppWindow::~FAppWindow() = default;
