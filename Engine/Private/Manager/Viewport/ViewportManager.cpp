@@ -6,9 +6,6 @@
 #include "Slate/SplitterV.h"
 #include "Slate/SplitterH.h"
 #include "Slate/Viewport.h"
-
-// jft, 종속성 없애기!
-#include "Render/Renderer/Renderer.h"
 #include "Manager/Input/InputManager.h"
 IMPLEMENT_CLASS(UViewportManager, UObject)
 
@@ -130,8 +127,7 @@ void UViewportManager::SetSubCamera(UCamera* InCamera)
 
 void UViewportManager::Update()
 {
-	// jft urgent.. render와의 종속성 lets go
-	if (URenderer::GetInstance().GetDividedWindow())
+	if (bIsWindowDivided)
 	{
 		// Order Need Tobe Preserved
 		if (UInputManager::GetInstance().IsKeyPressed(EKeyInput::MouseLeft))
@@ -154,7 +150,7 @@ void UViewportManager::SetMainCamera()
 	// 왼쪽 마우스 클릭 시 선택 카메라 조작 가능
 	SelectedViewportIdx = CandidateViewportIdx;
 	MainCamera->CopyFrom(*Viewports[SelectedViewportIdx]->GetViewportInfo()->Camera);
-	MainCamera->SetCameraType(Viewports[SelectedViewportIdx]->GetViewportInfo()->ViewType);
+	MainCamera->SetCameraType(Viewports[SelectedViewportIdx]->GetViewportInfo()->ViewType, bIsWindowDivided);
 }
 
 void UViewportManager::UpdateSubCamera()

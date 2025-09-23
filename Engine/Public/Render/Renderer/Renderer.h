@@ -107,8 +107,6 @@ public:
 	bool IsShowFlagEnabled(EEngineShowFlags Flag) const { return HasFlag(CurrentShowFlags, Flag); }
 
 	// ================== Window Management ==================
-	bool GetDividedWindow() const { return bIsWindowDivided; }
-	void SetDividedWindow(bool WindowDivided) { bIsWindowDivided = WindowDivided; }
 	bool GetIsResizing() const { return bIsResizing; }
 	void SetIsResizing(bool IsResizing) { bIsResizing = IsResizing; }
 
@@ -148,7 +146,6 @@ private:
 	EViewportRenderMode CurrentRenderMode = EViewportRenderMode::Lit;
 	EEngineShowFlags CurrentShowFlags = EEngineShowFlags::SF_Default;
 	bool bIsResizing = false;
-	bool bIsWindowDivided = false;
 
 	// ================== Clear Color ==================
 	FLOAT ClearColor[4] = { 0.025f, 0.025f, 0.025f, 1.0f };

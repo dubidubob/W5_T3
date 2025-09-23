@@ -19,7 +19,7 @@ public:
 	~UCamera() override {}
 
 	void Reset();
-	void Update();
+	void Update(bool IsDivided);
 	void Manipulate();
 	void UpdateMatrixByPers();
 	void UpdateMatrixByOrth();
@@ -34,8 +34,7 @@ public:
 	void SetNearZ(const float InOtherNearZ) { NearZ = InOtherNearZ; }
 	void SetFarZ(const float InOtherFarZ) { FarZ = InOtherFarZ; }
 
-	// jft
-	void SetCameraType(const EViewportViewType InCameraType);
+	void SetCameraType(const EViewportViewType InCameraType, bool bIsWindowDivided);
 	void SaveMainCameraInfo();
 	void LoadMainCameraInfo();
 
@@ -137,7 +136,7 @@ private:
 	float OrthoDistance = 50.0f;
 	FVector OrthoMoveDelta;
 
-	// jft : isSwitching to Multi VP?
+	// isSwitching to Multi VP?
 	bool bIsSingleVP = true;
 	
 	// Dynamic Movement Speed

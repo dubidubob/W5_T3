@@ -64,7 +64,7 @@ UEditor::~UEditor()
 
 void UEditor::Update()
 {	
-	Camera->Update();
+	Camera->Update(ViewportManager->GetIsWindowDivided());
 	ViewportManager->Update();
 
 	ProcessMouseInput(ULevelManager::GetInstance().GetCurrentLevel());
@@ -182,8 +182,7 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 	FVector2 MousePositionNdc = InputManager.GetMouseNDCPosition();
 
 	// Multi Viewport Mode -> Adjust MousePosition & FRay & Cam
-	auto& Renderer = URenderer::GetInstance();
-	if (Renderer.GetDividedWindow())
+	if (ViewportManager->GetIsWindowDivided())
 	{
 		FRect SelectedRect = ViewportManager->GetSelectedViewportRect();
 		const float W = SelectedRect.Width;

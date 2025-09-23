@@ -22,10 +22,10 @@ void UViewSettingsWidget::RenderWidget()
 	ImGui::Spacing();
 
 	// 뷰 4분할 여부
-	bool bIsWindowDivided = Renderer->GetDividedWindow();
+	bool bIsWindowDivided = ViewportManager->GetIsWindowDivided();
 	if (ImGui::Checkbox("Viewport 분할", &bIsWindowDivided))
 	{
-		Renderer->SetDividedWindow(bIsWindowDivided);
+		ViewportManager->SetIsWindowDivided(bIsWindowDivided);
 	}
 	if (bIsWindowDivided)
 	{

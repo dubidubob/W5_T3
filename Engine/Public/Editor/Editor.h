@@ -28,7 +28,7 @@ public:
 	// void RenderEditor();
 	void RenderEditorBatched();
 
-	/** jft, ViewportManager Getter*/
+	/** ViewportManager Getter*/
 	UViewportManager* GetViewportManager() { return ViewportManager; }
 
 private:
