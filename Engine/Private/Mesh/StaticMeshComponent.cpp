@@ -2,6 +2,7 @@
 #include "Mesh/StaticMeshComponent.h"
 #include "Mesh/StaticMesh/StaticMesh.h"
 #include "Mesh/StaticMesh/ObjManager.h"
+#include "Manager/Time/TimeManager.h"
 
 IMPLEMENT_CLASS(UStaticMeshComponent, UMeshComponent)
 
@@ -12,7 +13,35 @@ void UStaticMeshComponent::SetStaticMesh(const FString& InMeshFName)
 
 void UStaticMeshComponent::SetUseUVScroll(bool bEnable)
 {
-	bUseUVScroll = bEnable;
+    if (bUseUVScroll == bEnable)
+    {
+        return;
+    }
+
+    const float Now = UTimeManager::GetInstance().GetGameTime();
+
+    if (bEnable)
+    {
+        // 스크롤을 다시 시작: 이 시점부터의 경과 시간을 기준으로 합산
+        LastUVScrollUpdateTime = Now;
+    }
+    else
+    {
+        // 스크롤을 멈출 때, 지금까지의 경과 시간을 누적값에 더해 고정
+        UVScrollAccumTime += (Now - LastUVScrollUpdateTime);
+    }
+
+    bUseUVScroll = bEnable;
+}
+
+float UStaticMeshComponent::GetUVScrollTimeForShader() const
+{
+    const float Now = UTimeManager::GetInstance().GetGameTime();
+    if (bUseUVScroll)
+    {
+        return UVScrollAccumTime + (Now - LastUVScrollUpdateTime);
+    }
+    return UVScrollAccumTime;
 }
 
 FAABB UStaticMeshComponent::GetWorldBounds() const

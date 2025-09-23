@@ -449,22 +449,17 @@ void URenderer::SetupMaterialForSection(const UStaticMeshComponent* OwnerCompone
 	ID3D11ShaderResourceView* SRV = nullptr;
 	FMaterialParamsCB MaterialParams{};
 
-	if (Section.MaterialIndex >= 0 && Section.MaterialIndex < MeshData->Materials.Num())
-	{
-		FStaticMaterial& Material = MeshData->Materials[Section.MaterialIndex];
-		SRV = Material.TextureSRV;
-		MaterialParams.UseTexture = Material.bUseTexture;
-		if (OwnerComponent->GetUseUVScroll())
-		{
-			MaterialParams.UVScrollSpeed = FVector2(0.0f, -0.9f); // V 방향으로 스크롤
-			MaterialParams.Time = UTimeManager::GetInstance().GetGameTime();     // 누적 시간
-		}
-		else
-		{
-			MaterialParams.UVScrollSpeed = { 0.0f, 0.0f };
-			MaterialParams.Time = 0.0f;
-		}
-	}
+    if (Section.MaterialIndex >= 0 && Section.MaterialIndex < MeshData->Materials.Num())
+    {
+        FStaticMaterial& Material = MeshData->Materials[Section.MaterialIndex];
+        SRV = Material.TextureSRV;
+        MaterialParams.UseTexture = Material.bUseTexture;
+
+        // 항상 동일한 스크롤 속도를 사용하고, 시간만 누적/고정값을 전송하여
+        // 스크롤 OFF 시 마지막 프레임 상태로 고정되도록 한다.
+        MaterialParams.UVScrollSpeed = FVector2(0.0f, -0.9f); // V 방향으로 스크롤
+        MaterialParams.Time = OwnerComponent->GetUVScrollTimeForShader();
+    }
 	GetDeviceContext()->PSSetShaderResources(1, 1, &SRV);
 
 	Pipeline->SetConstantBuffer(4, false, ConstantBufferMaterialParam);
