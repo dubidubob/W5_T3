@@ -58,7 +58,7 @@ UGizmo::UGizmo()
 UGizmo::~UGizmo() = default;
 
 
-void UGizmo::RenderGizmo(AActor* Actor, const FVector& CameraLocation)
+void UGizmo::RenderGizmo(AActor* Actor, const FVector& CameraLocation, bool bUsingScaling, float InScale, float& OutScale)
 {
     TargetActor = Actor;
     if (!TargetActor) { return; }
@@ -76,8 +76,16 @@ void UGizmo::RenderGizmo(AActor* Actor, const FVector& CameraLocation)
         QuatBase = TargetActor->GetActorRotationQuat();
     }
 
-	EditorPrimitive.Scale = CalculateGizmoScale(CameraLocation);
-
+	if (bUsingScaling)
+	{
+		EditorPrimitive.Scale = CalculateGizmoScale(CameraLocation);
+		OutScale = EditorPrimitive.Scale.X;
+	}
+	else
+	{
+		EditorPrimitive.Scale = FVector::OneVector * InScale;
+	}
+	
     // 축 정렬용 고정 회전 (기본 메쉬는 Z-Up 가정)
     const FQuat QuatAlignRight   = FQuat::FromEulerXYZ(FVector{ -0.0f,  90.0f,  0.0f });	// Z->X
     const FQuat QuatAlignUp      = FQuat::FromEulerXYZ(FVector{ -90.0f,  0.0f,  0.0f });	// Z->Y

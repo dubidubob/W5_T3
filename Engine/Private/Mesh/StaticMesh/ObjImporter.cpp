@@ -3,20 +3,76 @@
 #include "Public/Mesh/StaticMesh/StaticMesh.h"
 #include "Public/Manager/Path/PathManager.h"
 #include "Mesh/ResourceManager.h"
+#include "Archive/Archive.h"
 
 FStaticMesh* FObjImporter::ParseAndConvert(const FString& FileName)
 {
-	FObjInfo RawData;
+	FStaticMesh* CookedData = LoadStaticMeshFromBinary(FileName);
+	if (CookedData)
+	{
+		return CookedData;
+	}
 
+	UE_LOG("Parsing OBJ and baking to binary: %s", FileName);
+
+	FObjInfo RawData;
 	if (!ParseObjFile(FileName, RawData))
 	{
 		return nullptr;
 	}
 
-	FStaticMesh* CookedData = new FStaticMesh();
+	CookedData = new FStaticMesh();
 	ConvertObjToStaticMesh(RawData, *CookedData);
 	CookedData->FileName = FileName;
+
+	FString BaseFileName = FileName;
+	size_t DotPos = FileName.find_last_of('.');
+	if (DotPos != FString::npos) { BaseFileName = FileName.substr(0, DotPos); }
+	path BinaryFilePath = UPathManager::GetInstance().GetBinaryPath() / (BaseFileName + ".bin");
+
+	FWindowsBinWriter Writer(BinaryFilePath);
+	CookedData->Serialize(Writer);
+	UE_LOG("Successfully baked mesh to binary file: %s", BinaryFilePath.string().c_str());
+
 	return CookedData;
+}
+
+FStaticMesh* FObjImporter::LoadStaticMeshFromBinary(const FString& FileName)
+{
+	FString BaseFileName = FileName;
+	size_t DotPos = FileName.find_last_of('.');
+	if (DotPos != FString::npos) { BaseFileName = FileName.substr(0, DotPos); }
+
+	path ObjFilePath = UPathManager::GetInstance().GetDataPath() / FileName;
+	path BinaryFilePath = UPathManager::GetInstance().GetBinaryPath() / (BaseFileName + ".bin");
+
+	// 바이너리 파일이 존재하고, OBJ 파일이 더 최신이 아닌 경우
+	bool bBinaryExists = std::filesystem::exists(BinaryFilePath);
+	bool bObjIsNewer = false;
+
+	if (bBinaryExists && std::filesystem::exists(ObjFilePath))
+	{
+		auto ObjTime = std::filesystem::last_write_time(ObjFilePath);
+		auto BinTime = std::filesystem::last_write_time(BinaryFilePath);
+		if (ObjTime > BinTime)
+		{
+			bObjIsNewer = true;
+		}
+	}
+
+	if (bBinaryExists && !bObjIsNewer)
+	{
+		UE_LOG("Binary file found and up-to-date. Loading from binary: %s", BinaryFilePath.string().c_str());
+		FWindowsBinReader Reader(BinaryFilePath);
+
+		FStaticMesh* CookedData = new FStaticMesh();
+		CookedData->Serialize(Reader);
+		return CookedData;
+	}
+
+	// 로드할 바이너리 파일이 없거나 최신이 아니면 nullptr 반환
+	return nullptr;
+
 }
 
 bool FObjImporter::ParseObjFile(const FString& FileName, FObjInfo& OutObjInfo)
@@ -27,7 +83,7 @@ bool FObjImporter::ParseObjFile(const FString& FileName, FObjInfo& OutObjInfo)
 	std::ifstream File(FilePath);
 	if (!File.is_open())
 	{
-		UE_LOG("Failed to open file: %s", FilePath.c_str());
+		UE_LOG("Failed to open file: %s", FilePath.string().c_str());
 		return false;
 	}
 
@@ -144,7 +200,7 @@ bool FObjImporter::ParseMtlFile(const path& FilePath, TArray<FObjMaterialInfo>& 
 	std::ifstream File(FilePath);
 	if (!File.is_open())
 	{
-		UE_LOG("Failed to open file: %s", FilePath.c_str());
+		UE_LOG("Failed to open file: %s", FilePath.string().c_str());
 		return false;
 	}
 
@@ -306,7 +362,6 @@ void FObjImporter::ConvertObjToStaticMesh(const FObjInfo& ObjInfo, FStaticMesh& 
 		if (!ObjMat.DiffuseTexturePath.empty())
 		{
 			StaticMat.DiffusePath = ObjMat.DiffuseTexturePath;
-			StaticMat.bUseTexture = true;	
 		}
 		//StaticMat.bUseTexture =
 		// 

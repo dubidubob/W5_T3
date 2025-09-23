@@ -342,14 +342,14 @@ void URenderer::RenderMultiViewport(UEditor* Editor)
 
 		DeviceResources->UpdateViewport();
 
-		RenderScene(Editor);
+		RenderScene(Editor, Idx);
 	}
 }
 
-void URenderer::RenderScene(UEditor* Editor)
+void URenderer::RenderScene(UEditor* Editor, int Idx)
 {
 	RenderLevel();
-	Editor->RenderEditorBatched();
+	Editor->RenderEditorBatched(Idx);
 	RenderText(Editor->GetCameraLocation());
 }
 

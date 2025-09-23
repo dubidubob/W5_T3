@@ -155,6 +155,7 @@
     <ClInclude Include="Global\Name.h" />
     <ClInclude Include="Global\NameTable.h" />
     <ClInclude Include="Global\Quat.h" />
+    <ClInclude Include="Public\Archive\Archive.h" />
     <ClInclude Include="Public\Core\ObjectIterator.h" />
     <ClInclude Include="Public\Manager\Viewport\ViewportManager.h" />
     <ClInclude Include="Public\Math\AABB.h" />
@@ -255,6 +256,7 @@
   <ItemGroup>
     <ClCompile Include="Global\Name.cpp" />
     <ClCompile Include="Global\NameTable.cpp" />
+    <ClCompile Include="Private\Archive\Archive.cpp" />
     <ClCompile Include="Private\Manager\Viewport\ViewportManager.cpp" />
     <ClCompile Include="Private\Math\AABB.cpp" />
     <ClCompile Include="Private\Mesh\Material\Material.cpp" />
