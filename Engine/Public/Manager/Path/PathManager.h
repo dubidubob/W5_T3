@@ -22,6 +22,7 @@ public:
 	const path& GetConfigPath() const { return ConfigPath; }
 	const path& GetEditorIniPath() const { return EditorIniPath; }
 	const path& GetFontPath() const { return FontPath; }
+	const path& GetBinaryPath() const { return BinaryPath; }
 
 private:
 	path RootPath;
@@ -34,6 +35,7 @@ private:
 	path ConfigPath;
 	path EditorIniPath;
 	path FontPath;
+	path BinaryPath;
 
 	void InitializeRootPath();
 	void GetEssentialPath();
