@@ -303,7 +303,7 @@ void URenderer::Update(UEditor* Editor)
 
 	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
 
-	if (bIsWindowDivided)
+	if (Editor->GetViewportManager()->GetIsWindowDivided())
 	{
 		RenderMultiViewport(Editor);
 	}

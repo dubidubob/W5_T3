@@ -138,7 +138,7 @@ void UCameraControlWidget::PushToCamera()
 	/*
 	 * @brief 카메라 모드 설정
 	 */
-	Camera->SetCameraType(static_cast<EViewportViewType>(CameraModeIndex));
+	Camera->SetCameraType(static_cast<EViewportViewType>(CameraModeIndex), false);
 
 	/*
 	 * @brief 카메라 파라미터 설정

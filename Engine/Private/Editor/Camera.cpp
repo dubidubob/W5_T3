@@ -21,9 +21,9 @@ void UCamera::Reset()
 	// Aspect = float(Render::INIT_SCREEN_WIDTH) / Render::INIT_SCREEN_HEIGHT;
 }
 
-void UCamera::Update()
+void UCamera::Update(bool IsDivided)
 {
-	if (!URenderer::GetInstance().GetDividedWindow() && !bIsSingleVP)
+	if (!IsDivided && !bIsSingleVP)
 	{
 		bIsSingleVP = true;
 		LoadMainCameraInfo();
@@ -114,58 +114,32 @@ void UCamera::Manipulate()
 			float MouseDeltaX = MouseDelta.X * CurrentMouseSensitivity;
 			float MouseDeltaY = MouseDelta.Y * CurrentMouseSensitivity;
 
-			// jft ㅜㅜ
+			FVector OrthoMoveDirection(0.0f, 0.0f, 0.0f);
+
 			switch (CameraViewType)
 			{
 			case EViewportViewType::Front:
-				RelativeLocation.Y -= MouseDeltaX;
-				RelativeLocation.Z += MouseDeltaY;
-
-				OrthoMoveDelta.X = 0.0f;
-				OrthoMoveDelta.Y = MouseDeltaX;
-				OrthoMoveDelta.Z = MouseDeltaY;
+				OrthoMoveDirection = FVector(0.0f, -MouseDelta.X, MouseDelta.Y);
 				break;
 			case EViewportViewType::Back:
-				RelativeLocation.Y += MouseDeltaX;
-				RelativeLocation.Z += MouseDeltaY;
-
-				OrthoMoveDelta.X = 0.0f;
-				OrthoMoveDelta.Y = MouseDeltaX;
-				OrthoMoveDelta.Z = MouseDeltaY;
+				OrthoMoveDirection = FVector(0.0f, MouseDelta.X, MouseDelta.Y);
 				break;
 			case EViewportViewType::Top:
-				RelativeLocation.Y += MouseDeltaX;
-				RelativeLocation.X += MouseDeltaY;
-
-				OrthoMoveDelta.Z = 0.0f;
-				OrthoMoveDelta.Y = MouseDeltaX;
-				OrthoMoveDelta.X = MouseDeltaY;
+				OrthoMoveDirection = FVector(MouseDelta.Y, MouseDelta.X, 0.0f);
 				break;
 			case EViewportViewType::Bottom:
-				RelativeLocation.Y += MouseDeltaX;
-				RelativeLocation.X -= MouseDeltaY;
-
-				OrthoMoveDelta.Z = 0.0f;
-				OrthoMoveDelta.Y = MouseDeltaX;
-				OrthoMoveDelta.X = MouseDeltaY;
+				OrthoMoveDirection = FVector(-MouseDelta.Y, MouseDelta.X, 0.0f);
 				break;
 			case EViewportViewType::Left:
-				RelativeLocation.X -= MouseDeltaX;
-				RelativeLocation.Z += MouseDeltaY;
-
-				OrthoMoveDelta.Y = 0.0f;
-				OrthoMoveDelta.X = MouseDeltaX;
-				OrthoMoveDelta.Z = MouseDeltaY;
+				OrthoMoveDirection = FVector(MouseDelta.X, 0.0f, MouseDelta.Y);
 				break;
 			case EViewportViewType::Right:
-				RelativeLocation.X += MouseDeltaX;
-				RelativeLocation.Z += MouseDeltaY;
-
-				OrthoMoveDelta.Y = 0.0f;
-				OrthoMoveDelta.X = MouseDeltaX;
-				OrthoMoveDelta.Z = MouseDeltaY;
+				OrthoMoveDirection = FVector(-MouseDelta.X, 0.0f, MouseDelta.Y);
 				break;
 			}
+
+			RelativeLocation += OrthoMoveDirection;
+			OrthoMoveDelta = OrthoMoveDirection;
 		}
 	}	
 }
@@ -427,14 +401,14 @@ void UCamera::LoadCameraSettings()
 	CurrentMouseSensitivity = min(CurrentMouseSensitivity, MAX_MOUSE_SENSITIVITY);
 }
 
-// jft : magic number
-void UCamera::SetCameraType(const EViewportViewType InCameraType)
+void UCamera::SetCameraType(const EViewportViewType InCameraType, bool bIsWindowDivided)
 {
+	// Single Perspective Viewport 상태만 저장.
+	// Single Viewport에 Perspective 상태였고 + 곧 Divided로 전환되거나 다른 CameraType으로 전환될 때 Camera Info Update
 	if (bIsSingleVP
 		&&
-		((CameraViewType == EViewportViewType::Perspective&& InCameraType != EViewportViewType::Perspective)
-		||
-		(URenderer::GetInstance().GetDividedWindow()))
+		((CameraViewType == EViewportViewType::Perspective && InCameraType != EViewportViewType::Perspective)
+		|| bIsWindowDivided)
 		)
 	{
 		bIsSingleVP = false;
@@ -452,39 +426,43 @@ void UCamera::SetCameraType(const EViewportViewType InCameraType)
 	FVector MoveAxis = FVector::ZeroVector;
 	FVector CameraRotation = FVector::ZeroVector;
 
-	const float RotateStep = 90.0f;
 	switch (InCameraType)
 	{
 	case EViewportViewType::Front:
-		MoveAxis = FVector(OrthoDistance, 0.0f, 0.0f);
-		CameraRotation = FVector(0.0f, 0.0f, -RotateStep * 2);
+		MoveAxis = FVector(1.0f, 0.0f, 0.0f);
+		CameraRotation = FVector(0.0f, 0.0f, -2.0f);
 		break;
 
 	case EViewportViewType::Back:
-		MoveAxis = FVector(-OrthoDistance, 0.0f, 0.0f);
+		MoveAxis = FVector(-1.0f, 0.0f, 0.0f);
 		CameraRotation = FVector(0.0f, 0.0f, 0.0f);
 		break;
 
 	case EViewportViewType::Top:
-		MoveAxis = FVector(0.0f, 0.0f, OrthoDistance);
-		CameraRotation = FVector(0.0f, RotateStep, 0.0f);
+		MoveAxis = FVector(0.0f, 0.0f, 1.0f);
+		CameraRotation = FVector(0.0f, 1.0f, 0.0f);
 		break;
 
 	case EViewportViewType::Bottom:
-		MoveAxis = FVector(0.0f, 0.0f, -OrthoDistance);
-		CameraRotation = FVector(0.0f, -RotateStep, 0.0f);
+		MoveAxis = FVector(0.0f, 0.0f, -1.0f);
+		CameraRotation = FVector(0.0f, -1.0f, 0.0f);
 		break;
 
 	case EViewportViewType::Left:
-		MoveAxis = FVector(0.0f, -OrthoDistance, 0.0f);
-		CameraRotation = FVector(0.0f, 0.0f, RotateStep);
+		MoveAxis = FVector(0.0f, -1.0f, 0.0f);
+		CameraRotation = FVector(0.0f, 0.0f, 1.0f);
 		break;
 
 	case EViewportViewType::Right:
-		MoveAxis = FVector(0.0f, OrthoDistance, 0.0f);
-		CameraRotation = FVector(0.0f, 0.0f, -RotateStep);
+		MoveAxis = FVector(0.0f, 1.0f, 0.0f);
+		CameraRotation = FVector(0.0f, 0.0f, -1.0f);
 		break;
 	}
+
+	const float RotateStep = 90.0f;
+	CameraRotation *= RotateStep;
+
+	MoveAxis *= OrthoDistance;
 
 	SetLocation(MoveAxis);
 	SetRotation(CameraRotation);
@@ -512,15 +490,16 @@ void UCamera::LoadMainCameraInfo()
 	CameraViewType = SaveCameraViewType;
 }
 
+/* Copy From Other Except Aspect & CameraViewType*/
 void UCamera::CopyFrom(const UCamera& Other)
 {
 	SetLocation(Other.GetLocation());
 	SetRotation(Other.GetRotation());
+
 	FovY = Other.GetFovY();
-	//Aspect = Other.GetAspect();
 	NearZ = Other.GetNearZ();
 	FarZ = Other.GetFarZ();
-	/*CameraViewType = Other.GetCameraType();*/
+
 	CurrentMoveSpeed = Other.GetMoveSpeed();
 	CurrentMouseSensitivity = Other.GetMouseSensitivity();
 

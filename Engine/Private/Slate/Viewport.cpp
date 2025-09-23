@@ -5,7 +5,7 @@
 void FViewportInfo::SetViewType(EViewportViewType InViewType)
 {
 	ViewType = InViewType;
-	Camera->SetCameraType(InViewType);
+	Camera->SetCameraType(InViewType, true);
 	Camera->RefreshViewMatrices();
 }
 

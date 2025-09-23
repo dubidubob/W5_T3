@@ -21,21 +21,26 @@ public:
 	void SetProjectionMode(uint32 InIdx, EViewportViewType InViewType);
 	void SetViewMode(uint32 InIdx, EViewportRenderMode InRenderType);
 
-	struct FViewportInfo* GetViewportInfo(uint32 ViewportIdx);
-
+	/*Mouse Input*/
 	void SetSplitterMouseInput(const POINT& WindowSize, const FVector2& InMouseNDC, bool bIsDragging);
 	FVector2 GetViewportMouseInputNdc(const POINT& WindowSize, const FVector2& InMouse);
 
+	/*Selected*/
 	UCamera* GetSelectedViewportCamera();
 	FRect GetSelectedViewportRect();
 
+	/*Viewport Infos*/
+	struct FViewportInfo* GetViewportInfo(uint32 ViewportIdx);
 	const TArray<class SWindow*>& GetWindows() { return Windows; }
+	bool GetIsWindowDivided() { return bIsWindowDivided; }
+	void SetIsWindowDivided(bool bInIsWindowDivided) { bIsWindowDivided = bInIsWindowDivided; }
 
 private:
 	FVector ViewportRatio;
 	int CandidateViewportIdx;
 	bool bSelectUpdated;
 	bool bOrthoManipulating;
+	bool bIsWindowDivided = false;
 
 	UCamera* MainCamera;
 	int32 SelectedViewportIdx = 0;

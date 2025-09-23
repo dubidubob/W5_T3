@@ -57,11 +57,11 @@ UGizmo::UGizmo()
 
 UGizmo::~UGizmo() = default;
 
+
 void UGizmo::RenderGizmo(AActor* Actor, const FVector& CameraLocation)
 {
     TargetActor = Actor;
     if (!TargetActor) { return; }
-    float DistanceToCamera = (CameraLocation - TargetActor->GetActorLocation()).Length();
 
 	URenderer& Renderer = URenderer::GetInstance();
 	const int Mode = static_cast<int>(GizmoMode);
@@ -76,15 +76,7 @@ void UGizmo::RenderGizmo(AActor* Actor, const FVector& CameraLocation)
         QuatBase = TargetActor->GetActorRotationQuat();
     }
 
-	float Scale = DistanceToCamera * ScaleFactor;
-	if (DistanceToCamera < MinScaleFactor)
-	{
-		Scale = MinScaleFactor * ScaleFactor;
-	}
-	TranslateCollisionConfig.Scale = Scale;
-	RotateCollisionConfig.Scale = Scale;
-
-	EditorPrimitive.Scale = FVector(Scale, Scale, Scale);
+	EditorPrimitive.Scale = CalculateGizmoScale(CameraLocation);
 
     // 축 정렬용 고정 회전 (기본 메쉬는 Z-Up 가정)
     const FQuat QuatAlignRight   = FQuat::FromEulerXYZ(FVector{ -0.0f,  90.0f,  0.0f });	// Z->X
@@ -114,6 +106,20 @@ void UGizmo::RenderGizmo(AActor* Actor, const FVector& CameraLocation)
     }
     EditorPrimitive.Color = ColorFor(EGizmoDirection::Forward);
     Renderer.RenderEditorPrimitive(EditorPrimitive, RenderState);
+}
+
+FVector UGizmo::CalculateGizmoScale(const FVector& CameraLocation)
+{
+	float DistanceToCamera = (CameraLocation - TargetActor->GetActorLocation()).Length();
+	float Scale = DistanceToCamera * ScaleFactor;
+	if (DistanceToCamera < MinScaleFactor)
+	{
+		Scale = MinScaleFactor * ScaleFactor;
+	}
+	TranslateCollisionConfig.Scale = Scale;
+	RotateCollisionConfig.Scale = Scale;
+
+	return FVector(Scale, Scale, Scale);
 }
 
 void UGizmo::ChangeGizmoMode()
