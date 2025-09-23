@@ -6,11 +6,11 @@ struct FQuat;
 class URenderer;
 class UObjectPicker;
 class UViewportManager;
+class UObjectPreviewScene;
 class UGizmo;
 class UAxis;
 class UGrid;
 class ULevel;
-
 class UEditor : public UObject
 {
 	DECLARE_CLASS(UEditor, UObject)
@@ -46,6 +46,8 @@ private:
 	UCamera* Camera;
 	UObjectPicker* ObjectPicker;
 	UViewportManager* ViewportManager;
+	//jft
+	UObjectPreviewScene* ObjPreview;
 
 	const float MinScale = 0.01f;
 	UGizmo* Gizmo;

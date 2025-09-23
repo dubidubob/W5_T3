@@ -130,6 +130,7 @@
     <ClCompile Include="Private\Slate\HorizontalBox.cpp" />
     <ClCompile Include="Private\Slate\VerticalBox.cpp" />
     <ClCompile Include="Private\Archive\Archive.cpp" />
+    <ClCompile Include="Private\Utility\ObjectPreviewScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\\Core\\Object.h" />
@@ -269,6 +270,7 @@
     <ClInclude Include="Public\Slate\HorizontalBox.h" />
     <ClInclude Include="Public\Slate\VerticalBox.h" />
     <ClInclude Include="Public\Archive\Archive.h" />
+    <ClInclude Include="Private\Utility\ObjectPreviewScene.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />
