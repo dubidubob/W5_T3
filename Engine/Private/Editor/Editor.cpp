@@ -26,17 +26,12 @@ UEditor::UEditor()
 	ObjectPicker = NewObject<UObjectPicker>();
 	ViewportManager = NewObject<UViewportManager>();
 
-
-	const float W = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width;
-	const float H = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Height;
-	ViewportManager->Initialize(POINT(W, H));
-
 	Gizmo = NewObject<UGizmo>();
 	Grid = NewObject<UGrid>();
 	Axis = NewObject<UAxis>();
 
 	ObjectPicker->SetCamera(Camera);
-	ViewportManager->SetSubCamera(Camera);
+	ViewportManager->Initialize(Camera);
 
 	// Set Camera to Control Panel
 	auto& UIManager = UUIManager::GetInstance();
@@ -63,7 +58,7 @@ UEditor::~UEditor()
 }
 
 void UEditor::Update()
-{	
+{
 	Camera->Update(ViewportManager->GetIsWindowDivided());
 	ViewportManager->Update();
 
@@ -73,13 +68,6 @@ void UEditor::Update()
 	auto& Renderer = URenderer::GetInstance();
 	Renderer.UpdateViewProjConstants(Camera->GetFViewProjConstants());
 }
-
-// void UEditor::RenderEditor()
-// {
-// 	Grid->RenderGrid();
-// 	Axis->Render();
-// 	Gizmo->RenderGizmo(ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor(), Camera.GetLocation());
-// }
 
 const FVector& UEditor::GetCameraLocation()
 {
@@ -178,26 +166,13 @@ void UEditor::ProcessKeyboardInput()
 
 void UEditor::ProcessMouseInput(ULevel* InLevel)
 {
+	/*Make Input*/
 	const UInputManager& InputManager = UInputManager::GetInstance();
 	FVector2 MousePositionNdc = InputManager.GetMouseNDCPosition();
+	// If Multi Viewport Mode -> Adjust MousePosition & FRay & Cam
+	MousePositionNdc = ViewportManager->UpdateMouseInputNdcInViewports(MousePositionNdc);
 
-	// Multi Viewport Mode -> Adjust MousePosition & FRay & Cam
-	if (ViewportManager->GetIsWindowDivided())
-	{
-		FRect SelectedRect = ViewportManager->GetSelectedViewportRect();
-		const float W = SelectedRect.Width;
-		const float H = SelectedRect.Height;
-		Camera->SetAspect(W / H);
-
-		// Mouse Left : Split 이면 Drag / Click만
-		bool IsDragging = InputManager.IsKeyDown(EKeyInput::MouseLeft);
-		ViewportManager->SetSplitterMouseInput(POINT(W, H), MousePositionNdc, IsDragging);
-
-		// Viewport는 Viewport의 NDC를 따로 구해야함
-		FVector2 MousePosition = InputManager.GetMousePosition();
-		MousePositionNdc = ViewportManager->GetViewportMouseInputNdc(POINT(W, H), MousePosition);
-	}
-
+	/*Calculate Gizmo*/
 	// 월드 레이 먼저 계산 (릴리즈 커밋에 사용)
 	const bool bMouseButtonStateChanged = InputManager.IsKeyPressed(EKeyInput::MouseLeft) || InputManager.IsKeyReleased(EKeyInput::MouseLeft);
 	const bool bMousePositionChanged = (LastMousePosition - MousePositionNdc).Length() > 1e-6f;
@@ -217,7 +192,6 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 
 	float ActorDistance = -1;
 
-	// todo : key left pressed 될 때마다 ray 쏘기
 	const UInputManager& InputManager = UInputManager::GetInstance();
 	if (InputManager.IsKeyReleased(EKeyInput::MouseLeft))
 	{

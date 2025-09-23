@@ -1,18 +1,18 @@
 #include "pch.h"
-#include "Manager/Viewport/ViewportManager.h"
 #include "Editor/Camera.h"
+#include "Manager/Viewport/ViewportManager.h"
+#include "Manager/Input/InputManager.h"
+
 #include "Slate/VerticalBox.h"
 #include "Slate/HorizontalBox.h"
 #include "Slate/SplitterV.h"
 #include "Slate/SplitterH.h"
 #include "Slate/Viewport.h"
-#include "Manager/Input/InputManager.h"
 IMPLEMENT_CLASS(UViewportManager, UObject)
 
 UViewportManager::UViewportManager()
 {
 }
-
 UViewportManager::~UViewportManager()
 {
 	int32 CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
@@ -26,8 +26,14 @@ UViewportManager::~UViewportManager()
 	delete RootWindow;
 }
 
-void UViewportManager::Initialize(const POINT& InWindowSize)
+void UViewportManager::Initialize(UCamera* InCamera)
 {
+	InitializeSplitter();
+	InitializeSubCamera(InCamera);
+}
+void UViewportManager::InitializeSplitter()
+{
+	/* Splitter 초기화*/
 	// Splitter Thickness > NDC
 	const float SplitterNdcWidth = 0.015f;
 	const float SplitterNdcHeight = 0.015f;
@@ -109,8 +115,7 @@ void UViewportManager::Initialize(const POINT& InWindowSize)
 		BottomSplitterV->DragEnd();
 	}
 }
-
-void UViewportManager::SetSubCamera(UCamera* InCamera)
+void UViewportManager::InitializeSubCamera(UCamera* InCamera)
 {
 	MainCamera = InCamera;
 	int32 CameraCnt = Viewports.Num();
@@ -208,12 +213,34 @@ FViewportInfo* UViewportManager::GetViewportInfo(uint32 ViewportIdx)
 	return nullptr;
 }
 
+FVector2 UViewportManager::UpdateMouseInputNdcInViewports(FVector2 MousePositionNdc)
+{
+	if (bIsWindowDivided)
+	{
+		FRect SelectedRect = Viewports[SelectedViewportIdx]->GetViewportPixelRect();
+		const float W = SelectedRect.Width;
+		const float H = SelectedRect.Height;
+		MainCamera->SetAspect(W / H);
+
+		// Mouse Left : Split 이면 Drag / Click만
+		bool IsDragging = UInputManager::GetInstance().IsKeyDown(EKeyInput::MouseLeft);
+		SetSplitterMouseInput(POINT(W, H), MousePositionNdc, IsDragging);
+
+		// Viewport는 Viewport의 NDC를 따로 구해야함
+		FVector2 MousePosition = UInputManager::GetInstance().GetMousePosition();
+		MousePositionNdc = GetViewportMouseInputNdc(POINT(W, H), MousePosition);
+	}
+	return MousePositionNdc;
+}
+
 void UViewportManager::SetSplitterMouseInput(const POINT& WindowSize, const FVector2& InMouseNDC, bool bIsDragging)
 {
+	/* 드래깅 하고 있다면 */
 	if (bIsDragging && DraggingWindow)
 	{
 		DraggingWindow->Drag(InMouseNDC);
 	}
+	/* 드래깅 안 할 시*/
 	else
 	{
 		SWindow* SelectedWindow = RootWindow->HitTest(InMouseNDC);
@@ -248,22 +275,4 @@ FVector2 UViewportManager::GetViewportMouseInputNdc(const POINT& WindowSize, con
 
 	FVector2 MousePositionNdc(2.0f * u - 1.0f, 1.0f - 2.0f * v);
 	return MousePositionNdc;
-}
-
-UCamera* UViewportManager::GetSelectedViewportCamera()
-{
-	if (SelectedViewportIdx >= 0 && Viewports[SelectedViewportIdx])
-	{
-		return Viewports[SelectedViewportIdx]->GetViewportInfo()->Camera;
-	}
-	return nullptr;
-}
-
-FRect UViewportManager::GetSelectedViewportRect()
-{
-	if (SelectedViewportIdx >= 0 && Viewports[SelectedViewportIdx])
-	{
-		return Viewports[SelectedViewportIdx]->GetViewportPixelRect();
-	}
-	return FRect();
 }
