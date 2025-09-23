@@ -13,7 +13,7 @@ public:
 	//"Demon",
 	//"Car"
 	//};
-	static inline TArray<const char*> PrimitiveTypes { "Cube" ,"Sphere" ,"Triangle" ,"Square" ,"Demon" ,"Car" };
+	static inline TArray<const char*> PrimitiveTypes { "Cube" ,"Sphere" ,"Cone" ,"Cylinder","Torus" ,"Demon" ,"Car"};
 	void Initialize() override;
 	void Update() override;
 	void RenderWidget() override;
