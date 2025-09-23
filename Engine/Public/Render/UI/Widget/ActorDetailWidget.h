@@ -17,6 +17,7 @@ private:
 	void RenderActorInfo();
 	void RenderNameField();
 	void RenderDropListUI();
+	void RenderUVScrollBox();
 	AActor* SelectedActor = nullptr;
 	char ActorNameBuffer[256] = "";
 	bool bNameChanged = false;

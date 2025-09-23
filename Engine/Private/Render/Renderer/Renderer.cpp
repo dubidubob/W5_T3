@@ -145,6 +145,7 @@ void URenderer::InitializeBuffers()
 	CreateConstantBuffer(ConstantBufferMaterialParam, sizeof(FMaterialParamsCB));
 
 	CreateCharacterTableBuffer();
+
 	CreateTextInstanceBuffer();
 	CreateSamplerState();
 
@@ -452,14 +453,20 @@ void URenderer::SetupMaterialForSection(FStaticMesh* MeshData, const FStaticMesh
 		FStaticMaterial& Material = MeshData->Materials[Section.MaterialIndex];
 		SRV = Material.TextureSRV;
 		MaterialParams.UseTexture = Material.bUseTexture;
-		MaterialParams.UVScrollSpeed = FVector2(0.0f, -0.9f); // V 방향으로 스크롤
-		MaterialParams.Time = UTimeManager::GetInstance().GetGameTime();     // 누적 시간
+		if (Material.bUseUVScroll)
+		{
+			MaterialParams.UVScrollSpeed = FVector2(0.0f, -0.9f); // V 방향으로 스크롤
+			MaterialParams.Time = UTimeManager::GetInstance().GetGameTime();     // 누적 시간
+		}
+		else
+		{
+			MaterialParams.UVScrollSpeed = { 0.0f, 0.0f };
+			MaterialParams.Time = 0.0f;
+		}
 	}
-
 	GetDeviceContext()->PSSetShaderResources(1, 1, &SRV);
 
 	Pipeline->SetConstantBuffer(4, false, ConstantBufferMaterialParam);
-	//MaterialParams.Padding = FVector(0, 0, 0);
 	UpdateBuffer(ConstantBufferMaterialParam, MaterialParams);
 }
 

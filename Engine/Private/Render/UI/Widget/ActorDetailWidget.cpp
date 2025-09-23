@@ -56,6 +56,9 @@ void UActorDetailWidget::RenderWidget()
 		RenderNameField();
 		ImGui::Separator();
 		RenderDropListUI();
+		ImGui::Separator();
+
+		ImGui::Separator();
 	}
 	else
 	{
@@ -101,7 +104,6 @@ void UActorDetailWidget::RenderDropListUI()
 
 	static int CurrentMeshIndex = 0;
 
-	// 1) UI 표시용 이름(확장자 제거) + 실제 파일명(확장자 포함) 두 개 관리
 	TArray<FString> MeshNamesDisplay;
 	TArray<FString> MeshNamesFull;
 
@@ -110,12 +112,10 @@ void UActorDetailWidget::RenderDropListUI()
 		UStaticMesh* Mesh = *It;
 		if (Mesh && Mesh->GetStaticMeshAsset())
 		{
-			FString FullName = Mesh->GetStaticMeshAsset()->GetFileName(); // ex) "Demon.obj"
+			FString FullName = Mesh->GetStaticMeshAsset()->GetFileName();
 
-			// 실제 파일명은 그대로 저장
 			MeshNamesFull.Add(FullName);
 
-			// 표시용 이름 (확장자 제거)
 			size_t DotPos = FullName.find_last_of('.');
 			if (DotPos != FString::npos)
 				MeshNamesDisplay.Add(FullName.substr(0, DotPos));
@@ -130,41 +130,41 @@ void UActorDetailWidget::RenderDropListUI()
 		return;
 	}
 
-	// 2) 현재 Actor의 Mesh가 있으면 맨 앞으로 이동
-	if (SelectedActor && IsValid(SelectedActor))
+	if (!SelectedActor || !IsValid(SelectedActor))
+		return;
+
+	AStaticMeshActor* SMActor = Cast<AStaticMeshActor>(SelectedActor);
+	if (!SMActor)
+		return;
+
+	UStaticMeshComponent* MeshComp = SMActor->GetStaticMeshComponent();
+	if (!MeshComp || !MeshComp->GetStaticMesh())
+		return;
+
+	FString CurrentMeshName = MeshComp->GetStaticMesh()
+		->GetStaticMeshAsset()->GetFileName();
+
+	for (int i = 0; i < MeshNamesFull.Num(); i++)
 	{
-		if (AStaticMeshActor* SMActor = Cast<AStaticMeshActor>(SelectedActor))
+		if (MeshNamesFull[i] != CurrentMeshName)
+			continue;
+
+		if (i != 0)
 		{
-			if (UStaticMeshComponent* MeshComp = SMActor->GetStaticMeshComponent())
-			{
-				FString CurrentMeshName = MeshComp->GetStaticMesh()
-					->GetStaticMeshAsset()->GetFileName();
+			FString FullTemp = MeshNamesFull[i];
+			FString DisplayTemp = MeshNamesDisplay[i];
 
-				for (int i = 0; i < MeshNamesFull.Num(); i++)
-				{
-					if (MeshNamesFull[i] == CurrentMeshName)
-					{
-						if (i != 0)
-						{
-							// Full과 Display 배열 모두 동기화해서 앞으로 이동
-							FString FullTemp = MeshNamesFull[i];
-							FString DisplayTemp = MeshNamesDisplay[i];
+			MeshNamesFull.RemoveAt(i);
+			MeshNamesDisplay.RemoveAt(i);
 
-							MeshNamesFull.RemoveAt(i);
-							MeshNamesDisplay.RemoveAt(i);
-
-							MeshNamesFull.Insert(FullTemp, 0);
-							MeshNamesDisplay.Insert(DisplayTemp, 0);
-						}
-						CurrentMeshIndex = 0;
-						break;
-					}
-				}
-			}
+			MeshNamesFull.Insert(FullTemp, 0);
+			MeshNamesDisplay.Insert(DisplayTemp, 0);
 		}
+
+		CurrentMeshIndex = 0;
+		break;
 	}
 
-	// 3) ImGui 콤보박스: 표시용 이름만 출력
 	auto ItemGetter = [](void* data, int idx, const char** out_text)
 		{
 			auto Names = static_cast<TArray<FString>*>(data);
@@ -178,7 +178,6 @@ void UActorDetailWidget::RenderDropListUI()
 		(void*)&MeshNamesDisplay,
 		MeshNamesDisplay.Num()))
 	{
-		// 4) 선택 변경 시 실제 Mesh 교체
 		if (SelectedActor)
 		{
 			if (AStaticMeshActor* SMActor = Cast<AStaticMeshActor>(SelectedActor))
@@ -193,4 +192,8 @@ void UActorDetailWidget::RenderDropListUI()
 			}
 		}
 	}
+}
+
+void UActorDetailWidget::RenderUVScrollBox()
+{
 }
