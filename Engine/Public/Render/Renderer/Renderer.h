@@ -308,7 +308,7 @@ private:
 
 	// ================== Rendering Functions ==================
 	void RenderMultiViewport(UEditor* Editor);
-	void RenderScene(UEditor* Editor);
+	void RenderScene(UEditor* Editor, int Idx = 0);
 	void RenderStaticMeshComponent(UPrimitiveComponent* Component);
 	void SetupStaticMeshRendering(UStaticMeshComponent* Component, FStaticMesh* MeshData);
 	void RenderStaticMeshSections(FStaticMesh* MeshData);

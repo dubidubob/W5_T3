@@ -24,7 +24,7 @@ public:
 	const TArray<class SWindow*>& GetWindows() { return Windows; }
 	bool GetIsWindowDivided() { return bIsWindowDivided; }
 	void SetIsWindowDivided(bool bInIsWindowDivided) { bIsWindowDivided = bInIsWindowDivided; }
-
+	bool IsSelectedWindowIdx(int Idx) { return SelectedViewportIdx == Idx; }
 private:
 	/*Initialize()에서 호출*/
 	void InitializeSubCamera(UCamera* InCamera);

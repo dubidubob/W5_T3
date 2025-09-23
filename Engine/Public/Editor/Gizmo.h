@@ -50,7 +50,7 @@ class UGizmo : public UObject
 public:
 	UGizmo();
 	~UGizmo() override;
-	void RenderGizmo(AActor* Actor, const FVector& CameraLocation);
+	void RenderGizmo(AActor* Actor, const FVector& CameraLocation, bool bUsingScaling, float InScale, float& OutScale);
 	void ChangeGizmoMode();
 
 	/* *

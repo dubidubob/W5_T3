@@ -7,6 +7,7 @@ struct FViewportInfo {
 	D3D11_VIEWPORT DxViewport;
 	EViewportViewType ViewType;
 	EViewportRenderMode RenderMode;
+	float GizmoScale;
 
 	void SetViewType(EViewportViewType InViewType);
 };

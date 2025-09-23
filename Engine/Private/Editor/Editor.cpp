@@ -79,7 +79,7 @@ UCamera* UEditor::GetCamera()
 	return Camera;
 }
 
-void UEditor::RenderEditorBatched()
+void UEditor::RenderEditorBatched(int Idx)
 {
 	ULineBatchRenderer& LineBatch = ULineBatchRenderer::GetInstance();
 
@@ -127,7 +127,18 @@ void UEditor::RenderEditorBatched()
 	LineBatch.FlushBatch();
 
 	/** Gizmo는 별도로 렌더링 (기존 방식 유지) */
-	Gizmo->RenderGizmo(ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor(), Camera->GetLocation());
+	if (ViewportManager->IsSelectedWindowIdx(Idx)||!ViewportManager->GetIsWindowDivided())
+	{
+		float CacheScale;
+		Gizmo->RenderGizmo(ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor(), Camera->GetLocation(), true, 0, CacheScale);
+		ViewportManager->GetViewportInfo(Idx)->GizmoScale = CacheScale;
+	}
+	else
+	{
+		float CachedScale = ViewportManager->GetViewportInfo(Idx)->GizmoScale;
+		Gizmo->RenderGizmo(ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor(), Camera->GetLocation(), false, CachedScale, CachedScale);
+	}
+
 }
 
 

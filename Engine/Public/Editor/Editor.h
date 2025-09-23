@@ -26,7 +26,7 @@ public:
 
 	/** 배칭 렌더링 버전 */
 	// void RenderEditor();
-	void RenderEditorBatched();
+	void RenderEditorBatched(int Idx);
 
 	/** ViewportManager Getter*/
 	UViewportManager* GetViewportManager() { return ViewportManager; }
