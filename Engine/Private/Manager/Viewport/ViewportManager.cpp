@@ -134,7 +134,6 @@ void UViewportManager::Update()
 	if (URenderer::GetInstance().GetDividedWindow())
 	{
 		// Order Need Tobe Preserved
-		// jft input 정리
 		if (UInputManager::GetInstance().IsKeyPressed(EKeyInput::MouseLeft))
 			SetMainCamera();
 
@@ -147,9 +146,12 @@ void UViewportManager::Update()
 	}
 }
 
+/*
+* Candidate Viewport Idx 반영
+*/
 void UViewportManager::SetMainCamera()
 {
-	// jft 이때서야 Candidate Viewport Idx 비로소 반영 todo : ray update를 click 때마다 하기
+	// 왼쪽 마우스 클릭 시 선택 카메라 조작 가능
 	SelectedViewportIdx = CandidateViewportIdx;
 	MainCamera->CopyFrom(*Viewports[SelectedViewportIdx]->GetViewportInfo()->Camera);
 	MainCamera->SetCameraType(Viewports[SelectedViewportIdx]->GetViewportInfo()->ViewType);
@@ -160,20 +162,21 @@ void UViewportManager::UpdateSubCamera()
 	int32 CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
 	for (int32 Idx = 0; Idx < CameraCnt; Idx++)
 	{
+		FViewportInfo* CurViewport = Viewports[Idx]->GetViewportInfo();
+
+		// ViewType Perpective라면 MainCamera Transform Copy
 		if (Viewports[SelectedViewportIdx]->GetViewportInfo()->ViewType == EViewportViewType::Perspective)
 		{
 			if (Idx != SelectedViewportIdx) continue;
-			Viewports[Idx]->GetViewportInfo()->Camera->CopyFrom(*MainCamera);
+			CurViewport->Camera->CopyFrom(*MainCamera);
 		}
-		else
+
+		// Ortho Viewport를 조작 중이라면 전체 Ortho Viewport에도 반영
+		else if (bOrthoManipulating && CurViewport->ViewType != EViewportViewType::Perspective)
 		{
-			// jft
-			if (bOrthoManipulating && Viewports[Idx]->GetViewportInfo()->ViewType != EViewportViewType::Perspective)
-			{				
-				FVector NewLocation = Viewports[Idx]->GetViewportInfo()->Camera->GetLocation() + MainCamera->GetOrthoMoveDelta();
-				Viewports[Idx]->GetViewportInfo()->Camera->SetLocation(NewLocation);
-				Viewports[Idx]->GetViewportInfo()->Camera->RefreshViewMatrices();
-			}
+			FVector NewLocation = CurViewport->Camera->GetLocation() + MainCamera->GetOrthoMoveDelta();
+			CurViewport->Camera->SetLocation(NewLocation);
+			CurViewport->Camera->RefreshViewMatrices();
 		}
 	}
 }
