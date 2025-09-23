@@ -27,11 +27,11 @@ const FName& UStaticMesh::GetAssetPathFileName() const
 void FStaticMesh::Serialize(FArchive& Ar)
 {
 	FString NameString = FileName.ToString();
+	Ar << NameString;
 	if (Ar.IsLoading())
 	{
 		FileName = FName(NameString);
 	}
-	Ar << NameString;
 	Ar << Vertices;
 	Ar << Indices;
 	Ar << Materials;
