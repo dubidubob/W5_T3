@@ -22,12 +22,10 @@ void UStaticMeshComponent::SetUseUVScroll(bool bEnable)
 
     if (bEnable)
     {
-        // 스크롤을 다시 시작: 이 시점부터의 경과 시간을 기준으로 합산
         LastUVScrollUpdateTime = Now;
     }
     else
     {
-        // 스크롤을 멈출 때, 지금까지의 경과 시간을 누적값에 더해 고정
         UVScrollAccumTime += (Now - LastUVScrollUpdateTime);
     }
 
