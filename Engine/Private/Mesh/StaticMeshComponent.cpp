@@ -10,6 +10,11 @@ void UStaticMeshComponent::SetStaticMesh(const FString& InMeshFName)
 	StaticMesh = FObjManager::GetInstance().LoadObjStaticMesh(InMeshFName);
 }
 
+void UStaticMeshComponent::SetUseUVScroll(bool bEnable)
+{
+	bUseUVScroll = bEnable;
+}
+
 FAABB UStaticMeshComponent::GetWorldBounds() const
 {
 	if (GetStaticMesh()->GetStaticMeshAsset()->Vertices.empty())

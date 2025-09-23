@@ -14,6 +14,8 @@ public:
 
 	// Setter (직접 UStaticMesh 포인터를 넘겨줌)
 	void SetStaticMesh(const FString& InMeshFName);
+	void SetUseUVScroll(bool bEnable);
+	bool GetUseUVScroll () const { return bUseUVScroll; }
 	virtual FAABB GetWorldBounds() const;
 	UStaticMesh* GetStaticMesh() { return StaticMesh; }
 
@@ -25,5 +27,7 @@ public:
 	virtual const TArray<uint32>* GetIndicesData() const;
 private:
 	UStaticMesh* StaticMesh;
+	bool bUseUVScroll = false;
+
 };
 

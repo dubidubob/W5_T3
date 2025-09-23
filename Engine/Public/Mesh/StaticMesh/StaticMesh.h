@@ -23,8 +23,6 @@ struct FStaticMaterial
 	//ID3D11ShaderResourceView* DiffuseSRV = nullptr;
 	ID3D11ShaderResourceView* TextureSRV = nullptr;
 	bool bUseTexture = false;
-	bool bUseUVScroll = false;
-
 };
 
 struct FStaticMeshSection
@@ -91,17 +89,18 @@ public:
 	UStaticMesh();
 	virtual ~UStaticMesh();
 
+	//Getter
 	FStaticMesh* GetStaticMeshAsset() const { return StaticMeshAsset; }
-	void SetStaticMeshAsset(FStaticMesh* InStaticMeshAsset) { StaticMeshAsset = InStaticMeshAsset; }
 	const FName& GetAssetPathFileName() const;
+
+	//Setter
+	void SetStaticMeshAsset(FStaticMesh* InStaticMeshAsset) { StaticMeshAsset = InStaticMeshAsset; }
 
 private:
 	FStaticMesh* StaticMeshAsset;
 
-	// 이거 두개 맵핑 되어야한다 .
 	TArray<FStaticMeshSection> Sections;  // 메시 파츠
 	TArray<FStaticMaterial> Materials;
-	//TArray<UMaterial*> MaterialSlots;     // 섹션별로 참조하는 머티리얼
 };
 
 

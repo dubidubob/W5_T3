@@ -5,6 +5,7 @@
 #include "Editor/EditorPrimitive.h"
 #include "Editor/Camera.h"
 #include "ViewportTypes.h"
+#include "Mesh/StaticMesh/StaticMesh.h"
 
 class UPipeline;
 class UDeviceResources;
@@ -311,8 +312,8 @@ private:
 	void RenderScene(UEditor* Editor);
 	void RenderStaticMeshComponent(UPrimitiveComponent* Component);
 	void SetupStaticMeshRendering(UStaticMeshComponent* Component, FStaticMesh* MeshData);
-	void RenderStaticMeshSections(FStaticMesh* MeshData);
-	void SetupMaterialForSection(FStaticMesh* MeshData, const struct FStaticMeshSection& Section);
+	void RenderStaticMeshSections(const UStaticMeshComponent* OwnerComponent, FStaticMesh* MeshData);
+	void SetupMaterialForSection(const UStaticMeshComponent* OwnerComponent, FStaticMesh* MeshData, const struct FStaticMeshSection& Section);
 	void SetupTextRendering();
 	void RenderTextComponent(UTextComponent* Component);
 	FVector CalculateTextPosition(UTextComponent* Component);

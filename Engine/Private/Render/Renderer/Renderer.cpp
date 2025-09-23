@@ -295,7 +295,7 @@ void URenderer::UpdateInstanceDrawConstants(bool UseInstancing, uint32 BaseOffse
 
 	UpdateBuffer(ConstantBufferInstance, Constants);
 }
-	
+
 // ================== Main Rendering Loop ==================
 
 void URenderer::Update(UEditor* Editor)
@@ -403,7 +403,7 @@ void URenderer::RenderStaticMeshComponent(UPrimitiveComponent* Component)
 	if (!MeshData) return;
 
 	SetupStaticMeshRendering(StaticMeshComponent, MeshData);
-	RenderStaticMeshSections(MeshData);
+	RenderStaticMeshSections(StaticMeshComponent, MeshData);
 }
 
 void URenderer::SetupStaticMeshRendering(UStaticMeshComponent* Component, FStaticMesh* MeshData)
@@ -434,17 +434,18 @@ void URenderer::SetupStaticMeshRendering(UStaticMeshComponent* Component, FStati
 	GetDeviceContext()->PSSetSamplers(0, 1, &DiffuseSampler);
 }
 
-void URenderer::RenderStaticMeshSections(FStaticMesh* MeshData)
+void URenderer::RenderStaticMeshSections(const UStaticMeshComponent* OwnerComponent, FStaticMesh* MeshData)
 {
 	for (const FStaticMeshSection& Section : MeshData->Sections)
 	{
-		SetupMaterialForSection(MeshData, Section);
+		SetupMaterialForSection(OwnerComponent, MeshData, Section);
 		GetDeviceContext()->DrawIndexed(Section.NumIndices, Section.FirstIndex, 0);
 	}
 }
 
-void URenderer::SetupMaterialForSection(FStaticMesh* MeshData, const FStaticMeshSection& Section)
+void URenderer::SetupMaterialForSection(const UStaticMeshComponent* OwnerComponent, FStaticMesh* MeshData, const FStaticMeshSection& Section)
 {
+
 	ID3D11ShaderResourceView* SRV = nullptr;
 	FMaterialParamsCB MaterialParams{};
 
@@ -453,7 +454,7 @@ void URenderer::SetupMaterialForSection(FStaticMesh* MeshData, const FStaticMesh
 		FStaticMaterial& Material = MeshData->Materials[Section.MaterialIndex];
 		SRV = Material.TextureSRV;
 		MaterialParams.UseTexture = Material.bUseTexture;
-		if (Material.bUseUVScroll)
+		if (OwnerComponent->GetUseUVScroll())
 		{
 			MaterialParams.UVScrollSpeed = FVector2(0.0f, -0.9f); // V 방향으로 스크롤
 			MaterialParams.Time = UTimeManager::GetInstance().GetGameTime();     // 누적 시간

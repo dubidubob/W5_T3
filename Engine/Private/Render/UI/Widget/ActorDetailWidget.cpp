@@ -57,7 +57,7 @@ void UActorDetailWidget::RenderWidget()
 		ImGui::Separator();
 		RenderDropListUI();
 		ImGui::Separator();
-
+		RenderUVScrollBox();
 		ImGui::Separator();
 	}
 	else
@@ -141,8 +141,7 @@ void UActorDetailWidget::RenderDropListUI()
 	if (!MeshComp || !MeshComp->GetStaticMesh())
 		return;
 
-	FString CurrentMeshName = MeshComp->GetStaticMesh()
-		->GetStaticMeshAsset()->GetFileName();
+	FString CurrentMeshName = MeshComp->GetStaticMesh()->GetStaticMeshAsset()->GetFileName();
 
 	for (int i = 0; i < MeshNamesFull.Num(); i++)
 	{
@@ -198,4 +197,19 @@ void UActorDetailWidget::RenderDropListUI()
 
 void UActorDetailWidget::RenderUVScrollBox()
 {
+	AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(SelectedActor);
+	if (!StaticMeshActor) return;
+
+	UStaticMeshComponent* MeshComp = StaticMeshActor->GetStaticMeshComponent();
+	if (!MeshComp) return;
+
+	// 현재 상태 가져오기
+	bool bUseUVScroll = MeshComp->GetUseUVScroll();
+
+	// 체크박스 렌더링
+	if (ImGui::Checkbox("Use UV Scroll", &bUseUVScroll))
+	{
+		// 값이 바뀌면 컴포넌트 통해 반영
+		MeshComp->SetUseUVScroll(bUseUVScroll);
+	}
 }
