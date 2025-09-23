@@ -21,6 +21,7 @@ public:
 
 	/*Viewport Infos*/
 	struct FViewportInfo* GetViewportInfo(uint32 ViewportIdx);
+	const TArray<class SWindow*>& GetWindows() { return Windows; }
 	bool GetIsWindowDivided() { return bIsWindowDivided; }
 	void SetIsWindowDivided(bool bInIsWindowDivided) { bIsWindowDivided = bInIsWindowDivided; }
 
