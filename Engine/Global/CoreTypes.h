@@ -20,7 +20,8 @@ struct FViewProjConstants
 struct FMaterialParamsCB
 {
 	UINT UseTexture;
-	FVector Padding; // 12바이트
+	FVector2 UVScrollSpeed; // (U, V 방향 속도)
+	float  Time;          // 경과 시간 (초 단위)
 };
 
 struct FVertex
