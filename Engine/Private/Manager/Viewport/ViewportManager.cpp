@@ -168,8 +168,11 @@ void UViewportManager::UpdateSubCamera()
 		// ViewType Perpective라면 MainCamera Transform Copy
 		if (Viewports[SelectedViewportIdx]->GetViewportInfo()->ViewType == EViewportViewType::Perspective)
 		{
-			if (Idx != SelectedViewportIdx) continue;
-			CurViewport->Camera->CopyFrom(*MainCamera);
+			if (Idx == SelectedViewportIdx)
+			{
+				CurViewport->Camera->CopyFrom(*MainCamera);
+			}
+			CurViewport->Camera->RefreshViewMatrices();
 		}
 
 		// Ortho Viewport를 조작 중이라면 전체 Ortho Viewport에도 반영
