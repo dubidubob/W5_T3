@@ -32,6 +32,14 @@ cbuffer MaterialParams : register(b4)
 	uint UseTexture; // 4바이트
 	float2 UVScrollSpeed; // 8바이트
 	float Time; // 4바이트
+
+	float4 AmbientColor; // 16바이트
+	float4 DiffuseColor; // 16바이트
+	float4 SpecularColor; // 16바이트
+	float SpecularExponent; // 4바이트
+	// --- 패딩 ---
+	float3 PADDING;
+
 };
 
 struct InstanceData
@@ -85,14 +93,14 @@ float4 MainPS(PS_INPUT Input) : SV_TARGET
 {
 	if (UseTexture != 0)
 	{
-       // UV 스크롤 적용
+		// UV 스크롤 적용
 		float2 scrolledUV = Input.Tex + UVScrollSpeed * Time;
-
-        // 반복되도록 0~1 범위로 잘라주기
 		scrolledUV = frac(scrolledUV);
 
+		// 텍스처 샘플링 결과만 반환
 		return DiffuseTexture.Sample(DiffuseSampler, scrolledUV);
 	}
-        // 정점 색상(또는 totalColor)만 사용
-	return Input.Color;
+	
+	// 텍스처를 사용하지 않을 경우 DiffuseColor를 반환
+	return DiffuseColor;
 }

@@ -374,6 +374,8 @@ void URenderer::RenderEnd() const
 
 void URenderer::RenderLevel()
 {
+	Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
+	Pipeline->SetConstantBuffer(2, false, ConstantBufferColor);
 	if (!ULevelManager::GetInstance().GetCurrentLevel() ||
 		!IsShowFlagEnabled(EEngineShowFlags::SF_Primitives))
 	{
@@ -412,8 +414,6 @@ void URenderer::SetupStaticMeshRendering(UStaticMeshComponent* Component, FStati
 
 	// Set constant buffers
 	Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
-	Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
-	Pipeline->SetConstantBuffer(2, false, ConstantBufferColor);
 
 	// Update constants
 	UpdateBuffer(ConstantBufferModels, Component->GetWorldTransformMatrix());
@@ -449,14 +449,18 @@ void URenderer::SetupMaterialForSection(const UStaticMeshComponent* OwnerCompone
 	ID3D11ShaderResourceView* SRV = nullptr;
 	FMaterialParamsCB MaterialParams{};
 
-    if (Section.MaterialIndex >= 0 && Section.MaterialIndex < MeshData->Materials.Num())
-    {
-        FStaticMaterial& Material = MeshData->Materials[Section.MaterialIndex];
-        SRV = Material.TextureSRV;
-        MaterialParams.UseTexture = Material.bUseTexture;
+	if (Section.MaterialIndex >= 0 && Section.MaterialIndex < MeshData->Materials.Num())
+	{
+		FStaticMaterial& Material = MeshData->Materials[Section.MaterialIndex];
 
-        // 컴포넌트가 보유한 속도를 사용하고, 시간은 누적/고정값을 전송하여
-        // 스크롤 OFF 시 마지막 프레임 상태로 고정되도록 한다.
+		MaterialParams.UseTexture = Material.bUseTexture ? 1 : 0;
+		if (MaterialParams.UseTexture) { SRV = Material.TextureSRV; }
+
+		MaterialParams.AmbientColor = FVector4(Material.AmbientColor.X, Material.AmbientColor.Y, Material.AmbientColor.Z, 1.0f);
+		MaterialParams.DiffuseColor = FVector4(Material.DiffuseColor.X, Material.DiffuseColor.Y, Material.DiffuseColor.Z, Material.Alpha);
+		MaterialParams.SpecularColor = FVector4(Material.SpecularColor.X, Material.SpecularColor.Y, Material.SpecularColor.Z, 1.0f);
+		MaterialParams.SpecularExponent = Material.SpecularExponent;
+
         MaterialParams.UVScrollSpeed = OwnerComponent->GetUVScrollSpeed();
         MaterialParams.Time = OwnerComponent->GetUVScrollTimeForShader();
     }

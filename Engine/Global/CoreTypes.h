@@ -20,8 +20,17 @@ struct FViewProjConstants
 struct FMaterialParamsCB
 {
 	UINT UseTexture;
-	FVector2 UVScrollSpeed; 
-	float  Time;
+	FVector2 UVScrollSpeed; // (U, V 방향 속도)
+	float  Time;          // 경과 시간 (초 단위)
+
+    // 동적 속성 (16바이트 정렬)
+	FVector4 AmbientColor;       // 16바이트
+	FVector4 DiffuseColor;       // 16바이트
+	FVector4 SpecularColor;      // 16바이트
+
+	// SpecularExponent와 패딩
+	float    SpecularExponent;   // 4바이트
+	FVector PADDING;            // 12바이트 패딩
 };
 
 struct FVertex
