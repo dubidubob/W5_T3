@@ -235,7 +235,7 @@ FVector2 UViewportManager::UpdateMouseInputNdcInViewports(FVector2 MousePosition
 
 void UViewportManager::SetSplitterMouseInput(const POINT& WindowSize, const FVector2& InMouseNDC, bool bIsDragging)
 {
-	/* 드래깅 하고 있다면 */
+	/* Splitter를 드래깅 하고 있다면 */
 	if (bIsDragging && DraggingWindow)
 	{
 		DraggingWindow->Drag(InMouseNDC);
@@ -255,7 +255,6 @@ void UViewportManager::SetSplitterMouseInput(const POINT& WindowSize, const FVec
 				}
 			}
 		}
-
 		if (bIsDragging) { DraggingWindow = SelectedWindow; }
 		else
 		{
@@ -273,6 +272,5 @@ FVector2 UViewportManager::GetViewportMouseInputNdc(const POINT& WindowSize, con
 	const float u = (InMouse.X - R.X) / R.Width;
 	const float v = (InMouse.Y - R.Y) / R.Height;
 
-	FVector2 MousePositionNdc(2.0f * u - 1.0f, 1.0f - 2.0f * v);
-	return MousePositionNdc;
+	return FVector2(2.0f * u - 1.0f, 1.0f - 2.0f * v);
 }

@@ -405,14 +405,17 @@ void UCamera::SetCameraType(const EViewportViewType InCameraType, bool bIsWindow
 {
 	// Single Perspective Viewport 상태만 저장.
 	// Single Viewport에 Perspective 상태였고 + 곧 Divided로 전환되거나 다른 CameraType으로 전환될 때 Camera Info Update
-	if (bIsSingleVP
-		&&
-		((CameraViewType == EViewportViewType::Perspective && InCameraType != EViewportViewType::Perspective)
-		|| bIsWindowDivided)
-		)
+	if (bIsSingleVP)
 	{
-		bIsSingleVP = false;
-		SaveMainCameraInfo();
+		if (bIsWindowDivided)
+		{
+			bIsSingleVP = false;
+			SaveMainCameraInfo();
+		}
+		if (CameraViewType == EViewportViewType::Perspective && InCameraType != EViewportViewType::Perspective)
+		{
+			SaveMainCameraInfo();
+		}
 	}
 
 	CameraViewType = InCameraType;
