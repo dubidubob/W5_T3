@@ -427,7 +427,6 @@ void UCamera::LoadCameraSettings()
 	CurrentMouseSensitivity = min(CurrentMouseSensitivity, MAX_MOUSE_SENSITIVITY);
 }
 
-// jft : magic number
 void UCamera::SetCameraType(const EViewportViewType InCameraType)
 {
 	if (bIsSingleVP
@@ -452,39 +451,43 @@ void UCamera::SetCameraType(const EViewportViewType InCameraType)
 	FVector MoveAxis = FVector::ZeroVector;
 	FVector CameraRotation = FVector::ZeroVector;
 
-	const float RotateStep = 90.0f;
 	switch (InCameraType)
 	{
 	case EViewportViewType::Front:
-		MoveAxis = FVector(OrthoDistance, 0.0f, 0.0f);
-		CameraRotation = FVector(0.0f, 0.0f, -RotateStep * 2);
+		MoveAxis = FVector(1.0f, 0.0f, 0.0f);
+		CameraRotation = FVector(0.0f, 0.0f, -2.0f);
 		break;
 
 	case EViewportViewType::Back:
-		MoveAxis = FVector(-OrthoDistance, 0.0f, 0.0f);
+		MoveAxis = FVector(-1.0f, 0.0f, 0.0f);
 		CameraRotation = FVector(0.0f, 0.0f, 0.0f);
 		break;
 
 	case EViewportViewType::Top:
-		MoveAxis = FVector(0.0f, 0.0f, OrthoDistance);
-		CameraRotation = FVector(0.0f, RotateStep, 0.0f);
+		MoveAxis = FVector(0.0f, 0.0f, 1.0f);
+		CameraRotation = FVector(0.0f, 1.0f, 0.0f);
 		break;
 
 	case EViewportViewType::Bottom:
-		MoveAxis = FVector(0.0f, 0.0f, -OrthoDistance);
-		CameraRotation = FVector(0.0f, -RotateStep, 0.0f);
+		MoveAxis = FVector(0.0f, 0.0f, -1.0f);
+		CameraRotation = FVector(0.0f, -1.0f, 0.0f);
 		break;
 
 	case EViewportViewType::Left:
-		MoveAxis = FVector(0.0f, -OrthoDistance, 0.0f);
-		CameraRotation = FVector(0.0f, 0.0f, RotateStep);
+		MoveAxis = FVector(0.0f, -1.0f, 0.0f);
+		CameraRotation = FVector(0.0f, 0.0f, 1.0f);
 		break;
 
 	case EViewportViewType::Right:
-		MoveAxis = FVector(0.0f, OrthoDistance, 0.0f);
-		CameraRotation = FVector(0.0f, 0.0f, -RotateStep);
+		MoveAxis = FVector(0.0f, 1.0f, 0.0f);
+		CameraRotation = FVector(0.0f, 0.0f, -1.0f);
 		break;
 	}
+
+	const float RotateStep = 90.0f;
+	CameraRotation *= RotateStep;
+
+	MoveAxis *= OrthoDistance;
 
 	SetLocation(MoveAxis);
 	SetRotation(CameraRotation);
@@ -512,15 +515,16 @@ void UCamera::LoadMainCameraInfo()
 	CameraViewType = SaveCameraViewType;
 }
 
+/* Copy From Other Except Aspect & CameraViewType*/
 void UCamera::CopyFrom(const UCamera& Other)
 {
 	SetLocation(Other.GetLocation());
 	SetRotation(Other.GetRotation());
+
 	FovY = Other.GetFovY();
-	//Aspect = Other.GetAspect();
 	NearZ = Other.GetNearZ();
 	FarZ = Other.GetFarZ();
-	/*CameraViewType = Other.GetCameraType();*/
+
 	CurrentMoveSpeed = Other.GetMoveSpeed();
 	CurrentMouseSensitivity = Other.GetMouseSensitivity();
 
