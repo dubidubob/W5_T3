@@ -16,6 +16,7 @@
 #include "Render/UI/Widget/ViewSettingsWidget.h"
 #include "Mesh/StaticMeshComponent.h"
 #include "Manager/Viewport/ViewportManager.h"
+#include "Utility/ObjectPreviewScene.h"
 #include "Slate/Viewport.h"
 
 IMPLEMENT_CLASS(UEditor, UObject)
@@ -25,6 +26,7 @@ UEditor::UEditor()
 	Camera = NewObject<UCamera>();
 	ObjectPicker = NewObject<UObjectPicker>();
 	ViewportManager = NewObject<UViewportManager>();
+	ObjPreview = NewObject<UObjectPreviewScene>();
 
 	Gizmo = NewObject<UGizmo>();
 	Grid = NewObject<UGrid>();
@@ -52,6 +54,7 @@ UEditor::~UEditor()
 	delete Camera;
 	delete ObjectPicker;
 	delete ViewportManager;
+	delete ObjPreview;
 	delete Gizmo;
 	delete Grid;
 	delete Axis;
@@ -270,6 +273,7 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 		if (Gizmo->GetGizmoDirection() == EGizmoDirection::None)
 		{
 			InLevel->SetSelectedActor(ActorPicked);
+			ObjPreview->SetActorInObjViewer(ActorPicked);
 			if (PreviousGizmoDirection != EGizmoDirection::None)
 			{
 				Gizmo->OnMouseRelease(PreviousGizmoDirection);
