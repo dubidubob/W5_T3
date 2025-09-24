@@ -103,5 +103,8 @@ float4 MainPS(PS_INPUT Input) : SV_TARGET
     
     // 텍스처를 사용하지 않을 경우 DiffuseColor의 RGB를 사용하되, 알파는 1.0으로 고정
     // (오브젝트 뷰어에서 UI 블렌딩 시 투명해지는 문제 방지)
-    return float4(DiffuseColor.rgb, 1.0f);
+    // 텍스처 미사용 시 Kd가 거의 검정이면 정점색 사용
+    float3 kd = DiffuseColor.rgb;
+    bool useVertexColor = all(kd < float3(0.001, 0.001, 0.001));
+    return float4(useVertexColor ? Input.Color.rgb : kd, 1.0f);
 }
