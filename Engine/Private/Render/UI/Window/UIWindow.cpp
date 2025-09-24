@@ -119,50 +119,22 @@ void UUIWindow::RenderWindow()
 		return;
 	}
 
-	// 도킹 설정 적용
-	ApplyDockingSettings();
-
-	// ImGui 윈도우 시작
-	ImGui::SetNextWindowSize(Config.DefaultSize, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowPos(Config.DefaultPosition, ImGuiCond_FirstUseEver);
-
-	// 크기 제한 설정
-	//ImGui::SetNextWindowSizeConstraints(Config.MinSize, Config.MaxSize);
-
 	bool bIsOpen = bIsWindowOpen;
-
 	if (ImGui::Begin(Config.WindowTitle.c_str(), &bIsOpen, Config.WindowFlags))
 	{
-		if (!bIsResized)
-		{
-			const ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImVec2 currentPos = ImGui::GetWindowPos();
-			ImVec2 currentSize = ImGui::GetWindowSize();
-			ImVec2 pivot = { 0.f, 0.f };
+		// 이 창은 이제 사용자가 직접 도킹할 수 있습니다.
 
-			PositionRatio.x = (currentPos.x - viewport->WorkPos.x + currentSize.x * pivot.x) / viewport->WorkSize.x;
-			PositionRatio.y = (currentPos.y - viewport->WorkPos.y + currentSize.y * pivot.y) / viewport->WorkSize.y;
-
-			SizeRatio.x = currentSize.x  / viewport->WorkSize.x;
-			SizeRatio.y = currentSize.y  / viewport->WorkSize.y;
-		}
-		// 실제 UI 컨텐츠 렌더링
+		// RenderWidget() 호출로 실제 UI 컨텐츠 렌더링
 		RenderWidget();
 
 		// 윈도우 정보 업데이트
 		UpdateWindowInfo();
 	}
-	//ClampWindow();
-	if (bIsResized)
-	{
-		OnMainWindowResized();
-		bIsResized = false;
-	}
 
 	ImGui::End();
 
 	// 윈도우가 닫혔는지 확인
-	if (!bIsWindowOpen && bIsWindowOpen)
+	if (!bIsOpen && bIsWindowOpen)
 	{
 		if (OnWindowClose())
 		{

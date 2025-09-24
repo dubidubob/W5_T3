@@ -2,6 +2,7 @@
 #include "Render/UI/ImGui/ImGuiHelper.h"
 
 #include "ImGui/imgui.h"
+#include "ImGui/imgui_internal.h"
 #include "ImGui/imgui_impl_dx11.h"
 #include "imGui/imgui_impl_win32.h"
 
@@ -39,6 +40,7 @@ void UImGuiHelper::Initialize(HWND InWindowHandle)
 	ImGui_ImplWin32_Init(InWindowHandle);
 
 	ImGuiIO& IO = ImGui::GetIO();
+	IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	path FontFilePath = UPathManager::GetInstance().GetFontPath() / "Pretendard-Regular.otf";
 	IO.Fonts->AddFontFromFileTTF(FontFilePath.string().c_str(), 16.0f, nullptr, IO.Fonts->GetGlyphRangesKorean());
 
@@ -79,6 +81,27 @@ void UImGuiHelper::BeginFrame() const
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+
+	const ImGuiViewport* Viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(Viewport->WorkPos);
+	ImGui::SetNextWindowSize(Viewport->WorkSize);
+	ImGui::SetNextWindowViewport(Viewport->ID);
+
+	// 윈도우 스타일 설정 (테두리, 패딩 등)
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+	// DockSpace 컨테이너 윈도우 시작
+	ImGuiWindowFlags WindowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
+
+	ImGui::Begin("MainDockspace", nullptr, WindowFlags);
+	ImGui::PopStyleVar(3); // Pop StyleVars
+
+	// DockSpace 생성
+	ImGuiID MainDockspaceId = ImGui::GetID("MainDockspace");
+	ImGui::DockSpace(MainDockspaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+	ImGui::End();
 }
 
 /**
