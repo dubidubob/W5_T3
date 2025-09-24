@@ -94,7 +94,7 @@ bool ULevelManager::LoadLevel(const FString& InFilePath)
 			UE_LOG("LevelManager: Level Validation Failed: %s", ErrorMessage.c_str());
 			return false;
 		}
-
+		UCamera* CameraPtr = CurrentLevel->GetCamera();
 		// 기존 레벨 정리
 		if (CurrentLevel)
 		{
@@ -107,8 +107,8 @@ bool ULevelManager::LoadLevel(const FString& InFilePath)
 		CurrentLevel->SetName("LoadedLevel");
 
 		// 새 카메라 생성 및 설정
-		UCamera* NewCamera = NewObject<UCamera>();
-		CurrentLevel->SetCamera(NewCamera);
+		//UCamera* NewCamera = NewObject<UCamera>();
+		CurrentLevel->SetCamera(CameraPtr);
 
 		// 메타데이터로부터 레벨 구성
 		bool bSuccess = LoadLevelFromMetadata(CurrentLevel, Metadata);
