@@ -14,10 +14,11 @@ UObjectPreviewScene::~UObjectPreviewScene()
 
 void UObjectPreviewScene::SetActorInObjViewer(AActor* InSelectedActor)
 {
-	if (!InSelectedActor) return;
-
+	/*if (!InSelectedActor) return;
 	if (SelectedActorInObjViewer)
 	{
+		if (InSelectedActor->GetUUID() == SelectedActorInObjViewer->GetUUID())
+			return;
 		SafeDelete(SelectedActorInObjViewer);
 	}
 
@@ -31,11 +32,11 @@ void UObjectPreviewScene::SetActorInObjViewer(AActor* InSelectedActor)
 		{
 			ObjViewerComponents.push_back(Primitive);
 		}
-	}
+	}*/
 }
 
 TArray<UPrimitiveComponent*> UObjectPreviewScene::GetPrimitiveInObjViewer()
 {
-	return ObjViewerComponents;
+	/*return ObjViewerComponents;*/
 }
 
