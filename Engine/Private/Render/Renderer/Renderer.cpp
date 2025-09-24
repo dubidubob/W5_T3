@@ -4,6 +4,7 @@
 #include "Level/Level.h"
 #include "Manager/Level/LevelManager.h"
 #include "Manager/UI/UIManager.h"
+#include "Manager/Path/PathManager.h"
 #include "Mesh/Actor.h"
 #include "Render/Renderer/Pipeline.h"
 #include "Render/Renderer/LineBatchRenderer.h"
@@ -514,7 +515,8 @@ void URenderer::SetupTextRendering()
 	Pipeline->UpdatePipeline(CreateTextPipelineInfo(State));
 
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
-	ID3D11ShaderResourceView* SRV = ResourceManager.GetTexture("Data/Font/Pretendard-Regular.dds");
+	ID3D11ShaderResourceView* SRV = ResourceManager.GetTexture(
+		(UPathManager::GetInstance().GetFontPath() / "Pretendard-Regular.dds").string());
 	ID3D11SamplerState* SamplerState = ResourceManager.GetSamplerState(ESamplerType::Text);
 
 	Pipeline->SetShaderResourceView(0, false, SRV);

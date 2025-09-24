@@ -111,8 +111,8 @@ void UCamera::Manipulate()
 		{
 			const FVector2 MouseDelta = UInputManager::GetInstance().GetMouseDelta();
 
-			float MouseDeltaX = MouseDelta.X * CurrentMouseSensitivity;
-			float MouseDeltaY = MouseDelta.Y * CurrentMouseSensitivity;
+			float MouseDeltaX = MouseDelta.X * CurrentMouseSensitivity * 0.1f;
+			float MouseDeltaY = MouseDelta.Y * CurrentMouseSensitivity * 0.1f;
 
 			FVector OrthoMoveDirection(0.0f, 0.0f, 0.0f);
 
@@ -279,50 +279,52 @@ FRay UCamera::ConvertToWorldRay(float NdcX, float NdcY) const
 	 */
 	const FVector4 NdcNear(NdcX, NdcY, 0.0f, 1.0f);
 	const FVector4 NdcFar(NdcX, NdcY, 1.0f, 1.0f);
-
-	/* *
-	 * @brief Projection 행렬을 View 행렬로 역투영합니다.
-	 * Model -> View -> Projection -> NDC
-	 */
-	const FVector4 ViewNear = MultiplyPointWithMatrix(NdcNear, ViewProjMatrix.Projection);
-	const FVector4 ViewFar = MultiplyPointWithMatrix(NdcFar, ViewProjMatrix.Projection);
-
-	/* *
-	 * @brief View 행렬을 World 행렬로 역투영합니다.
-	 * Model -> View -> Projection -> NDC
-	 */
-	const FVector4 WorldNear = MultiplyPointWithMatrix(ViewNear, ViewProjMatrix.View);
-	const FVector4 WorldFar = MultiplyPointWithMatrix(ViewFar, ViewProjMatrix.View);
-
-	/* *
-	 * @brief 카메라의 월드 좌표를 추출합니다.
-	 * Row-major 기준, 마지막 행 벡터는 위치 정보를 가지고 있음
-	 */
-	const FVector4 CameraPosition(
-		ViewProjMatrix.View.Data[3][0],
-		ViewProjMatrix.View.Data[3][1],
-		ViewProjMatrix.View.Data[3][2],
-		ViewProjMatrix.View.Data[3][3]);
-
 	if (CameraViewType == EViewportViewType::Perspective)
 	{
+		// 기존 로직 그대로 유지
+		const FVector4 ViewNear = MultiplyPointWithMatrix(NdcNear, ViewProjMatrix.Projection);
+		const FVector4 ViewFar = MultiplyPointWithMatrix(NdcFar, ViewProjMatrix.Projection);
+		const FVector4 WorldNear = MultiplyPointWithMatrix(ViewNear, ViewProjMatrix.View);
+		const FVector4 WorldFar = MultiplyPointWithMatrix(ViewFar, ViewProjMatrix.View);
+
+		const FVector4 CameraPosition(
+			ViewProjMatrix.View.Data[3][0],
+			ViewProjMatrix.View.Data[3][1],
+			ViewProjMatrix.View.Data[3][2],
+			ViewProjMatrix.View.Data[3][3]);
+
 		FVector4 DirectionVector = WorldFar - CameraPosition;
 		DirectionVector.Normalize();
 
 		Ray.Origin = CameraPosition;
 		Ray.Direction = DirectionVector;
 	}
-	else if (CameraViewType != EViewportViewType::Perspective)
+	else // Orthographic
 	{
-		FVector4 DirectionVector = WorldFar - WorldNear;
-		DirectionVector.Normalize();
+		// View 행렬에서 카메라 위치와 방향을 추출
+		const FVector4 CameraPosition(
+			ViewProjMatrix.View.Data[3][0],
+			ViewProjMatrix.View.Data[3][1],
+			ViewProjMatrix.View.Data[3][2],
+			ViewProjMatrix.View.Data[3][3]);
 
-		Ray.Origin = WorldNear;
-		Ray.Direction = DirectionVector;
+		const FVector4 CameraForward(
+			ViewProjMatrix.View.Data[2][0],
+			ViewProjMatrix.View.Data[2][1],
+			ViewProjMatrix.View.Data[2][2],
+			0.0f);
+
+		// NDC 좌표를 View-Projection 역행렬에 직접 곱하여 월드 좌표를 얻음
+		const FMatrix InvViewProjMatrix = GetFViewProjConstantsInverse().Projection * GetFViewProjConstantsInverse().View; // View * Projection 역행렬을 한 번에 구하는 함수
+
+		// 레이의 시작점은 스크린의 클릭 지점에 해당하는 월드 좌표
+		Ray.Origin = MultiplyPointWithMatrix(NdcNear, InvViewProjMatrix);
+
+		// 레이의 방향은 카메라의 정방향
+		Ray.Direction = CameraForward;
+
+		Ray.Direction.Normalize(); // Normalize는 이미 되어 있을 수 있지만, 안전을 위해 추가
 	}
-
-	// 기준변환을 View에 흡수했으므로 별도 축 순열 변환 불필요
-	Ray.Direction.Normalize();
 
 	return Ray;
 }
@@ -403,6 +405,7 @@ void UCamera::LoadCameraSettings()
 
 void UCamera::SetCameraType(const EViewportViewType InCameraType, bool bIsWindowDivided)
 {
+	if (InCameraType == CameraViewType) { return; }
 	// Single Perspective Viewport 상태만 저장.
 	// Single Viewport에 Perspective 상태였고 + 곧 Divided로 전환되거나 다른 CameraType으로 전환될 때 Camera Info Update
 	if (bIsSingleVP)

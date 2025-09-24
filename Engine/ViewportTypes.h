@@ -20,7 +20,6 @@ enum class EViewportRenderMode : uint8_t
 	Lit = 0,
 	Unlit,
 	Wireframe,
-	Count,
 
 	End
 };

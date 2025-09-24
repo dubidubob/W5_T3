@@ -13,7 +13,9 @@
     <FxCompile Include="Asset\Shader\TextShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Data\Shader\SlateShader.hlsl" />
+    <FxCompile Include="Data\Shader\SlateShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Private\\Core\\Object.cpp" />
