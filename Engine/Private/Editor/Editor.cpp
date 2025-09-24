@@ -14,6 +14,7 @@
 #include "Level/Level.h"
 #include "Render/UI/Widget/CameraControlWidget.h"
 #include "Render/UI/Widget/ViewSettingsWidget.h"
+#include "Render/UI/Widget/TargetActorTransformWidget.h"
 #include "Mesh/StaticMeshComponent.h"
 #include "Manager/Viewport/ViewportManager.h"
 #include "Utility/ObjectPreviewScene.h"
@@ -47,6 +48,10 @@ UEditor::UEditor()
 	ViewSettingsWidget->SetGrid(Grid);
 	ViewSettingsWidget->SetRenderer(&URenderer::GetInstance());
 	ViewSettingsWidget->SetViewportManager(ViewportManager);
+
+	UTargetActorTransformWidget* TargetActorTransformWidget =
+		Cast<UTargetActorTransformWidget>(UIManager.FindWidget("UTargetActorTransformWidget"));
+	TargetActorTransformWidget->SetObjectViewer(ObjPreview);
 };
 
 UEditor::~UEditor()

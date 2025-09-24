@@ -21,6 +21,9 @@ public :
 
 	/*Renderer의 Render Target View에 Render 해야하는 걸 넘겨준다.*/
 	TArray<UPrimitiveComponent*> GetPrimitiveInObjViewer();
+	void SetComponentScale(FVector Scale);
+	void SetComponentRotation(FVector Rotation);
+	void SetCameraLocation(FVector Location);
 
 private :
 	uint32 UUID = -1;

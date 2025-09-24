@@ -57,19 +57,49 @@ void UObjectPreviewScene::UpdatePreviewFromActor(AActor* InSelectedActor)
 		{
 			if (UStaticMesh* SrcMesh = SrcComp->GetStaticMesh())
 			{
-				UStaticMeshComponent* NewComp = new UStaticMeshComponent();
+				UStaticMeshComponent* NewComp = NewObject<UStaticMeshComponent>();
 				NewComp->SetStaticMesh(SrcComp->GetStaticMesh());
 
 				NewComp->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
-				NewComp->SetRelativeRotation(FVector(45.0f, 45.0f, 0.0f));
+				NewComp->SetRelativeRotation(FVector(0.0f, 0.0f, 0.0f));
 
 				PreviewComponents.push_back(NewComp);
 			}
 		}
 	}
+
+	/*jft*/
+	MiniCamera->UpdateMatrixByPers();
 }
 
 TArray<UPrimitiveComponent*> UObjectPreviewScene::GetPrimitiveInObjViewer()
 {
 	return PreviewComponents;
+}
+
+void UObjectPreviewScene::SetComponentScale(FVector Scale)
+{
+	for (UPrimitiveComponent* Comp : PreviewComponents)
+	{
+		if (Comp)
+		{
+			Comp->SetRelativeScale3D(Scale);
+		}
+	}
+}
+
+void UObjectPreviewScene::SetComponentRotation(FVector Rotation)
+{
+	for (UPrimitiveComponent* Comp : PreviewComponents)
+	{
+		if (Comp)
+		{
+			Comp->SetRelativeRotation(Rotation);
+		}
+	}
+}
+
+void UObjectPreviewScene::SetCameraLocation(FVector Location)
+{
+	MiniCamera->SetLocation(Location);
 }
