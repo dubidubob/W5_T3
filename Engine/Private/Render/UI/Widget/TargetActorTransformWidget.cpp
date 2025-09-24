@@ -112,7 +112,7 @@ void UTargetActorTransformWidget::RenderWidget()
 		}
 
 		// Camera 위치 조작
-		static FVector previewCamLocation(0.0f, 0.0f, -2.0f);
+		static FVector previewCamLocation(-0.7f, 0.0f, 0.0f);
 		if (ImGui::DragFloat3("Preview Camera", &previewCamLocation.X, 0.05f))
 		{
 			ObjectPreview->SetCameraLocation(previewCamLocation);

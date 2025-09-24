@@ -11,13 +11,8 @@ IMPLEMENT_CLASS(UObjectPreviewScene, UObject)
 UObjectPreviewScene::UObjectPreviewScene()
 {
 	MiniCamera = NewObject<UCamera>();
-	if (URenderer::GetInstance().GetDeviceResources())
-	{
-		float Width = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width;
-		float Height = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Height;
-		MiniCamera->SetAspect(Width / Height);
-	}
-
+	
+	MiniCamera->SetAspect(1.0f);
 	MiniCamera->SetLocation(FVector( - 0.7f, 0.0f, 0.0f));
 	MiniCamera->UpdateMatrixByPers();
 }
@@ -70,9 +65,6 @@ void UObjectPreviewScene::UpdatePreviewFromActor(AActor* InSelectedActor)
 			}
 		}
 	}
-
-	/*jft*/
-	MiniCamera->UpdateMatrixByPers();
 }
 
 TArray<UPrimitiveComponent*> UObjectPreviewScene::GetPrimitiveInObjViewer()
