@@ -15,7 +15,7 @@ UViewportManager::UViewportManager()
 }
 UViewportManager::~UViewportManager()
 {
-	int32 CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
+	int32 CameraCnt = Viewports.Num();
 	for (int32 Idx = 0; Idx < CameraCnt; Idx++)
 	{
 		if (Viewports[Idx])
@@ -154,6 +154,7 @@ void UViewportManager::Update()
 			bOrthoManipulating = false;
 
 		UpdateSubCamera();
+		// UE_LOG("%d", SelectedViewportIdx);
 	}
 }
 
@@ -162,10 +163,13 @@ void UViewportManager::Update()
 */
 void UViewportManager::SetMainCamera()
 {
-	// 왼쪽 마우스 클릭 시 선택 카메라 조작 가능
-	SelectedViewportIdx = CandidateViewportIdx;
-	MainCamera->CopyFrom(*Viewports[SelectedViewportIdx]->GetViewportInfo()->Camera);
-	MainCamera->SetCameraType(Viewports[SelectedViewportIdx]->GetViewportInfo()->ViewType, bIsWindowDivided);
+	if (!ImGui::GetIO().WantCaptureMouse)
+	{
+		// 왼쪽 마우스 클릭 시 선택 카메라 조작 가능
+		SelectedViewportIdx = CandidateViewportIdx;
+		MainCamera->CopyFrom(*Viewports[SelectedViewportIdx]->GetViewportInfo()->Camera);
+		MainCamera->SetCameraType(Viewports[SelectedViewportIdx]->GetViewportInfo()->ViewType, bIsWindowDivided);
+	}
 }
 
 void UViewportManager::UpdateSubCamera()
