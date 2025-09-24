@@ -98,21 +98,21 @@ void UTargetActorTransformWidget::RenderWidget()
 		ImGui::Text("Object Viewer Controls");
 
 		// Scale 조작
-		static FVector previewScale(1.0f, 1.0f, 1.0f);
+		FVector previewScale = ObjectPreview->GetComponentScale();
 		if (ImGui::DragFloat3("Preview Scale", &previewScale.X, 0.01f, 0.01f, 10.0f))
 		{
 			ObjectPreview->SetComponentScale(previewScale);
 		}
 
 		// Rotation 조작
-		static FVector previewRotation(0.0f, 0.0f, 0.0f);
+		FVector previewRotation = ObjectPreview->GetComponentRotation();
 		if (ImGui::DragFloat3("Preview Rotation", &previewRotation.X, 0.5f, -180.0f, 180.0f))
 		{
 			ObjectPreview->SetComponentRotation(previewRotation);
 		}
 
 		// Camera 위치 조작
-		static FVector previewCamLocation(-0.7f, 0.0f, 0.0f);
+		FVector previewCamLocation = ObjectPreview->GetCameraLocation();
 		if (ImGui::DragFloat3("Preview Camera", &previewCamLocation.X, 0.05f))
 		{
 			ObjectPreview->SetCameraLocation(previewCamLocation);

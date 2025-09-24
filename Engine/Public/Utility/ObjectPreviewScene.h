@@ -10,7 +10,7 @@ class UCamera;
 class UObjectPreviewScene : public UObject
 {
 	DECLARE_CLASS(UObjectPreviewScene, UObject)
-public :
+public:
 	UObjectPreviewScene();
 	~UObjectPreviewScene() override;
 
@@ -24,9 +24,15 @@ public :
 	void SetComponentScale(FVector Scale);
 	void SetComponentRotation(FVector Rotation);
 	void SetCameraLocation(FVector Location);
+	FVector GetCameraLocation() { return MiniCamera->GetLocation(); };
+	FVector GetComponentScale() { return ComponentScale; };
+	FVector GetComponentRotation() { return ComponentRotation; };
 
-private :
+private:
 	uint32 UUID = -1;
 	TArray<UPrimitiveComponent*> PreviewComponents;
 	UCamera* MiniCamera;
+
+	FVector ComponentScale{0.3f, 0.3f, 0.3f};
+	FVector ComponentRotation{ 0.0f, 0.0f, 0.0f };
 };

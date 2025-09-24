@@ -58,8 +58,8 @@ void UObjectPreviewScene::UpdatePreviewFromActor(AActor* InSelectedActor)
 				NewComp = NewObject<UStaticMeshComponent>();
 				NewComp->SetStaticMesh(SrcComp->GetStaticMesh());
 
-				NewComp->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
-				NewComp->SetRelativeRotation(FVector(0.0f, 0.0f, 0.0f));
+				NewComp->SetRelativeLocation(FVector::ZeroVector);
+				NewComp->SetRelativeRotation(ComponentRotation);
 
 				PreviewComponents.push_back(NewComp);
 			}
@@ -78,7 +78,8 @@ void UObjectPreviewScene::SetComponentScale(FVector Scale)
 	{
 		if (Comp)
 		{
-			Comp->SetRelativeScale3D(Scale);
+			ComponentScale = Scale;
+			Comp->SetRelativeScale3D(ComponentScale);
 		}
 	}
 }
@@ -89,7 +90,8 @@ void UObjectPreviewScene::SetComponentRotation(FVector Rotation)
 	{
 		if (Comp)
 		{
-			Comp->SetRelativeRotation(Rotation);
+			ComponentRotation = Rotation;
+			Comp->SetRelativeRotation(ComponentRotation);
 		}
 	}
 }
