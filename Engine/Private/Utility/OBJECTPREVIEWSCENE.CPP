@@ -102,4 +102,11 @@ void UObjectPreviewScene::SetCameraLocation(FVector Location)
 	MiniCamera->SetLocation(Location);
 	MiniCamera->UpdateMatrixByPers();
 }
+
+bool UObjectPreviewScene::SelectActivated()
+{
+	if (PreviewComponents.empty())
+		return false;
+	return true;
+}
 #endif

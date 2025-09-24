@@ -14,7 +14,9 @@
 #include "Manager/Viewport/ViewportManager.h"
 #include "Slate/Viewport.h"
 #include "Manager/Input/InputManager.h"
+#if IS_OBJ_VIEWER
 #include "Utility/ObjectPreviewScene.h"
+#endif
 
 namespace
 {
@@ -316,7 +318,8 @@ void URenderer::Update(UEditor* Editor)
 	}
 
 #if IS_OBJ_VIEWER
-	RenderObjectViewer(Editor);
+	if(Editor->GetObjPreview()->SelectActivated())
+		RenderObjectViewer(Editor);
 #endif
 	UUIManager::GetInstance().Render();
 	RenderEnd();
