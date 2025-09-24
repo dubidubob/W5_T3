@@ -197,6 +197,7 @@ void UActorDetailWidget::RenderDropListUI()
 
 void UActorDetailWidget::RenderUVScrollBox()
 {
+	if(!IsValid(SelectedActor)) { return; }
 	AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(SelectedActor);
 	if (!StaticMeshActor) return;
 
