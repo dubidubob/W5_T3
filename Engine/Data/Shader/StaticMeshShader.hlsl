@@ -91,16 +91,17 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 
 float4 MainPS(PS_INPUT Input) : SV_TARGET
 {
-	if (UseTexture != 0)
-	{
+    if (UseTexture != 0)
+    {
 		// UV 스크롤 적용
 		float2 scrolledUV = Input.Tex + UVScrollSpeed * Time;
 		scrolledUV = frac(scrolledUV);
 
-		// 텍스처 샘플링 결과만 반환
-		return DiffuseTexture.Sample(DiffuseSampler, scrolledUV);
-	}
-	
-	// 텍스처를 사용하지 않을 경우 DiffuseColor를 반환
-	return DiffuseColor;
+        // 텍스처 샘플링 결과만 반환
+        return DiffuseTexture.Sample(DiffuseSampler, scrolledUV);
+    }
+    
+    // 텍스처를 사용하지 않을 경우 DiffuseColor의 RGB를 사용하되, 알파는 1.0으로 고정
+    // (오브젝트 뷰어에서 UI 블렌딩 시 투명해지는 문제 방지)
+    return float4(DiffuseColor.rgb, 1.0f);
 }

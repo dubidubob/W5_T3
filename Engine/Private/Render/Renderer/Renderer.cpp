@@ -843,60 +843,66 @@ void URenderer::ReleaseShaderSet(ID3D11VertexShader*& VS, ID3D11PixelShader*& PS
 void URenderer::RenderObjectViewer(UEditor* Editor)
 {
 	// 1. Get resources
-	ID3D11RenderTargetView* objectViewerRTV = DeviceResources->GetObjectViewerRTV();
-	ID3D11DepthStencilView* objectViewerDSV = DeviceResources->GetObjectViewerDSV();
-	UObjectPreviewScene* previewScene = Editor->GetObjPreview();
+	ID3D11RenderTargetView* ObjectViewerRTV = DeviceResources->GetObjectViewerRTV();
+	ID3D11DepthStencilView* ObjectViewerDSV = DeviceResources->GetObjectViewerDSV();
+	UObjectPreviewScene* PreviewScene = Editor->GetObjPreview();
 
-	if (!objectViewerRTV || !objectViewerDSV || !previewScene) return;
+	if (!ObjectViewerRTV || !ObjectViewerDSV || !PreviewScene)
+	{
+		return;
+	}
 
-	const TArray<UPrimitiveComponent*>& primitiveComponents = previewScene->GetPrimitiveInObjViewer();
-	if (primitiveComponents.IsEmpty()) return;
+	const TArray<UPrimitiveComponent*>& PrimitiveComponents = PreviewScene->GetPrimitiveInObjViewer();
+	if (PrimitiveComponents.IsEmpty())
+	{
+		return;
+	}
 
 	// 2. Store original targets and viewport
-	ID3D11RenderTargetView* originalRTV = nullptr;
-	ID3D11DepthStencilView* originalDSV = nullptr;
-	GetDeviceContext()->OMGetRenderTargets(1, &originalRTV, &originalDSV);
+	ID3D11RenderTargetView* OriginalRTV = nullptr;
+	ID3D11DepthStencilView* OriginalDSV = nullptr;
+	GetDeviceContext()->OMGetRenderTargets(1, &OriginalRTV, &OriginalDSV);
 
-	D3D11_VIEWPORT originalViewport;
-	UINT numViewports = 1;
-	GetDeviceContext()->RSGetViewports(&numViewports, &originalViewport);
+	D3D11_VIEWPORT OriginalViewport;
+	UINT NumViewports = 1;
+	GetDeviceContext()->RSGetViewports(&NumViewports, &OriginalViewport);
 
 	// 3. Set new render target and viewport for Object Viewer
-	GetDeviceContext()->OMSetRenderTargets(1, &objectViewerRTV, objectViewerDSV);
+	GetDeviceContext()->OMSetRenderTargets(1, &ObjectViewerRTV, ObjectViewerDSV);
 
-	D3D11_VIEWPORT objectViewerViewport = {};
-	objectViewerViewport.Width = 1024; // Must match the texture size in DeviceResources
-	objectViewerViewport.Height = 1024;
-	objectViewerViewport.MinDepth = 0.0f;
-	objectViewerViewport.MaxDepth = 1.0f;
-	objectViewerViewport.TopLeftX = 0;
-	objectViewerViewport.TopLeftY = 0;
-	GetDeviceContext()->RSSetViewports(1, &objectViewerViewport);
+	D3D11_VIEWPORT ObjectViewerViewport = {};
+	ObjectViewerViewport.Width = 1024; // Must match the texture size in DeviceResources
+	ObjectViewerViewport.Height = 1024;
+	ObjectViewerViewport.MinDepth = 0.0f;
+	ObjectViewerViewport.MaxDepth = 1.0f;
+	ObjectViewerViewport.TopLeftX = 0;
+	ObjectViewerViewport.TopLeftY = 0;
+	GetDeviceContext()->RSSetViewports(1, &ObjectViewerViewport);
 
 	// 4. Clear the new render target
-	GetDeviceContext()->ClearRenderTargetView(objectViewerRTV, ClearColor);
-	GetDeviceContext()->ClearDepthStencilView(objectViewerDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	GetDeviceContext()->ClearRenderTargetView(ObjectViewerRTV, ClearColor);
+	GetDeviceContext()->ClearDepthStencilView(ObjectViewerDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	// 5. Set camera constants (TODO: Use a dedicated preview camera)
 	// For now, using the main editor camera as a placeholder
-	FViewProjConstants constants = Editor->GetObjPreview()->GetCamera()->GetFViewProjConstants();
-	UpdateViewProjConstants(constants);
+	FViewProjConstants Constants = Editor->GetObjPreview()->GetCamera()->GetFViewProjConstants();
+	UpdateViewProjConstants(Constants);
 
 	// 6. Render the component(s)
-	const TArray<UPrimitiveComponent*>& PrimitiveComponents = Editor->GetObjPreview()->GetPrimitiveInObjViewer();
-	if (!PrimitiveComponents.IsEmpty())
+	const TArray<UPrimitiveComponent*>& Components = Editor->GetObjPreview()->GetPrimitiveInObjViewer();
+	if (!Components.IsEmpty())
 	{
-		for (UPrimitiveComponent* Component : PrimitiveComponents)
+		for (UPrimitiveComponent* Component : Components)
 		{
 			RenderStaticMeshComponent(Component);
 		}
 	}
 
 	// 7. Restore original render target and viewport
-	GetDeviceContext()->OMSetRenderTargets(1, &originalRTV, originalDSV);
-	GetDeviceContext()->RSSetViewports(1, &originalViewport);
+	GetDeviceContext()->OMSetRenderTargets(1, &OriginalRTV, OriginalDSV);
+	GetDeviceContext()->RSSetViewports(1, &OriginalViewport);
 
 	// Release the COM objects we obtained from OMGetRenderTargets
-	SafeRelease(originalRTV);
-	SafeRelease(originalDSV);
+	SafeRelease(OriginalRTV);
+	SafeRelease(OriginalDSV);
 }
