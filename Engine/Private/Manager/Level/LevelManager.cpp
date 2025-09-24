@@ -13,6 +13,7 @@
 #include "Manager/Path/PathManager.h"
 #include "Utility/LevelSerializer.h"
 #include "Utility/Metadata.h"
+#include "Public/Core/EngineStatics.h"
 
 IMPLEMENT_CLASS(ULevelManager, UObject)
 IMPLEMENT_SINGLETON(ULevelManager)
@@ -203,7 +204,7 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 {
 	FLevelMetadata Metadata;
 	Metadata.Version = 1;
-	Metadata.NextUUID = 1;
+	Metadata.NextUUID = UEngineStatics::GetNextUUID();
 
 	if (!InLevel)
 	{
@@ -219,7 +220,7 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 			continue;
 
 		FPrimitiveMetadata PrimitiveMeta;
-		PrimitiveMeta.ID = CurrentID++;
+		PrimitiveMeta.ID = Actor->GetUUID();
 		PrimitiveMeta.Location = Actor->GetActorLocation();
 		PrimitiveMeta.Rotation = Actor->GetActorRotation();
 		PrimitiveMeta.Scale = Actor->GetActorScale3D();
@@ -272,7 +273,7 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 		Metadata.PerspectiveCamera = CameraMetadata;
 	}
 
-	Metadata.NextUUID = CurrentID;
+	//Metadata.NextUUID = CurrentID;
 
 	UE_LOG("LevelManager: Converted %zu Actors To Metadata", Metadata.Primitives.size());
 	return Metadata;
@@ -329,6 +330,7 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 
 		if (NewActor)
 		{
+			NewActor->SetUUID(ID);
 			// Transform 정보 적용
 			NewActor->SetActorLocation(PrimitiveMeta.Location);
 			NewActor->SetActorRotation(PrimitiveMeta.Rotation);
@@ -351,6 +353,7 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 		CameraPtr->SetFarZ(InMetadata.PerspectiveCamera.FarClip);
 		CameraPtr->RefreshViewMatrices();
 	}
+	UEngineStatics::SetNextUUID(InMetadata.NextUUID);
 
 	UE_LOG("LevelManager: Level successfully loaded from metadata");
 	return true;

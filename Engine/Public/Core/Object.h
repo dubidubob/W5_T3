@@ -21,6 +21,7 @@ public:
 
 	void SetName(const FName& InName) { Name = InName; }
 	void SetOuter(UObject* InObject);
+	void SetUUID(uint32 InUUID);
 
 	void AddMemoryUsage(uint64 InBytes, uint32 InCount = 1);
 	void RemoveMemoryUsage(uint64 InBytes, uint32 InCount = 1);

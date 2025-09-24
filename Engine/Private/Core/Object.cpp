@@ -47,6 +47,11 @@ void UObject::SetOuter(UObject* InObject)
 	}
 }
 
+void UObject::SetUUID(uint32 InUUID)
+{
+	UUID = InUUID;
+}
+
 void UObject::AddMemoryUsage(uint64 InBytes, uint32 InCount)
 {
 	AllocatedBytes += InBytes;
