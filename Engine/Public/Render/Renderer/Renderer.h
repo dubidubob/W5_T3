@@ -317,7 +317,9 @@ private:
 	void SetupTextRendering();
 	void RenderTextComponent(UTextComponent* Component);
 
+#if IS_OBJ_VIEWER
 	void RenderObjectViewer(UEditor* Editor);
+#endif
 
 	FVector CalculateTextPosition(UTextComponent* Component);
 	void RenderWindow(SWindow* Window, const FVector2& MouseCoord);

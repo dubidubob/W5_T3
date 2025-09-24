@@ -1,3 +1,4 @@
+#if IS_OBJ_VIEWER
 #pragma once
 #include "Global/CoreTypes.h"
 #include "Core/Object.h"
@@ -36,3 +37,4 @@ private:
 	FVector ComponentScale{0.3f, 0.3f, 0.3f};
 	FVector ComponentRotation{ 0.0f, 0.0f, 0.0f };
 };
+#endif

@@ -1,4 +1,5 @@
 #include "pch.h"
+#if IS_OBJ_VIEWER
 #include "Editor/Camera.h"
 #include "Render/Renderer/Renderer.h"
 #include "Public/Utility/ObjectPreviewScene.h"
@@ -101,3 +102,4 @@ void UObjectPreviewScene::SetCameraLocation(FVector Location)
 	MiniCamera->SetLocation(Location);
 	MiniCamera->UpdateMatrixByPers();
 }
+#endif

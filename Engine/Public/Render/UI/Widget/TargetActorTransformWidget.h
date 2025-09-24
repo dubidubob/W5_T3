@@ -13,8 +13,9 @@ public:
 
 	void UpdateTransformFromActor();
 	void ApplyTransformToActor() const;
+#if IS_OBJ_VIEWER
 	void SetObjectViewer(UObjectPreviewScene* InObjectPreview);
-
+#endif
 	// Special Member Function
 	UTargetActorTransformWidget();
 	~UTargetActorTransformWidget() override;

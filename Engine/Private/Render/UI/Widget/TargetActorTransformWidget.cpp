@@ -4,7 +4,9 @@
 #include "Level/Level.h"
 #include "Manager/Level/LevelManager.h"
 #include "Render/Renderer/Renderer.h"
+#if IS_OBJ_VIEWER
 #include "Utility/ObjectPreviewScene.h"
+#endif
 
 IMPLEMENT_CLASS(UTargetActorTransformWidget, UWidget)
 UTargetActorTransformWidget::UTargetActorTransformWidget()
@@ -92,6 +94,7 @@ void UTargetActorTransformWidget::RenderWidget()
 
 	ImGui::Separator();
 
+#if IS_OBJ_VIEWER
 	// jft Object Viewer 출력
 	if (ObjectPreview)
 	{
@@ -132,6 +135,7 @@ void UTargetActorTransformWidget::RenderWidget()
 	{
 		ImGui::Text("No Object Viewer Render Target");
 	}
+#endif
 }
 
 /**
@@ -165,7 +169,9 @@ void UTargetActorTransformWidget::ApplyTransformToActor() const
 	}
 }
 
+#if IS_OBJ_VIEWER
 void UTargetActorTransformWidget::SetObjectViewer(UObjectPreviewScene* InObjectPreview)
 {
 	ObjectPreview = InObjectPreview;
 }
+#endif

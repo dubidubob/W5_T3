@@ -14,11 +14,13 @@
 #include "Level/Level.h"
 #include "Render/UI/Widget/CameraControlWidget.h"
 #include "Render/UI/Widget/ViewSettingsWidget.h"
-#include "Render/UI/Widget/TargetActorTransformWidget.h"
 #include "Mesh/StaticMeshComponent.h"
 #include "Manager/Viewport/ViewportManager.h"
-#include "Utility/ObjectPreviewScene.h"
 #include "Slate/Viewport.h"
+#if IS_OBJ_VIEWER
+#include "Render/UI/Widget/TargetActorTransformWidget.h"
+#include "Utility/ObjectPreviewScene.h"
+#endif
 
 IMPLEMENT_CLASS(UEditor, UObject)
 
@@ -27,7 +29,9 @@ UEditor::UEditor()
 	Camera = NewObject<UCamera>();
 	ObjectPicker = NewObject<UObjectPicker>();
 	ViewportManager = NewObject<UViewportManager>();
+#if IS_OBJ_VIEWER
 	ObjPreview = NewObject<UObjectPreviewScene>();
+#endif
 
 	Gizmo = NewObject<UGizmo>();
 	Grid = NewObject<UGrid>();
@@ -39,9 +43,11 @@ UEditor::UEditor()
 	// Set Camera to Control Panel
 	auto& UIManager = UUIManager::GetInstance();
 
+#if IS_OBJ_VIEWER
 	UTargetActorTransformWidget* TargetActorTransformWidget =
 		Cast<UTargetActorTransformWidget>(UIManager.FindWidget("UTargetActorTransformWidget"));
 	TargetActorTransformWidget->SetObjectViewer(ObjPreview);
+#endif
 
 	UCameraControlWidget* CameraControlWidget =
 		Cast<UCameraControlWidget>(UIManager.FindWidget("UCameraControlWidget"));
@@ -59,7 +65,9 @@ UEditor::~UEditor()
 	delete Camera;
 	delete ObjectPicker;
 	delete ViewportManager;
+#if IS_OBJ_VIEWER
 	delete ObjPreview;
+#endif
 	delete Gizmo;
 	delete Grid;
 	delete Axis;
@@ -279,7 +287,9 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 		{
 			/* todo : 매번 같은 애 다시 Update 해주고 있음 */
 			InLevel->SetSelectedActor(ActorPicked);
+#if IS_OBJ_VIEWER
 			ObjPreview->UpdatePreviewFromActor(ActorPicked);
+#endif
 			if (PreviousGizmoDirection != EGizmoDirection::None)
 			{
 				Gizmo->OnMouseRelease(PreviousGizmoDirection);

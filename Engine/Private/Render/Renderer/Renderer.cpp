@@ -315,8 +315,9 @@ void URenderer::Update(UEditor* Editor)
 		RenderScene(Editor);
 	}
 
+#if IS_OBJ_VIEWER
 	RenderObjectViewer(Editor);
-
+#endif
 	UUIManager::GetInstance().Render();
 	RenderEnd();
 }
@@ -839,6 +840,7 @@ void URenderer::ReleaseShaderSet(ID3D11VertexShader*& VS, ID3D11PixelShader*& PS
 	SafeRelease(Layout);
 }
 
+#if IS_OBJ_VIEWER
 // jft
 void URenderer::RenderObjectViewer(UEditor* Editor)
 {
@@ -906,3 +908,4 @@ void URenderer::RenderObjectViewer(UEditor* Editor)
 	SafeRelease(OriginalRTV);
 	SafeRelease(OriginalDSV);
 }
+#endif
