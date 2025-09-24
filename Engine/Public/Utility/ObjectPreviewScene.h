@@ -28,6 +28,7 @@ public:
 	FVector GetCameraLocation() { return MiniCamera->GetLocation(); };
 	FVector GetComponentScale() { return ComponentScale; };
 	FVector GetComponentRotation() { return ComponentRotation; };
+	bool SelectActivated();
 
 private:
 	uint32 UUID = -1;

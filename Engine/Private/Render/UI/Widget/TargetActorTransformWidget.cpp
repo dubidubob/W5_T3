@@ -96,7 +96,7 @@ void UTargetActorTransformWidget::RenderWidget()
 
 #if IS_OBJ_VIEWER
 	// jft Object Viewer 출력
-	if (ObjectPreview)
+	if (ObjectPreview && ObjectPreview->SelectActivated())
 	{
 		ImGui::Text("Object Viewer Controls");
 
@@ -122,18 +122,18 @@ void UTargetActorTransformWidget::RenderWidget()
 		}
 
 		ImGui::Separator();
-	}
 
-	ID3D11ShaderResourceView* objViewerSRV = URenderer::GetInstance().GetDeviceResources()->GetObjectViewerSRV();
-	if (objViewerSRV)
-	{
-		ImVec2 avail = ImGui::GetContentRegionAvail(); // 현재 패널에 남은 공간
-		float size = std::min(avail.x, avail.y);       // 정사각형 유지
-		ImGui::Image((ImTextureID)objViewerSRV, ImVec2(size, size));
-	}
-	else
-	{
-		ImGui::Text("No Object Viewer Render Target");
+		ID3D11ShaderResourceView* objViewerSRV = URenderer::GetInstance().GetDeviceResources()->GetObjectViewerSRV();
+		if (objViewerSRV)
+		{
+			ImVec2 avail = ImGui::GetContentRegionAvail(); // 현재 패널에 남은 공간
+			float size = std::min(avail.x, avail.y);       // 정사각형 유지
+			ImGui::Image((ImTextureID)objViewerSRV, ImVec2(size, size));
+		}
+		else
+		{
+			ImGui::Text("No Object Viewer Render Target");
+		}
 	}
 #endif
 }
