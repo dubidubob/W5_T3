@@ -148,9 +148,11 @@ void UViewportManager::Update()
 		if (UInputManager::GetInstance().IsKeyPressed(EKeyInput::MouseLeft))
 			SetMainCamera();
 
-		if (UInputManager::GetInstance().IsKeyPressed(EKeyInput::MouseRight))
+		if (UInputManager::GetInstance().IsKeyPressed(EKeyInput::MouseRight)
+			&& Viewports[SelectedViewportIdx]->GetViewportInfo()->ViewType != EViewportViewType::Perspective)
 			bOrthoManipulating = true;
-		if (UInputManager::GetInstance().IsKeyReleased(EKeyInput::MouseRight))
+		if (UInputManager::GetInstance().IsKeyReleased(EKeyInput::MouseRight)
+			&& Viewports[SelectedViewportIdx]->GetViewportInfo()->ViewType != EViewportViewType::Perspective)
 			bOrthoManipulating = false;
 
 		UpdateSubCamera();
@@ -186,16 +188,18 @@ void UViewportManager::UpdateSubCamera()
 			{
 				CurViewport->Camera->CopyFrom(*MainCamera);
 			}
-			CurViewport->Camera->RefreshViewMatrices();
 		}
 
 		// Ortho Viewport를 조작 중이라면 전체 Ortho Viewport에도 반영
-		else if (bOrthoManipulating && CurViewport->ViewType != EViewportViewType::Perspective)
+		else if (CurViewport->ViewType != EViewportViewType::Perspective)
 		{
-			FVector NewLocation = CurViewport->Camera->GetLocation() + MainCamera->GetOrthoMoveDelta();
-			CurViewport->Camera->SetLocation(NewLocation);
-			CurViewport->Camera->RefreshViewMatrices();
+			if (bOrthoManipulating)
+			{
+				FVector NewLocation = CurViewport->Camera->GetLocation() + MainCamera->GetOrthoMoveDelta();
+				CurViewport->Camera->SetLocation(NewLocation);
+			}
 		}
+		CurViewport->Camera->RefreshViewMatrices();
 	}
 }
 

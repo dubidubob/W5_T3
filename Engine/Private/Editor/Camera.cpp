@@ -119,22 +119,22 @@ void UCamera::Manipulate()
 			switch (CameraViewType)
 			{
 			case EViewportViewType::Front:
-				OrthoMoveDirection = FVector(0.0f, -MouseDelta.X, MouseDelta.Y);
+				OrthoMoveDirection = FVector(0.0f, -MouseDeltaX, MouseDeltaY);
 				break;
 			case EViewportViewType::Back:
-				OrthoMoveDirection = FVector(0.0f, MouseDelta.X, MouseDelta.Y);
+				OrthoMoveDirection = FVector(0.0f, MouseDeltaX, MouseDeltaY);
 				break;
 			case EViewportViewType::Top:
-				OrthoMoveDirection = FVector(MouseDelta.Y, MouseDelta.X, 0.0f);
+				OrthoMoveDirection = FVector(MouseDeltaY, MouseDeltaX, 0.0f);
 				break;
 			case EViewportViewType::Bottom:
-				OrthoMoveDirection = FVector(-MouseDelta.Y, MouseDelta.X, 0.0f);
+				OrthoMoveDirection = FVector(-MouseDeltaY, MouseDeltaX, 0.0f);
 				break;
 			case EViewportViewType::Left:
-				OrthoMoveDirection = FVector(MouseDelta.X, 0.0f, MouseDelta.Y);
+				OrthoMoveDirection = FVector(MouseDeltaX, 0.0f, MouseDeltaY);
 				break;
 			case EViewportViewType::Right:
-				OrthoMoveDirection = FVector(-MouseDelta.X, 0.0f, MouseDelta.Y);
+				OrthoMoveDirection = FVector(-MouseDeltaX, 0.0f, MouseDeltaY);
 				break;
 			}
 
@@ -503,8 +503,8 @@ void UCamera::CopyFrom(const UCamera& Other)
 	NearZ = Other.GetNearZ();
 	FarZ = Other.GetFarZ();
 
-	CurrentMoveSpeed = Other.GetMoveSpeed();
-	CurrentMouseSensitivity = Other.GetMouseSensitivity();
+	/*CurrentMoveSpeed = Other.GetMoveSpeed();
+	CurrentMouseSensitivity = Other.GetMouseSensitivity();*/
 
 	RefreshViewMatrices();
 }
