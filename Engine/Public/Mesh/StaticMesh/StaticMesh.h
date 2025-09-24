@@ -115,9 +115,6 @@ public:
 
 private:
 	FStaticMesh* StaticMeshAsset;
-
-	TArray<FStaticMeshSection> Sections;  // 메시 파츠
-	TArray<FStaticMaterial> Materials;
 };
 
 
