@@ -1,4 +1,6 @@
 #include "pch.h"
+#include "Editor/Camera.h"
+#include "Render/Renderer/Renderer.h"
 #include "Public/Utility/ObjectPreviewScene.h"
 #include "Public/Mesh/Actor.h"
 #include "Public/Mesh/StaticMeshComponent.h"
@@ -8,6 +10,15 @@ IMPLEMENT_CLASS(UObjectPreviewScene, UObject)
 
 UObjectPreviewScene::UObjectPreviewScene()
 {
+	MiniCamera = NewObject<UCamera>();
+	if (URenderer::GetInstance().GetDeviceResources())
+	{
+		float Width = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Width;
+		float Height = URenderer::GetInstance().GetDeviceResources()->GetViewportInfo().Height;
+		MiniCamera->SetAspect(Width / Height);
+	}
+
+	MiniCamera->UpdateMatrixByPers();
 }
 
 UObjectPreviewScene::~UObjectPreviewScene()
@@ -25,7 +36,15 @@ void UObjectPreviewScene::ClearPreview()
 
 void UObjectPreviewScene::UpdatePreviewFromActor(AActor* InSelectedActor)
 {
-	if (!InSelectedActor) return;
+	if (!InSelectedActor)
+	{
+		if (!PreviewComponents.empty())
+		{
+			ClearPreview();
+		}
+		return;
+	}
+
 	if (InSelectedActor->GetUUID() == UUID) return; /* 이미 선택한 것, Texture 등 달라져도 변하지 않는다...*/
 	UUID = InSelectedActor->GetUUID();
 
@@ -48,7 +67,6 @@ void UObjectPreviewScene::UpdatePreviewFromActor(AActor* InSelectedActor)
 		}
 	}
 }
-	
 
 TArray<UPrimitiveComponent*> UObjectPreviewScene::GetPrimitiveInObjViewer()
 {

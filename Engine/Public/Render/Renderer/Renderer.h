@@ -316,6 +316,9 @@ private:
 	void SetupMaterialForSection(const UStaticMeshComponent* OwnerComponent, FStaticMesh* MeshData, const struct FStaticMeshSection& Section);
 	void SetupTextRendering();
 	void RenderTextComponent(UTextComponent* Component);
+
+	void RenderObjectViewer(UEditor* Editor);
+
 	FVector CalculateTextPosition(UTextComponent* Component);
 	void RenderWindow(SWindow* Window, const FVector2& MouseCoord);
 

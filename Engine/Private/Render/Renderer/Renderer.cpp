@@ -315,6 +315,8 @@ void URenderer::Update(UEditor* Editor)
 		RenderScene(Editor);
 	}
 
+	RenderObjectViewer(Editor);
+
 	UUIManager::GetInstance().Render();
 	RenderEnd();
 }
@@ -351,15 +353,6 @@ void URenderer::RenderScene(UEditor* Editor, int Idx)
 {
 	RenderLevel();
 	Editor->RenderEditorBatched(Idx);
-	//jft
-	const TArray<UPrimitiveComponent*>& PrimitiveComponents = Editor->GetObjPreview()->GetPrimitiveInObjViewer();
-	if (!PrimitiveComponents.IsEmpty())
-	{
-		for (UPrimitiveComponent* Component : PrimitiveComponents)
-		{
-			RenderStaticMeshComponent(Component);
-		}
-	}
 	RenderText(Editor->GetCameraLocation());
 }
 
@@ -844,4 +837,66 @@ void URenderer::ReleaseShaderSet(ID3D11VertexShader*& VS, ID3D11PixelShader*& PS
 	SafeRelease(VS);
 	SafeRelease(PS);
 	SafeRelease(Layout);
+}
+
+// jft
+void URenderer::RenderObjectViewer(UEditor* Editor)
+{
+	// 1. Get resources
+	ID3D11RenderTargetView* objectViewerRTV = DeviceResources->GetObjectViewerRTV();
+	ID3D11DepthStencilView* objectViewerDSV = DeviceResources->GetObjectViewerDSV();
+	UObjectPreviewScene* previewScene = Editor->GetObjPreview();
+
+	if (!objectViewerRTV || !objectViewerDSV || !previewScene) return;
+
+	const TArray<UPrimitiveComponent*>& primitiveComponents = previewScene->GetPrimitiveInObjViewer();
+	if (primitiveComponents.IsEmpty()) return;
+
+	// 2. Store original targets and viewport
+	ID3D11RenderTargetView* originalRTV = nullptr;
+	ID3D11DepthStencilView* originalDSV = nullptr;
+	GetDeviceContext()->OMGetRenderTargets(1, &originalRTV, &originalDSV);
+
+	D3D11_VIEWPORT originalViewport;
+	UINT numViewports = 1;
+	GetDeviceContext()->RSGetViewports(&numViewports, &originalViewport);
+
+	// 3. Set new render target and viewport for Object Viewer
+	GetDeviceContext()->OMSetRenderTargets(1, &objectViewerRTV, objectViewerDSV);
+
+	D3D11_VIEWPORT objectViewerViewport = {};
+	objectViewerViewport.Width = 500; // Must match the texture size in DeviceResources
+	objectViewerViewport.Height = 500;
+	objectViewerViewport.MinDepth = 0.0f;
+	objectViewerViewport.MaxDepth = 1.0f;
+	objectViewerViewport.TopLeftX = 0;
+	objectViewerViewport.TopLeftY = 0;
+	GetDeviceContext()->RSSetViewports(1, &objectViewerViewport);
+
+	// 4. Clear the new render target
+	GetDeviceContext()->ClearRenderTargetView(objectViewerRTV, ClearColor);
+	GetDeviceContext()->ClearDepthStencilView(objectViewerDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	// 5. Set camera constants (TODO: Use a dedicated preview camera)
+	// For now, using the main editor camera as a placeholder
+	FViewProjConstants constants = Editor->GetObjPreview()->GetCamera()->GetFViewProjConstants();
+	UpdateViewProjConstants(constants);
+
+	// 6. Render the component(s)
+	const TArray<UPrimitiveComponent*>& PrimitiveComponents = Editor->GetObjPreview()->GetPrimitiveInObjViewer();
+	if (!PrimitiveComponents.IsEmpty())
+	{
+		for (UPrimitiveComponent* Component : PrimitiveComponents)
+		{
+			RenderStaticMeshComponent(Component);
+		}
+	}
+
+	// 7. Restore original render target and viewport
+	GetDeviceContext()->OMSetRenderTargets(1, &originalRTV, originalDSV);
+	GetDeviceContext()->RSSetViewports(1, &originalViewport);
+
+	// Release the COM objects we obtained from OMGetRenderTargets
+	SafeRelease(originalRTV);
+	SafeRelease(originalDSV);
 }
