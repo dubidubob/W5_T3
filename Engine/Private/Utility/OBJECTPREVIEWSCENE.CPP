@@ -18,6 +18,7 @@ UObjectPreviewScene::UObjectPreviewScene()
 		MiniCamera->SetAspect(Width / Height);
 	}
 
+	MiniCamera->SetLocation(FVector( - 0.7f, 0.0f, 0.0f));
 	MiniCamera->UpdateMatrixByPers();
 }
 
@@ -60,7 +61,7 @@ void UObjectPreviewScene::UpdatePreviewFromActor(AActor* InSelectedActor)
 				NewComp->SetStaticMesh(SrcComp->GetStaticMesh());
 
 				NewComp->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
-				NewComp->SetRelativeRotation(FVector(0.0f, 0.0f, 0.0f));
+				NewComp->SetRelativeRotation(FVector(45.0f, 45.0f, 0.0f));
 
 				PreviewComponents.push_back(NewComp);
 			}

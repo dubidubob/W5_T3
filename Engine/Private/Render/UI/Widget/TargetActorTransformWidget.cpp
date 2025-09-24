@@ -3,6 +3,7 @@
 #include "Mesh/Actor.h"
 #include "Level/Level.h"
 #include "Manager/Level/LevelManager.h"
+#include "Render/Renderer/Renderer.h"
 
 IMPLEMENT_CLASS(UTargetActorTransformWidget, UWidget)
 UTargetActorTransformWidget::UTargetActorTransformWidget()
@@ -89,6 +90,19 @@ void UTargetActorTransformWidget::RenderWidget()
 	}
 
 	ImGui::Separator();
+
+	// jft Object Viewer 출력
+	ID3D11ShaderResourceView* objViewerSRV = URenderer::GetInstance().GetDeviceResources()->GetObjectViewerSRV();
+	if (objViewerSRV)
+	{
+		ImVec2 avail = ImGui::GetContentRegionAvail(); // 현재 패널에 남은 공간
+		float size = std::min(avail.x, avail.y);       // 정사각형 유지
+		ImGui::Image((ImTextureID)objViewerSRV, ImVec2(size, size));
+	}
+	else
+	{
+		ImGui::Text("No Object Viewer Render Target");
+	}
 }
 
 /**

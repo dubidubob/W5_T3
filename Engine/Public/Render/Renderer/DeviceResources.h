@@ -28,6 +28,7 @@ public:
 	// Object Viewer Getters
 	ID3D11RenderTargetView* GetObjectViewerRTV() const { return ObjectViewerRTV; }
 	ID3D11DepthStencilView* GetObjectViewerDSV() const { return ObjectViewerDSV; }
+	ID3D11ShaderResourceView* GetObjectViewerSRV() const { return ObjectViewerSRV; }
 
 	void UpdateViewport();
 
@@ -50,6 +51,7 @@ private:
 	// Resources for Object Viewer Render Target
 	ID3D11Texture2D*        ObjectViewerTexture = nullptr;
 	ID3D11RenderTargetView* ObjectViewerRTV = nullptr;
+	ID3D11ShaderResourceView* ObjectViewerSRV = nullptr;
 	ID3D11Texture2D*        ObjectViewerDepthTexture = nullptr;
 	ID3D11DepthStencilView* ObjectViewerDSV = nullptr;
 };

@@ -865,8 +865,8 @@ void URenderer::RenderObjectViewer(UEditor* Editor)
 	GetDeviceContext()->OMSetRenderTargets(1, &objectViewerRTV, objectViewerDSV);
 
 	D3D11_VIEWPORT objectViewerViewport = {};
-	objectViewerViewport.Width = 500; // Must match the texture size in DeviceResources
-	objectViewerViewport.Height = 500;
+	objectViewerViewport.Width = 1024; // Must match the texture size in DeviceResources
+	objectViewerViewport.Height = 1024;
 	objectViewerViewport.MinDepth = 0.0f;
 	objectViewerViewport.MaxDepth = 1.0f;
 	objectViewerViewport.TopLeftX = 0;

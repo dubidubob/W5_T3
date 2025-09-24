@@ -217,6 +217,15 @@ void UDeviceResources::CreateObjectViewerResources()
 	hr = Device->CreateRenderTargetView(ObjectViewerTexture, &rtvDesc, &ObjectViewerRTV);
 	if(FAILED(hr)) assert(!"Failed to create Object Viewer RTV");
 
+	// Create the shader resource view (SRV)
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = textureDesc.Format;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = 1;
+	hr = Device->CreateShaderResourceView(ObjectViewerTexture, &srvDesc, &ObjectViewerSRV);
+	if(FAILED(hr)) assert(!"Failed to create Object Viewer SRV");
+
 	// Create the depth stencil texture
 	D3D11_TEXTURE2D_DESC depthDesc = {};
 	depthDesc.Width = textureWidth;
@@ -245,6 +254,11 @@ void UDeviceResources::CreateObjectViewerResources()
 
 void UDeviceResources::ReleaseObjectViewerResources()
 {
+	if (ObjectViewerSRV)
+	{
+		ObjectViewerSRV->Release();
+		ObjectViewerSRV = nullptr;
+	}
 	if (ObjectViewerDSV)
 	{
 		ObjectViewerDSV->Release();
