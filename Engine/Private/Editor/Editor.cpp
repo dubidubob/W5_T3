@@ -347,18 +347,16 @@ FVector UEditor::GetGizmoDragLocation(const FRay& WorldRay)
 	}
 
 	// 드래그 평면의 법선 벡터 계산
-	FVector PlaneNormal;
-	FVector CameraForward = Camera->GetForward();
-
-	// 카메라 전방 벡터와 기즈모 축이 거의 평행한지 확인 (외적 결과가 0이 되는 상황 방지)
-	PlaneNormal = GizmoAxis.Cross(Camera->GetUp());
-
+	FVector PlaneNormal = GizmoAxis.Cross(Camera->GetUp());
 	if (PlaneNormal.Length() < 0.001f)
 	{
 		PlaneNormal = (GizmoAxis.Cross(Camera->GetRight()));
 	}
+	else if (abs(WorldRay.Direction.Dot3(PlaneNormal)) < 0.001f)
+	{
+		PlaneNormal = FVector(0, 0, 1);
+	}
 	PlaneNormal.Normalize();
-
 
 	if (ObjectPicker->IsRayCollideWithPlane(WorldRay, PlaneOrigin, PlaneNormal, MouseWorld))
 	{
