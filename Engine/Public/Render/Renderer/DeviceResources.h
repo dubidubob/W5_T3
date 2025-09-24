@@ -15,6 +15,8 @@ public:
 	void ReleaseFrameBuffer();
 	void CreateDepthBuffer();
 	void ReleaseDepthBuffer();
+	void CreateObjectViewerResources();
+	void ReleaseObjectViewerResources();
 
 	ID3D11Device* GetDevice() const { return Device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return DeviceContext; }
@@ -22,6 +24,12 @@ public:
 	ID3D11RenderTargetView* GetRenderTargetView() const { return FrameBufferRTV; }
 	ID3D11DepthStencilView* GetDepthStencilView() const { return DepthStencilView; }
 	const D3D11_VIEWPORT& GetViewportInfo() const { return ViewportInfo; }
+
+	// Object Viewer Getters
+	ID3D11RenderTargetView* GetObjectViewerRTV() const { return ObjectViewerRTV; }
+	ID3D11DepthStencilView* GetObjectViewerDSV() const { return ObjectViewerDSV; }
+	ID3D11ShaderResourceView* GetObjectViewerSRV() const { return ObjectViewerSRV; }
+
 	void UpdateViewport();
 
 private:
@@ -39,4 +47,11 @@ private:
 
 	uint32 Width = 0;
 	uint32 Height = 0;
+
+	// Resources for Object Viewer Render Target
+	ID3D11Texture2D*        ObjectViewerTexture = nullptr;
+	ID3D11RenderTargetView* ObjectViewerRTV = nullptr;
+	ID3D11ShaderResourceView* ObjectViewerSRV = nullptr;
+	ID3D11Texture2D*        ObjectViewerDepthTexture = nullptr;
+	ID3D11DepthStencilView* ObjectViewerDSV = nullptr;
 };

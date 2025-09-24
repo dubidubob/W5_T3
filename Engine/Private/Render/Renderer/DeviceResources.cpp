@@ -21,10 +21,12 @@ void UDeviceResources::Create(HWND InWindowHandle)
 	CreateDeviceAndSwapChain(InWindowHandle);
 	CreateFrameBuffer();
 	CreateDepthBuffer();
+	CreateObjectViewerResources();
 }
 
 void UDeviceResources::Release()
 {
+	ReleaseObjectViewerResources();
 	ReleaseFrameBuffer();
 	ReleaseDepthBuffer();
 	ReleaseDeviceAndSwapChain();
@@ -116,6 +118,7 @@ void UDeviceResources::CreateFrameBuffer()
 	framebufferRTVdesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D; // 2D 텍스처
 
 	Device->CreateRenderTargetView(FrameBuffer, &framebufferRTVdesc, &FrameBufferRTV);
+	
 }
 
 /**
@@ -154,6 +157,8 @@ void UDeviceResources::CreateDepthBuffer()
 
 	Device->CreateTexture2D(&dsDesc, nullptr, &DepthBuffer);
 	Device->CreateDepthStencilView(DepthBuffer, nullptr, &DepthStencilView);
+
+	
 }
 
 void UDeviceResources::ReleaseDepthBuffer()
@@ -181,4 +186,98 @@ void UDeviceResources::UpdateViewport()
 	};
 	Width = SwapChainDescription.BufferDesc.Width;
 	Height = SwapChainDescription.BufferDesc.Height;
+}
+
+void UDeviceResources::CreateObjectViewerResources()
+{
+	// Define the size of the Object Viewer texture
+	const int textureWidth = 1024;
+	const int textureHeight = 1024;
+
+	// Create the render target texture
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = textureWidth;
+	textureDesc.Height = textureHeight;
+	textureDesc.MipLevels = 1;
+	textureDesc.ArraySize = 1;
+	textureDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.MiscFlags = 0;
+
+	HRESULT hr = Device->CreateTexture2D(&textureDesc, nullptr, &ObjectViewerTexture);
+	if(FAILED(hr)) assert(!"Failed to create Object Viewer Texture");
+
+	// Create the render target view (RTV)
+	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.Format = textureDesc.Format;
+	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	hr = Device->CreateRenderTargetView(ObjectViewerTexture, &rtvDesc, &ObjectViewerRTV);
+	if(FAILED(hr)) assert(!"Failed to create Object Viewer RTV");
+
+	// Create the shader resource view (SRV)
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = textureDesc.Format;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = 1;
+	hr = Device->CreateShaderResourceView(ObjectViewerTexture, &srvDesc, &ObjectViewerSRV);
+	if(FAILED(hr)) assert(!"Failed to create Object Viewer SRV");
+
+	// Create the depth stencil texture
+	D3D11_TEXTURE2D_DESC depthDesc = {};
+	depthDesc.Width = textureWidth;
+	depthDesc.Height = textureHeight;
+	depthDesc.MipLevels = 1;
+	depthDesc.ArraySize = 1;
+	depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthDesc.SampleDesc.Count = 1;
+	depthDesc.SampleDesc.Quality = 0;
+	depthDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthDesc.CPUAccessFlags = 0;
+	depthDesc.MiscFlags = 0;
+
+	hr = Device->CreateTexture2D(&depthDesc, nullptr, &ObjectViewerDepthTexture);
+	if(FAILED(hr)) assert(!"Failed to create Object Viewer Depth Texture");
+
+	// Create the depth stencil view (DSV)
+	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+	dsvDesc.Format = depthDesc.Format;
+	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	dsvDesc.Texture2D.MipSlice = 0;
+	hr = Device->CreateDepthStencilView(ObjectViewerDepthTexture, &dsvDesc, &ObjectViewerDSV);
+	if(FAILED(hr)) assert(!"Failed to create Object Viewer DSV");
+}
+
+void UDeviceResources::ReleaseObjectViewerResources()
+{
+	if (ObjectViewerSRV)
+	{
+		ObjectViewerSRV->Release();
+		ObjectViewerSRV = nullptr;
+	}
+	if (ObjectViewerDSV)
+	{
+		ObjectViewerDSV->Release();
+		ObjectViewerDSV = nullptr;
+	}
+	if (ObjectViewerDepthTexture)
+	{
+		ObjectViewerDepthTexture->Release();
+		ObjectViewerDepthTexture = nullptr;
+	}
+	if (ObjectViewerRTV)
+	{
+		ObjectViewerRTV->Release();
+		ObjectViewerRTV = nullptr;
+
+	}
+	if (ObjectViewerTexture)
+	{
+		ObjectViewerTexture->Release();
+		ObjectViewerTexture = nullptr;
+	}
 }

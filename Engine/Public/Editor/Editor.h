@@ -30,7 +30,7 @@ public:
 
 	/** ViewportManager Getter*/
 	UViewportManager* GetViewportManager() { return ViewportManager; }
-
+	UObjectPreviewScene* GetObjPreview() { return ObjPreview; }
 private:
 	void ProcessKeyboardInput();
 	void ProcessMouseInput(ULevel* InLevel);

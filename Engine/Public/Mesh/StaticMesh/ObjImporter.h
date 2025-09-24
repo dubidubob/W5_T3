@@ -5,16 +5,16 @@ struct FStaticMesh;
 
 struct FObjMaterialInfo
 {
-	FString Name;
-	FVector AmbientColor;   // Ka
-	FVector DiffuseColor;   // Kd
-	FVector SpecularColor;  // Ks
-	float SpecularExponent; // Ns
-	float Alpha; // d or Tr
+    FString Name;
+    FVector AmbientColor   = FVector(0.0f, 0.0f, 0.0f);   // Ka
+    FVector DiffuseColor   = FVector(0.8f, 0.8f, 0.8f);   // Kd 
+    FVector SpecularColor  = FVector(0.0f, 0.0f, 0.0f);   // Ks
+    float   SpecularExponent = 0.0f;                      // Ns
+    float   Alpha = 1.0f;                    
 
-	FString DiffuseTexturePath; // map_Kd
-	FString NormalTexturePath;  // map_bump or norm
-	FString SpecularPath;
+    FString DiffuseTexturePath; // map_Kd
+    FString NormalTexturePath;  // map_bump or norm
+    FString SpecularPath;
 };
 
 struct FObjInfo

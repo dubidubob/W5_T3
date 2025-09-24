@@ -16,14 +16,14 @@ inline FArchive& operator<<(FArchive& Ar, FNormalVertex& Vertex);
 
 struct FStaticMaterial
 {
-	FString Name;
-	FVector AmbientColor;
-	FVector DiffuseColor;
-	FVector SpecularColor;
-	float SpecularExponent;
-	float Alpha;
-	FString SpecularPath;
-	FString DiffusePath;
+    FString Name;
+    FVector AmbientColor;
+    FVector DiffuseColor;
+    FVector SpecularColor;
+    float SpecularExponent = 0.0f;
+    float Alpha = 1.0f;
+    FString SpecularPath;
+    FString DiffusePath;
 
 	// -- Do not need to Serialize --
 	//ID3D11ShaderResourceView* DiffuseSRV = nullptr;
@@ -115,9 +115,6 @@ public:
 
 private:
 	FStaticMesh* StaticMeshAsset;
-
-	TArray<FStaticMeshSection> Sections;  // 메시 파츠
-	TArray<FStaticMaterial> Materials;
 };
 
 

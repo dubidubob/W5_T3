@@ -270,7 +270,7 @@
     <ClInclude Include="Public\Slate\HorizontalBox.h" />
     <ClInclude Include="Public\Slate\VerticalBox.h" />
     <ClInclude Include="Public\Archive\Archive.h" />
-    <ClInclude Include="Private\Utility\ObjectPreviewScene.h" />
+    <ClInclude Include="Public\Utility\ObjectPreviewScene.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />

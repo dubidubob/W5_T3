@@ -14,6 +14,7 @@
 #include "Level/Level.h"
 #include "Render/UI/Widget/CameraControlWidget.h"
 #include "Render/UI/Widget/ViewSettingsWidget.h"
+#include "Render/UI/Widget/TargetActorTransformWidget.h"
 #include "Mesh/StaticMeshComponent.h"
 #include "Manager/Viewport/ViewportManager.h"
 #include "Utility/ObjectPreviewScene.h"
@@ -37,7 +38,11 @@ UEditor::UEditor()
 
 	// Set Camera to Control Panel
 	auto& UIManager = UUIManager::GetInstance();
-	
+
+	UTargetActorTransformWidget* TargetActorTransformWidget =
+		Cast<UTargetActorTransformWidget>(UIManager.FindWidget("UTargetActorTransformWidget"));
+	TargetActorTransformWidget->SetObjectViewer(ObjPreview);
+
 	UCameraControlWidget* CameraControlWidget =
 		Cast<UCameraControlWidget>(UIManager.FindWidget("UCameraControlWidget"));
 	CameraControlWidget->SetCamera(Camera);
@@ -272,8 +277,9 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 		/** 기즈모에 호버링되거나 클릭되지 않았을 때. Actor 업데이트해줌. */
 		if (Gizmo->GetGizmoDirection() == EGizmoDirection::None)
 		{
+			/* todo : 매번 같은 애 다시 Update 해주고 있음 */
 			InLevel->SetSelectedActor(ActorPicked);
-			ObjPreview->SetActorInObjViewer(ActorPicked);
+			ObjPreview->UpdatePreviewFromActor(ActorPicked);
 			if (PreviousGizmoDirection != EGizmoDirection::None)
 			{
 				Gizmo->OnMouseRelease(PreviousGizmoDirection);

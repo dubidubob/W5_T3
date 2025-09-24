@@ -222,7 +222,6 @@
     <ClInclude Include="Global\Name.h" />
     <ClInclude Include="Global\NameTable.h" />
     <ClInclude Include="Global\Quat.h" />
-    <ClInclude Include="Private\Utility\ObjectPreviewScene.h" />
     <ClInclude Include="Public\Archive\Archive.h" />
     <ClInclude Include="Public\Core\ObjectIterator.h" />
     <ClInclude Include="Public\Manager\Viewport\ViewportManager.h" />
@@ -249,6 +248,7 @@
     <ClInclude Include="Public\Slate\VerticalBox.h" />
     <ClInclude Include="Public\Slate\Viewport.h" />
     <ClInclude Include="Public\Slate\Window.h" />
+    <ClInclude Include="Public\Utility\ObjectPreviewScene.h" />
     <ClInclude Include="Public\\Core\\Class.h" />
     <ClInclude Include="Public\\Core\\Object.h" />
     <ClInclude Include="Public\\Editor\\Axis.h" />
