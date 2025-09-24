@@ -64,7 +64,7 @@ void UObjectPreviewScene::UpdatePreviewFromActor(AActor* InSelectedActor)
 				PreviewComponents.push_back(NewComp);
 			}
 		}
-	}
+	}*/
 }
 
 TArray<UPrimitiveComponent*> UObjectPreviewScene::GetPrimitiveInObjViewer()
