@@ -22,9 +22,9 @@ UDetailWindow::UDetailWindow()
 	Config.UpdateWindowFlags();
 	SetConfig(Config);
 
-	AddWidget(new UActorDetailWidget);
-	AddWidget(new UTargetActorTransformWidget);
-	AddWidget(new UActorTerminationWidget);
+	AddWidget(NewObject<UActorDetailWidget>());
+	AddWidget(NewObject<UTargetActorTransformWidget>());
+	AddWidget(NewObject<UActorTerminationWidget>());
 }
 
 void UDetailWindow::Initialize()

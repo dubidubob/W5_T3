@@ -1,6 +1,7 @@
 #pragma once
 #include "Widget.h"
 
+class UObjectPreviewScene;
 class UTargetActorTransformWidget : public UWidget
 {
 	DECLARE_CLASS(UTargetActorTransformWidget, UWidget)
@@ -12,6 +13,7 @@ public:
 
 	void UpdateTransformFromActor();
 	void ApplyTransformToActor() const;
+	void SetObjectViewer(UObjectPreviewScene* InObjectPreview);
 
 	// Special Member Function
 	UTargetActorTransformWidget();
@@ -19,6 +21,7 @@ public:
 
 private:
 	class AActor* SelectedActor;
+	UObjectPreviewScene* ObjectPreview = nullptr;
 
 	FVector EditLocation;
 	FVector EditRotation;

@@ -3,6 +3,8 @@
 #include "Mesh/Actor.h"
 #include "Level/Level.h"
 #include "Manager/Level/LevelManager.h"
+#include "Render/Renderer/Renderer.h"
+#include "Utility/ObjectPreviewScene.h"
 
 IMPLEMENT_CLASS(UTargetActorTransformWidget, UWidget)
 UTargetActorTransformWidget::UTargetActorTransformWidget()
@@ -89,6 +91,47 @@ void UTargetActorTransformWidget::RenderWidget()
 	}
 
 	ImGui::Separator();
+
+	// jft Object Viewer 출력
+	if (ObjectPreview)
+	{
+		ImGui::Text("Object Viewer Controls");
+
+		// Scale 조작
+		static FVector previewScale(1.0f, 1.0f, 1.0f);
+		if (ImGui::DragFloat3("Preview Scale", &previewScale.X, 0.01f, 0.01f, 10.0f))
+		{
+			ObjectPreview->SetComponentScale(previewScale);
+		}
+
+		// Rotation 조작
+		static FVector previewRotation(0.0f, 0.0f, 0.0f);
+		if (ImGui::DragFloat3("Preview Rotation", &previewRotation.X, 0.5f, -180.0f, 180.0f))
+		{
+			ObjectPreview->SetComponentRotation(previewRotation);
+		}
+
+		// Camera 위치 조작
+		static FVector previewCamLocation(-0.7f, 0.0f, 0.0f);
+		if (ImGui::DragFloat3("Preview Camera", &previewCamLocation.X, 0.05f))
+		{
+			ObjectPreview->SetCameraLocation(previewCamLocation);
+		}
+
+		ImGui::Separator();
+	}
+
+	ID3D11ShaderResourceView* objViewerSRV = URenderer::GetInstance().GetDeviceResources()->GetObjectViewerSRV();
+	if (objViewerSRV)
+	{
+		ImVec2 avail = ImGui::GetContentRegionAvail(); // 현재 패널에 남은 공간
+		float size = std::min(avail.x, avail.y);       // 정사각형 유지
+		ImGui::Image((ImTextureID)objViewerSRV, ImVec2(size, size));
+	}
+	else
+	{
+		ImGui::Text("No Object Viewer Render Target");
+	}
 }
 
 /**
@@ -120,4 +163,9 @@ void UTargetActorTransformWidget::ApplyTransformToActor() const
 		SelectedActor->SetActorRotation(EditRotation);
 		SelectedActor->SetActorScale3D(EditScale);
 	}
+}
+
+void UTargetActorTransformWidget::SetObjectViewer(UObjectPreviewScene* InObjectPreview)
+{
+	ObjectPreview = InObjectPreview;
 }

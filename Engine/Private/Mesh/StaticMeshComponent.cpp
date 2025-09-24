@@ -11,6 +11,11 @@ void UStaticMeshComponent::SetStaticMesh(const FString& InMeshFName)
 	StaticMesh = FObjManager::GetInstance().LoadObjStaticMesh(InMeshFName);
 }
 
+void UStaticMeshComponent::SetStaticMesh(UStaticMesh* InMesh)
+{
+	StaticMesh = InMesh;
+}
+
 void UStaticMeshComponent::SetUseUVScroll(bool bEnable)
 {
     if (bUseUVScroll == bEnable)
