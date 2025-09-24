@@ -13,7 +13,7 @@ public:
 	UStaticMesh* GetStaticMesh() const { return StaticMesh; }
 
 	// Setter (직접 UStaticMesh 포인터를 넘겨줌)
-	void SetStaticMesh(const FString& InMeshFName);
+	void SetStaticMeshByPath(path Path);
 	void SetStaticMesh(UStaticMesh* InMesh);
 	void SetUseUVScroll(bool bEnable);
 	bool GetUseUVScroll () const { return bUseUVScroll; }

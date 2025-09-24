@@ -9,6 +9,8 @@
 #include "Mesh/TriangleActor.h"
 #include "Mesh/StaticMeshActor.h"
 #include "Mesh/StaticMeshComponent.h"
+#include "Manager/Path/PathManager.h"
+
 IMPLEMENT_CLASS(UPrimitiveSpawnWidget, UWidget)
 
 UPrimitiveSpawnWidget::UPrimitiveSpawnWidget()
@@ -89,12 +91,12 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 		AStaticMeshActor* NewActor = nullptr;
 
 		FString Name = PrimitiveTypes[SelectedPrimitiveType];
-		FString StaticMeshPath = Name + ".obj";
+		path StaticMeshPath = path("Data") / (Name + ".obj");
 
 		if (!Name.empty())
 		{
 			NewActor = CurrentLevel->SpawnActor<AStaticMeshActor>();
-			NewActor->GetStaticMeshComponent()->SetStaticMesh(StaticMeshPath);
+			NewActor->GetStaticMeshComponent()->SetStaticMeshByPath(StaticMeshPath);
 		}
 
 		if (NewActor)

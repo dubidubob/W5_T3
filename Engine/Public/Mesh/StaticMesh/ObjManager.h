@@ -20,7 +20,7 @@ public:
 	* @param PathFileName Obj 파일 경로
 	* @return Obj 파일을 담는 FStaticMesh를 담는 UStaticMesh 포인터
 	*/
-	UStaticMesh* LoadObjStaticMesh(const FString& PathFileName);
+	UStaticMesh* LoadObjStaticMesh(path Path);
 
 	void CreateVertexBuffer(FStaticMesh* OutStaticMesh);
 	void CreateIndexBuffer(FStaticMesh* OutStaticMesh);

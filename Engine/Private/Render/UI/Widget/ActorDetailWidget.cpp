@@ -113,14 +113,14 @@ void UActorDetailWidget::RenderDropListUI()
 		if (Mesh && Mesh->GetStaticMeshAsset())
 		{
 			FString FullName = Mesh->GetStaticMeshAsset()->GetFileName();
+			path FullPath = FullName; FString FileName = FullPath.filename().string();
 
 			MeshNamesFull.Add(FullName);
-
-			size_t DotPos = FullName.find_last_of('.');
+			size_t DotPos = FileName.find_last_of('.');
 			if (DotPos != FString::npos)
-				MeshNamesDisplay.Add(FullName.substr(0, DotPos));
+				MeshNamesDisplay.Add(FileName.substr(0, DotPos));
 			else
-				MeshNamesDisplay.Add(FullName);
+				MeshNamesDisplay.Add(FileName);
 		}
 	}
 
@@ -189,7 +189,7 @@ void UActorDetailWidget::RenderDropListUI()
 			return;
 
 		const FString& SelectedFullName = MeshNamesFull[CurrentMeshIndex];
-		MeshComp->SetStaticMesh(SelectedFullName);
+		MeshComp->SetStaticMeshByPath(SelectedFullName);
 
 		UE_LOG("Changed mesh to: %s", SelectedFullName.c_str());
 	}

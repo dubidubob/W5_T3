@@ -13,7 +13,7 @@ FStaticMesh* FObjImporter::ParseAndConvert(const FString& FileName)
 		return CookedData;
 	}
 
-	UE_LOG("Parsing OBJ and baking to binary: %s", FileName);
+	UE_LOG("Parsing OBJ and baking to binary: %s", FileName.c_str());
 
 	FObjInfo RawData;
 	if (!ParseObjFile(FileName, RawData))
@@ -25,9 +25,8 @@ FStaticMesh* FObjImporter::ParseAndConvert(const FString& FileName)
 	ConvertObjToStaticMesh(RawData, *CookedData);
 	CookedData->FileName = FileName;
 
-	FString BaseFileName = FileName;
-	size_t DotPos = FileName.find_last_of('.');
-	if (DotPos != FString::npos) { BaseFileName = FileName.substr(0, DotPos); }
+	path ObjFilePath = UPathManager::GetInstance().GetRootPath() / FileName;
+	FString BaseFileName = ObjFilePath.stem().string();
 	path BinaryFilePath = UPathManager::GetInstance().GetBinaryPath() / (BaseFileName + ".bin");
 
 	FWindowsBinWriter Writer(BinaryFilePath);
@@ -39,11 +38,8 @@ FStaticMesh* FObjImporter::ParseAndConvert(const FString& FileName)
 
 FStaticMesh* FObjImporter::LoadStaticMeshFromBinary(const FString& FileName)
 {
-	FString BaseFileName = FileName;
-	size_t DotPos = FileName.find_last_of('.');
-	if (DotPos != FString::npos) { BaseFileName = FileName.substr(0, DotPos); }
-
-	path ObjFilePath = UPathManager::GetInstance().GetDataPath() / FileName;
+	path ObjFilePath = UPathManager::GetInstance().GetRootPath() / FileName;
+	FString BaseFileName = ObjFilePath.stem().string();
 	path BinaryFilePath = UPathManager::GetInstance().GetBinaryPath() / (BaseFileName + ".bin");
 
 	// 바이너리 파일이 존재하고, OBJ 파일이 더 최신이 아닌 경우
@@ -77,9 +73,8 @@ FStaticMesh* FObjImporter::LoadStaticMeshFromBinary(const FString& FileName)
 
 bool FObjImporter::ParseObjFile(const FString& FileName, FObjInfo& OutObjInfo)
 {
-
 	//FString ObjFilePath = FileName;
-	const path FilePath = UPathManager::GetInstance().GetDataPath() / FileName;
+	path FilePath = UPathManager::GetInstance().GetRootPath() / FileName;
 	std::ifstream File(FilePath);
 	if (!File.is_open())
 	{

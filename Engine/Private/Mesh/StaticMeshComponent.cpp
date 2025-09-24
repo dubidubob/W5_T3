@@ -6,9 +6,9 @@
 
 IMPLEMENT_CLASS(UStaticMeshComponent, UMeshComponent)
 
-void UStaticMeshComponent::SetStaticMesh(const FString& InMeshFName)
+void UStaticMeshComponent::SetStaticMeshByPath(path Path)
 {
-	StaticMesh = FObjManager::GetInstance().LoadObjStaticMesh(InMeshFName);
+	StaticMesh = FObjManager::GetInstance().LoadObjStaticMesh(Path);
 }
 
 void UStaticMeshComponent::SetStaticMesh(UStaticMesh* InMesh)

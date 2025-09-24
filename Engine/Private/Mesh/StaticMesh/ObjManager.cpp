@@ -85,8 +85,9 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 //	Device = InDevice;
 //}
 
-UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
+UStaticMesh* FObjManager::LoadObjStaticMesh(path Path)
 {
+	FString PathFileName = Path.string();
 	if (StaticMeshMap.Contains(PathFileName))
 	{
 		UStaticMesh* CachedMesh = StaticMeshMap[PathFileName];

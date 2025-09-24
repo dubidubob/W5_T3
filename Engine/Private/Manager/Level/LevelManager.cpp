@@ -318,7 +318,7 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 			if (StaticMeshActor)
 			{
 				UStaticMeshComponent* StaticMeshComponent = StaticMeshActor->GetStaticMeshComponent();
-				StaticMeshComponent->SetStaticMesh(PrimitiveMeta.ObjStaticMeshAsset);
+				StaticMeshComponent->SetStaticMeshByPath(PrimitiveMeta.ObjStaticMeshAsset);
 			}
 			break;
 		}
