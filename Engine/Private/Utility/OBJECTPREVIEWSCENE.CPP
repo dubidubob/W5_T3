@@ -45,6 +45,8 @@ void UObjectPreviewScene::UpdatePreviewFromActor(AActor* InSelectedActor)
 	}
 
 	if (InSelectedActor->GetUUID() == UUID) return; /* 이미 선택한 것, Texture 등 달라져도 변하지 않는다...*/
+	ComponentRotation = FVector::ZeroVector;
+	ComponentScale = FVector{ 0.3f, 0.3f, 0.3f };
 	UUID = InSelectedActor->GetUUID();
 
 	ClearPreview();
