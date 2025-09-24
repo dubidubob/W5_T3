@@ -24,6 +24,8 @@ UObjectPreviewScene::UObjectPreviewScene()
 
 UObjectPreviewScene::~UObjectPreviewScene()
 {
+	SafeDelete(MiniCamera);
+	ClearPreview();
 }
 
 void UObjectPreviewScene::ClearPreview()
@@ -57,7 +59,8 @@ void UObjectPreviewScene::UpdatePreviewFromActor(AActor* InSelectedActor)
 		{
 			if (UStaticMesh* SrcMesh = SrcComp->GetStaticMesh())
 			{
-				UStaticMeshComponent* NewComp = NewObject<UStaticMeshComponent>();
+				UStaticMeshComponent* NewComp;
+				NewComp = NewObject<UStaticMeshComponent>();
 				NewComp->SetStaticMesh(SrcComp->GetStaticMesh());
 
 				NewComp->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
@@ -102,4 +105,5 @@ void UObjectPreviewScene::SetComponentRotation(FVector Rotation)
 void UObjectPreviewScene::SetCameraLocation(FVector Location)
 {
 	MiniCamera->SetLocation(Location);
+	MiniCamera->UpdateMatrixByPers();
 }

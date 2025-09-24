@@ -260,8 +260,6 @@ UWidget* UUIManager::FindWidget(const FString& InWidgetName) const
 	{
 		for (auto* Widget : Window->GetWidgets())
 		{
-			FString str = Widget->GetBaseName();
-			str;
 			if (Widget->GetBaseName() == InWidgetName)
 			{
 				return Widget;
