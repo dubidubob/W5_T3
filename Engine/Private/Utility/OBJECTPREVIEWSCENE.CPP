@@ -38,5 +38,6 @@ void UObjectPreviewScene::SetActorInObjViewer(AActor* InSelectedActor)
 TArray<UPrimitiveComponent*> UObjectPreviewScene::GetPrimitiveInObjViewer()
 {
 	/*return ObjViewerComponents;*/
+	return TArray<UPrimitiveComponent*>();
 }
 
