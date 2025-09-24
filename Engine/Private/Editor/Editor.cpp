@@ -38,7 +38,11 @@ UEditor::UEditor()
 
 	// Set Camera to Control Panel
 	auto& UIManager = UUIManager::GetInstance();
-	
+
+	UTargetActorTransformWidget* TargetActorTransformWidget =
+		Cast<UTargetActorTransformWidget>(UIManager.FindWidget("UTargetActorTransformWidget"));
+	TargetActorTransformWidget->SetObjectViewer(ObjPreview);
+
 	UCameraControlWidget* CameraControlWidget =
 		Cast<UCameraControlWidget>(UIManager.FindWidget("UCameraControlWidget"));
 	CameraControlWidget->SetCamera(Camera);
@@ -48,10 +52,6 @@ UEditor::UEditor()
 	ViewSettingsWidget->SetGrid(Grid);
 	ViewSettingsWidget->SetRenderer(&URenderer::GetInstance());
 	ViewSettingsWidget->SetViewportManager(ViewportManager);
-
-	UTargetActorTransformWidget* TargetActorTransformWidget =
-		Cast<UTargetActorTransformWidget>(UIManager.FindWidget("UTargetActorTransformWidget"));
-	TargetActorTransformWidget->SetObjectViewer(ObjPreview);
 };
 
 UEditor::~UEditor()
