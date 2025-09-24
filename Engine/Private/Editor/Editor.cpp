@@ -272,8 +272,9 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 		/** 기즈모에 호버링되거나 클릭되지 않았을 때. Actor 업데이트해줌. */
 		if (Gizmo->GetGizmoDirection() == EGizmoDirection::None)
 		{
+			/* todo : 매번 같은 애 다시 Update 해주고 있음 */
 			InLevel->SetSelectedActor(ActorPicked);
-			ObjPreview->SetActorInObjViewer(ActorPicked);
+			ObjPreview->UpdatePreviewFromActor(ActorPicked);
 			if (PreviousGizmoDirection != EGizmoDirection::None)
 			{
 				Gizmo->OnMouseRelease(PreviousGizmoDirection);

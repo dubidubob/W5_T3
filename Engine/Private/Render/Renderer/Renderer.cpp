@@ -14,6 +14,7 @@
 #include "Manager/Viewport/ViewportManager.h"
 #include "Slate/Viewport.h"
 #include "Manager/Input/InputManager.h"
+#include "Utility/ObjectPreviewScene.h"
 
 namespace
 {
@@ -350,6 +351,15 @@ void URenderer::RenderScene(UEditor* Editor, int Idx)
 {
 	RenderLevel();
 	Editor->RenderEditorBatched(Idx);
+	//jft
+	const TArray<UPrimitiveComponent*>& PrimitiveComponents = Editor->GetObjPreview()->GetPrimitiveInObjViewer();
+	if (!PrimitiveComponents.IsEmpty())
+	{
+		for (UPrimitiveComponent* Component : PrimitiveComponents)
+		{
+			RenderStaticMeshComponent(Component);
+		}
+	}
 	RenderText(Editor->GetCameraLocation());
 }
 
@@ -389,7 +399,7 @@ void URenderer::RenderLevel()
 	{
 		RenderStaticMeshComponent(Component);
 	}
-
+	
 	DisableInstancing();
 }
 

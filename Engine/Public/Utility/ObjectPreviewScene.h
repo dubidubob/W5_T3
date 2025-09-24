@@ -4,6 +4,8 @@
 
 class AActor;
 class UPrimitiveComponent;
+class UStaticMeshComponent;
+
 class UObjectPreviewScene : public UObject
 {
 	DECLARE_CLASS(UObjectPreviewScene, UObject)
@@ -11,13 +13,14 @@ public :
 	UObjectPreviewScene();
 	~UObjectPreviewScene() override;
 
-	/*선택된 Actor 복사 및 SelectedActorInObjViewerComponent Initialize*/
-	void SetActorInObjViewer(AActor* InSelectedActor);
+	/*선택된 Actor로부터 StaticMesh, Material 등 Asset 정보를 가져와 Preview Component에 설정*/
+	void UpdatePreviewFromActor(AActor* InSelectedActor);
+	void ClearPreview();
 
 	/*Renderer의 Render Target View에 Render 해야하는 걸 넘겨준다.*/
 	TArray<UPrimitiveComponent*> GetPrimitiveInObjViewer();
 
 private :
-	AActor* SelectedActorInObjViewer = nullptr;
-	TArray<UPrimitiveComponent*> ObjViewerComponents;
+	uint32 UUID = -1;
+	TArray<UPrimitiveComponent*> PreviewComponents;
 };
