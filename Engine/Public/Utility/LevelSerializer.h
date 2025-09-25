@@ -20,6 +20,8 @@ class FLevelSerializer
 public:
 	static JSON VectorToJson(const FVector& InVector);
 	static FVector JsonToVector(const JSON& InJsonData);
+	static JSON FloatToJson(const float& InFloat);
+	static float JsonToFloat(const JSON& InJsonData);
 	static string PrimitiveTypeToWideString(EPrimitiveType InType);
 	static EPrimitiveType StringToPrimitiveType(const string& InTypeString);
 	static JSON PrimitiveMetadataToJson(const FPrimitiveMetadata& InPrimitive);

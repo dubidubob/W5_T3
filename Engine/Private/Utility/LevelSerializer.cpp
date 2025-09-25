@@ -42,6 +42,30 @@ FVector FLevelSerializer::JsonToVector(const JSON& InJsonData)
 	}
 }
 
+JSON FLevelSerializer::FloatToJson(const float& InFloat)
+{
+	JSON VectorArray = JSON::Make(JSON::Class::Array);
+	VectorArray.append(InFloat);
+	return VectorArray;
+}
+
+float FLevelSerializer::JsonToFloat(const JSON& InJsonData)
+{
+	if (InJsonData.JSONType() != JSON::Class::Array || InJsonData.size() != 1)
+	{
+		return 0.0f;
+	}
+
+	try
+	{
+		return static_cast<float>(InJsonData.at(0).ToFloat());
+	}
+	catch (const exception&)
+	{
+		return 0.0f ;
+	}
+}
+
 /**
  * @brief EPrimitiveType을 문자열로 변환
  */
@@ -152,9 +176,9 @@ JSON FLevelSerializer::CameraMetadataToJson(const FCameraMetadata& InCamera)
 	JSON CameraJson;
 	CameraJson["Location"] = VectorToJson(InCamera.Location);
 	CameraJson["Rotation"] = VectorToJson(InCamera.Rotation);
-	CameraJson["FOV"]      = InCamera.FOV;
-	CameraJson["NearClip"] = InCamera.NearClip;
-	CameraJson["FarClip"]  = InCamera.FarClip;
+	CameraJson["FOV"]      = FloatToJson(InCamera.FOV);
+	CameraJson["NearClip"] = FloatToJson(InCamera.NearClip);
+	CameraJson["FarClip"]  = FloatToJson(InCamera.FarClip);
 	return CameraJson;
 }
 /**
@@ -177,15 +201,15 @@ FCameraMetadata FLevelSerializer::JsonToCamera(const JSON& InCameraData)
 		}
 		if (InCameraData.hasKey("FOV"))
 		{
-			CameraMetadata.FOV = InCameraData.at("FOV").ToFloat();
+			CameraMetadata.FOV = JsonToFloat(InCameraData.at("FOV"));
 		}
 		if (InCameraData.hasKey("NearClip"))
 		{
-			CameraMetadata.NearClip = InCameraData.at("NearClip").ToFloat();
+			CameraMetadata.NearClip = JsonToFloat(InCameraData.at("NearClip"));
 		}
 		if (InCameraData.hasKey("FarClip"))
 		{
-			CameraMetadata.FarClip = InCameraData.at("FarClip").ToFloat();
+			CameraMetadata.FarClip = JsonToFloat(InCameraData.at("FarClip"));
 		}
 	}
 	catch (const std::exception& e)
