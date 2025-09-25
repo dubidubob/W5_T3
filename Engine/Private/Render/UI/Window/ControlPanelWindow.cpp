@@ -30,8 +30,8 @@ UControlPanelWindow::UControlPanelWindow()
 	Config.UpdateWindowFlags();
 	SetConfig(Config);
 
-	AddWidget(NewObject<UFPSWidget>());
 	AddWidget(NewObject<UPickingPerformanceWidget>());
+	AddWidget(NewObject<UFPSWidget>());
 	AddWidget(NewObject<UPrimitiveSpawnWidget>());
 	AddWidget(NewObject<USceneIOWidget>());
 	AddWidget(NewObject<UCameraControlWidget>());
