@@ -41,9 +41,8 @@ void UImGuiHelper::Initialize(HWND InWindowHandle)
 
 	ImGuiIO& IO = ImGui::GetIO();
 	IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	path FontFilePath = path("./Data") / "Font" / "Pretendard-Regular.otf";
-	// 2. ImGui 함수에 UTF-8 문자열의 포인터를 전달
-	IO.Fonts->AddFontFromFileTTF(FontFilePath.string().c_str(), 16.0f, nullptr, IO.Fonts->GetGlyphRangesKorean());
+	path FontFilePath = UPathManager::GetInstance().GetFontPath() / "Pretendard-Regular.otf";
+	IO.Fonts->AddFontFromFileTTF((char*)FontFilePath.u8string().c_str(), 16.0f, nullptr, IO.Fonts->GetGlyphRangesKorean());
 
 	auto& Renderer = URenderer::GetInstance();
 	ImGui_ImplDX11_Init(Renderer.GetDevice(), Renderer.GetDeviceContext());
