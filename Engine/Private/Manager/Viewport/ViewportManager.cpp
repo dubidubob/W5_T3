@@ -176,7 +176,7 @@ void UViewportManager::SetMainCamera()
 
 void UViewportManager::UpdateSubCamera()
 {
-	int32 CameraCnt = sizeof(Viewports) / sizeof(Viewports[0]);
+	int32 CameraCnt = Viewports.Num(); // sizeof(Viewports) / sizeof(Viewports[0]);
 	for (int32 Idx = 0; Idx < CameraCnt; Idx++)
 	{
 		FViewportInfo* CurViewport = Viewports[Idx]->GetViewportInfo();
