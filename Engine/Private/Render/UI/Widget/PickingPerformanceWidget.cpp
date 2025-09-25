@@ -15,8 +15,8 @@ UPickingPerformanceWidget::~UPickingPerformanceWidget() = default;
 
 void UPickingPerformanceWidget::Initialize()
 {
-	DisplayTotalPickTime = 0;
-	DisplayLastPickTime = 0;
+	DisplayTotalPickTime = 0.0;
+	DisplayLastPickTime = 0.0;
 	DisplayTotalPickCount = 0;
 	AveragePickTime = 0.0;
 	bShowDetails = false;
@@ -52,7 +52,7 @@ void UPickingPerformanceWidget::Update()
 			// 평균 피킹 시간 계산 (microseconds)
 			if (DisplayTotalPickCount > 0)
 			{
-				AveragePickTime = static_cast<double>(DisplayTotalPickTime) / DisplayTotalPickCount;
+				AveragePickTime = DisplayTotalPickTime / DisplayTotalPickCount;
 			}
 		}
 
@@ -72,16 +72,16 @@ void UPickingPerformanceWidget::RenderWidget()
 		// 마지막 피킹 시간
 		double LastPickTimeMs = DisplayLastPickTime;
 		ImVec4 LastPickColor = GetPerformanceColor(LastPickTimeMs);
-		ImGui::TextColored(LastPickColor, "Last Pick Time: %.9f ms", LastPickTimeMs);
+		ImGui::TextColored(LastPickColor, "Last Pick Time: %.10f ms", LastPickTimeMs);
 
 		// 평균 피킹 시간
 		double AveragePickTimeMs = AveragePickTime;
 		ImVec4 AverageColor = GetPerformanceColor(AveragePickTimeMs);
-		ImGui::TextColored(AverageColor, "Average Pick Time: %.9f ms", AveragePickTimeMs);
+		ImGui::TextColored(AverageColor, "Average Pick Time: %.10f ms", AveragePickTimeMs);
 
 		// 총 피킹 시간
 		double TotalPickTimeMs = DisplayTotalPickTime;
-		ImGui::Text("Total Pick Time: %.9f ms", TotalPickTimeMs);
+		ImGui::Text("Total Pick Time: %.10f ms", TotalPickTimeMs);
 	}
 	else
 	{

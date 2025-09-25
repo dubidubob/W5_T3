@@ -20,13 +20,13 @@ public:
 			GSecondsPerCycle = 1.0 / Frequency;
 		}
 	}
-	static float GetSecondsPerCycle()
+	static double GetSecondsPerCycle()
 	{
 		if (!bInitialized)
 		{
 			InitTiming();
 		}
-		return (float)GSecondsPerCycle;
+		return (double)GSecondsPerCycle;
 	}
 	static uint64 GetFrequency()
 	{
@@ -47,7 +47,7 @@ public:
 	{
 		LARGE_INTEGER CycleCount;
 		QueryPerformanceCounter(&CycleCount);
-		return ToMilliseconds((uint64)CycleCount.QuadPart);
+		return (uint64)CycleCount.QuadPart;
 	}
 };
 
@@ -77,12 +77,12 @@ public:
 		Finish();
 	}
 
-	uint64 Finish()
+	double Finish()
 	{
 		const uint64 EndCycles = FPlatformTime::Cycles64();
 		const uint64 CycleDiff = EndCycles - StartCycles;
 
-		return CycleDiff;
+		return FWindowsPlatformTime::ToMilliseconds(CycleDiff);
 	}
 
 private:

@@ -33,8 +33,8 @@ public:
 	UObjectPreviewScene* GetObjPreview() { return ObjPreview; }
 
 	/** Performance Metrics Getters */
-	uint64_t GetTotalPickTime() const { return TotalPickTime; }
-	uint64_t GetLastPickTime() const { return LastPickTime; }
+	double GetTotalPickTime() const { return TotalPickTime; }
+	double GetLastPickTime() const { return LastPickTime; }
 	uint32_t GetTotalPickCount() const { return TotalPickCount; }
 private:
 	void ProcessKeyboardInput();
@@ -61,7 +61,7 @@ private:
 
 	FVector2 LastMousePosition = FVector2(0.0f, 0.0f);
 
-	uint64_t TotalPickTime = 0;
+	double TotalPickTime = 0.0;
 	uint32_t TotalPickCount = 0;
-	uint64_t LastPickTime = 0;
+	double LastPickTime = 0.0;
 };

@@ -21,8 +21,8 @@ public:
 
 private:
 	// Performance metrics from UEditor
-	uint64_t DisplayTotalPickTime = 0;
-	uint64_t DisplayLastPickTime = 0;
+	double DisplayTotalPickTime = 0.0;
+	double DisplayLastPickTime = 0.0;
 	uint32_t DisplayTotalPickCount = 0;
 
 	// Calculated metrics
