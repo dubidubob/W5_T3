@@ -185,7 +185,7 @@ enum class EEngineShowFlags : uint64
 	SF_Bounds = 1 << 3,          // Show bounding boxes
 
 	// Default flags (everything visible)
-	SF_Default = SF_Primitives | SF_BillboardText | SF_Grid
+	SF_Default = SF_Primitives | SF_Grid
 };
 
 // Bitwise operators for EEngineShowFlags
