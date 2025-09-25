@@ -17,6 +17,7 @@
 #include "Mesh/StaticMeshComponent.h"
 #include "Manager/Viewport/ViewportManager.h"
 #include "Slate/Viewport.h"
+#include "Global/PlatformTime.h"
 #if IS_OBJ_VIEWER
 #include "Render/UI/Widget/TargetActorTransformWidget.h"
 #include "Utility/ObjectPreviewScene.h"
@@ -268,13 +269,26 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 		}
 		if (!ImGui::GetIO().WantCaptureMouse && InputManager.IsKeyPressed(EKeyInput::MouseLeft))
 		{
+			// 퍼포먼스 측정용 카운터 시작
+			FScopeCycleCounter PickingCounter;
+
+			// 전체 Picking 횟수 누적
+			++TotalPickCount;
+
+			// 피킹 후보들 찾기
 			TArray<UPrimitiveComponent*> Candidate = FindCandidatePrimitives(InLevel);
 
+			// 피킹 시도
 			UPrimitiveComponent* PrimitiveCollided = ObjectPicker->PickPrimitive(InWorldRay, Candidate, &ActorDistance);
 
+			// 피킹된 프리미티브의 액터를 선택
 			if (PrimitiveCollided)
 			{
 				ActorPicked = PrimitiveCollided->GetOwner();
+
+				// 퍼포먼스 측정 종료 및 시간 누적
+				LastPickTime = PickingCounter.Finish();
+				TotalPickTime += LastPickTime;
 			}
 			else
 			{

@@ -3,6 +3,7 @@
 
 #include "Render/UI/Widget/CameraControlWidget.h"
 #include "Render/UI/Widget/FPSWidget.h"
+#include "Render/UI/Widget/PickingPerformanceWidget.h"
 #include "Render/UI/Widget/PrimitiveSpawnWidget.h"
 #include "Render/UI/Widget/SceneIOWidget.h"
 #include "Render/UI/Widget/ViewSettingsWidget.h"
@@ -30,6 +31,7 @@ UControlPanelWindow::UControlPanelWindow()
 	SetConfig(Config);
 
 	AddWidget(NewObject<UFPSWidget>());
+	AddWidget(NewObject<UPickingPerformanceWidget>());
 	AddWidget(NewObject<UPrimitiveSpawnWidget>());
 	AddWidget(NewObject<USceneIOWidget>());
 	AddWidget(NewObject<UCameraControlWidget>());

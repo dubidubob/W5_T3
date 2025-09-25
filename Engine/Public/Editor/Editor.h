@@ -31,6 +31,11 @@ public:
 	/** ViewportManager Getter*/
 	UViewportManager* GetViewportManager() { return ViewportManager; }
 	UObjectPreviewScene* GetObjPreview() { return ObjPreview; }
+
+	/** Performance Metrics Getters */
+	uint64_t GetTotalPickTime() const { return TotalPickTime; }
+	uint64_t GetLastPickTime() const { return LastPickTime; }
+	uint32_t GetTotalPickCount() const { return TotalPickCount; }
 private:
 	void ProcessKeyboardInput();
 	void ProcessMouseInput(ULevel* InLevel);
@@ -55,4 +60,8 @@ private:
 	UGrid* Grid;
 
 	FVector2 LastMousePosition = FVector2(0.0f, 0.0f);
+
+	uint64_t TotalPickTime = 0;
+	uint32_t TotalPickCount = 0;
+	uint64_t LastPickTime = 0;
 };
