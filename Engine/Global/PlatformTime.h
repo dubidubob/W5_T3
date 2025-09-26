@@ -13,7 +13,7 @@ FScopeCycleCounter Key##Counter(#Key); //현재 스코프 단위로 측정
 #ifdef _DEVELOP
 #define TIME_PROFILE_START(Key)\
 {\
-	FScopeCycleCounter Key##Counter(#Key);
+	FScopeCycleCounter Key##Counter(#Key); //Key를 변수값으로 사용해 중복안되도록 
 #else
 #define TIME_PROFILE_START(Key)
 #endif

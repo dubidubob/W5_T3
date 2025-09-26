@@ -427,6 +427,7 @@ void URenderer::RenderMultiViewport(UEditor* Editor)
 
 void URenderer::RenderScene(UEditor* Editor, int Idx)
 {
+	TIME_PROFILE(RenderScene)
 	RenderLevel();
 	Editor->RenderEditorBatched(Idx);
 	RenderText(Editor->GetCameraLocation());
@@ -488,8 +489,7 @@ void URenderer::ReSetSortingBatchMap()
             for (int i = 0; i < MaterialSize; i++)
             {
                 FStaticMaterial* pMaterial = &StaticMeshAsset->Materials[i];
-				//마테리얼 없으면 추가
-				
+				//마테리얼 없으면 추가	
 				if (SortingBatchMap.Contains(pMaterial) == false)
 				{
 					SortingBatchMap[pMaterial] =
@@ -501,14 +501,14 @@ void URenderer::ReSetSortingBatchMap()
 				}
 				else
 				{
-					//占쏙옙占쌓몌옙占쏙옙 占싫울옙 占쌨쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 占쌩곤옙
+					//스태틱메쉬 없으면 추가
 					if (SortingBatchMap[pMaterial].Contains(StaticMeshAsset) == false)
 					{
 						SortingBatchMap[pMaterial][StaticMeshAsset] = { {StaticMeshComponent, {}} };
 					}
 					else
 					{
-						//占쏙옙占쌓몌옙占쏙옙-> 占쌨쏙옙 占싫울옙 StaticMeshComponent 占쌩곤옙
+						//스태틱 메쉬 컴포넌트 추가
 						SortingBatchMap[pMaterial][StaticMeshAsset][StaticMeshComponent] = {};
 					}
 				}
@@ -560,6 +560,7 @@ void URenderer::RenderLevel()
 
 void URenderer::RenderSortingBatchMap()
 {
+	TIME_PROFILE(RenderSortingBatchMap);
     SetupStaticMeshCommon();
     TStaticArray<FVector4, 6> Planes;
     ExtractFrustumPlanes(CachedViewProj, Planes);

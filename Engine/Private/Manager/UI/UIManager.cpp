@@ -6,6 +6,7 @@
 #include "Render/UI/Window/ExperimentalFeatureWindow.h"
 #include "Render/UI/ImGui/ImGuiHelper.h"
 #include "Render/UI/Widget/Widget.h"
+#include "Global/PlatformTime.h"
 
 IMPLEMENT_CLASS(UUIManager, UObject)
 IMPLEMENT_SINGLETON(UUIManager)
@@ -132,6 +133,7 @@ void UUIManager::Update()
  */
 void UUIManager::Render()
 {
+	TIME_PROFILE(UIRender)
 	if (!bIsInitialized)
 	{
 		return;
