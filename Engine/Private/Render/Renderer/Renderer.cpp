@@ -17,9 +17,7 @@
 #include "Manager/Input/InputManager.h"
 #include "Math/Frustum.h"
 
-#ifdef _DEVELOP
 #include "Global/PlatformTime.h"
-#endif
 
 #if IS_OBJ_VIEWER
 #include "Utility/ObjectPreviewScene.h"
