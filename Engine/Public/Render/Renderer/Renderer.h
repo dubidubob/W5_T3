@@ -148,10 +148,25 @@ public:
 	ID3D11DepthStencilState* GetDefaultDepthStencilState() const { return DefaultDepthStencilState; }
 	ID3D11RasterizerState* GetRasterizerState(const FRenderState& RenderState);
 
+#ifdef _DEVELOP
+	const uint32 GetMaterialChangeCount() const { return MaterialChangeCount; }
+	const uint32 GetStaticMeshChangeCount() const { return StaticMeshChangeCount; }
+	const uint32 GetStaticMeshComponentChagneCount() const { return StaticMeshComponentChagneCount; }
+	const uint32 GetMeshSectionDrawCount() const { return MeshSectionDrawCount; }
+#endif
+
 private:
 
 	bool bSortingBatchMapDirty = true;
 	TMap<FStaticMaterial*, TMap<FStaticMesh*, TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>>> SortingBatchMap;
+
+#ifdef _DEVELOP
+	uint32 MaterialChangeCount = 0;
+	uint32 StaticMeshChangeCount = 0;
+	uint32 StaticMeshComponentChagneCount = 0;
+	uint32 MeshSectionDrawCount = 0;
+#endif
+
 		// ================== Core Components ==================
 	UPipeline* Pipeline = nullptr;
 	UDeviceResources* DeviceResources = nullptr;
@@ -309,6 +324,9 @@ private:
 	void InitializeRenderStates();
 	void InitializeShaders();
 	void InitializeBuffers();
+#ifdef _DEVELOP
+	void InitializeRenderStateChangeCount();
+#endif
 
 	// ================== Creation Functions ==================
 	void CreateDepthStencilState(ID3D11DepthStencilState*& State, bool DepthEnable, D3D11_DEPTH_WRITE_MASK WriteMask);

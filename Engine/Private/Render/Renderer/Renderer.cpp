@@ -156,7 +156,15 @@ void URenderer::InitializeBuffers()
 
 	UpdateInstanceDrawConstants(false, 0, 0);
 }
-
+#ifdef _DEVELOP
+void URenderer::InitializeRenderStateChangeCount()
+{
+	MaterialChangeCount = 0;
+	StaticMeshChangeCount = 0;
+	StaticMeshComponentChagneCount = 0;
+	MeshSectionDrawCount = 0;
+}
+#endif
 // ================== Core Creation Functions ==================
 
 void URenderer::CreateDepthStencilState(ID3D11DepthStencilState*& State, bool DepthEnable, D3D11_DEPTH_WRITE_MASK WriteMask)
@@ -397,20 +405,19 @@ void URenderer::ReSetSortingBatchMap()
     const TArray<UPrimitiveComponent*>& PrimitiveComponents =
         ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
 
-    CleanUpSortingBatch();
-
-
-    for (auto& Primitive : PrimitiveComponents)
-    {
-        UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Primitive);
-        if (StaticMeshComponent != nullptr)
-        {
-            FStaticMesh* StaticMeshAsset = StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset();
-            int MaterialSize = StaticMeshAsset->Materials.size();
-            for (int i = 0; i < MaterialSize; i++)
-            {
-                FStaticMaterial* pMaterial = &StaticMeshAsset->Materials[i];
-				//���׸��� ������ �߰�
+	CleanUpSortingBatch();
+	  
+	for (auto& Primitive : PrimitiveComponents)
+	{
+		UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Primitive);
+		if (StaticMeshComponent != nullptr)
+		{
+			FStaticMesh* StaticMeshAsset = StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset();
+			int MaterialSize = StaticMeshAsset->Materials.size();
+			for (int i = 0; i < MaterialSize; i++)
+			{
+				FStaticMaterial* pMaterial = &StaticMeshAsset->Materials[i];
+				//마테리얼 없으면 추가
 				
 				if (SortingBatchMap.Contains(pMaterial) == false)
 				{
@@ -460,7 +467,9 @@ void URenderer::RenderLevel()
 	{
 		return;
 	}
-
+#ifdef _DEVELOP
+	InitializeRenderStateChangeCount();
+#endif
 	//렌더스테이트 배치
 	ReSetSortingBatchMap();
 	RenderSortingBatchMap();
@@ -476,6 +485,7 @@ void URenderer::RenderLevel()
 	
 	//DisableInstancing();
 }
+
 
 void URenderer::RenderSortingBatchMap()
 {
@@ -531,6 +541,9 @@ void URenderer::SetupMaterial(FStaticMaterial* Material)
 	GetDeviceContext()->PSSetShaderResources(1, 1, &SRV);
 	Pipeline->SetConstantBuffer(4, false, ConstantBufferMaterialParam);
 	UpdateBuffer(ConstantBufferMaterialParam, MaterialParams);
+#ifdef _DEVELOP
+	MaterialChangeCount++;
+#endif
 }
 void URenderer::SetupStaticMeshAsset(FStaticMesh* StaticMeshAsset)
 {
@@ -538,11 +551,16 @@ void URenderer::SetupStaticMeshAsset(FStaticMesh* StaticMeshAsset)
 	UINT Offset = 0;
 	GetDeviceContext()->IASetVertexBuffers(0, 1, &StaticMeshAsset->VertexBuffer, &StaticStride, &Offset);
 	GetDeviceContext()->IASetIndexBuffer(StaticMeshAsset->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-
+#ifdef _DEVELOP
+	StaticMeshChangeCount++;
+#endif
 }
 void URenderer::SetupStaticMeshComponent(UStaticMeshComponent* StaticMeshComponent)
 {
 	UpdateBuffer(ConstantBufferModels, StaticMeshComponent->GetWorldTransformMatrix());
+#ifdef _DEVELOP
+	StaticMeshComponentChagneCount++;
+#endif
 }
 
 void URenderer::RenderStaticMeshComponent(UPrimitiveComponent* Component)
