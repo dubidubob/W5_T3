@@ -357,12 +357,8 @@ void URenderer::UpdateInstanceDrawConstants(bool UseInstancing, uint32 BaseOffse
 
 void URenderer::Update(UEditor* Editor)
 {
-	FScopeCycleCounter Counter("Update");
-	TIME_PROFILE(TEST)
-	TIME_PROFILE_START(TEST2)
-	TIME_PROFILE_START(TEST3)
-	TIME_PROFILE_END(TEST2)
-	TIME_PROFILE_END(TEST3)
+	TIME_PROFILE(Update)
+
 	RenderBegin();
 
 	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
