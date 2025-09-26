@@ -376,9 +376,8 @@ void URenderer::Update(UEditor* Editor)
 		RenderObjectViewer(Editor);
 #endif
 
-    bool NeedPicking = UInputManager::GetInstance().IsKeyDown(EKeyInput::MouseLeft) ||
-                       UInputManager::GetInstance().IsKeyDown(EKeyInput::MouseRight);
-    if (NeedPicking)
+    // Only perform color picking when conditions are met
+    if (ShouldPerformColorPicking())
     {
         RenderColorPicking();
     }
@@ -462,6 +461,7 @@ void URenderer::ReSetSortingBatchMap()
         return;
     }
 
+	TIME_PROFILE(ReSetSortingBatchMap)
     bSortingBatchMapDirty = false;
     const TArray<UPrimitiveComponent*>& PrimitiveComponents =
         ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
@@ -530,6 +530,7 @@ void URenderer::ReSetSortingBatchMap()
 
 void URenderer::RenderLevel()
 {
+	TIME_PROFILE(RenderLevel)
 	Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
 	Pipeline->SetConstantBuffer(2, false, ConstantBufferColor);
 	
@@ -569,6 +570,7 @@ void URenderer::RenderSortingBatchMap()
     TSet<UStaticMeshComponent*> CandidateSet;
     for (auto* C : Candidates) CandidateSet.Add(C);
     TArray<FStaticMaterial*> MaterialKeys = SortingBatchMap.GetKeys();
+
     for (FStaticMaterial* MaterialKey : MaterialKeys)
     {
         SetupMaterial(MaterialKey);
@@ -634,7 +636,11 @@ void URenderer::RenderSortingBatchMap()
 						TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
 						for (FStaticMeshSection* Section : SectionArray)
 						{
+							TIME_PROFILE(Draw)
 							Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+#ifdef _DEVELOP
+							MeshSectionDrawCount++;
+#endif
 						}
 					}
 				}
@@ -652,6 +658,9 @@ void URenderer::RenderSortingBatchMap()
 				for (FStaticMeshSection* Section : SectionArray)
 				{
 					Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+#ifdef _DEVELOP
+					MeshSectionDrawCount++;
+#endif
 				}
 			}
 #endif
@@ -699,6 +708,25 @@ void URenderer::SetupStaticMeshComponent(UStaticMeshComponent* StaticMeshCompone
 #ifdef _DEVELOP
 	StaticMeshComponentChagneCount++;
 #endif
+}
+
+bool URenderer::ShouldPerformColorPicking()
+{
+	// Check if mouse is pressed
+	UInputManager& InputManager = UInputManager::GetInstance();
+	bool bMousePressed = InputManager.IsKeyDown(EKeyInput::MouseLeft);
+	if (!bMousePressed)
+	{
+		return false;
+	}
+
+	// UI위에 마우스 있으면 안그림
+	if (ImGui::GetIO().WantCaptureMouse)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void URenderer::RenderColorPicking()

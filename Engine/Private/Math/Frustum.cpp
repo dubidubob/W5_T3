@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Math/Frustum.h"
 #include "Math/AABB.h"
+#include "Global/PlatformTime.h"
 
 static inline void NormalizePlane(FVector4& P)
 {
@@ -84,6 +85,7 @@ bool TestAABBFrustum(const FAABB& Box, const TStaticArray<FVector4, 6>& Planes)
 
 __m128 TestAABBFrustum_Chunk_SIMD(const FAABB_SIMD_Chunk& Chunk, const TStaticArray<FVector4, 6>& Planes)
 {
+	TIME_PROFILE(TestAABBFrustum_Chunk_SIMD)
 	// 1. AABB 데이터 로드
 	// AABB의 [MinX, MinY, MinZ]와 [MaxX, MaxY, MaxZ]를 SIMD 레지스터에 로드
 	// (AABB_SIMD_Chunk의 필드들이 16바이트 정렬되어 있다고 가정)

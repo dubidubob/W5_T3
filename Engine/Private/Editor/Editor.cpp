@@ -100,6 +100,8 @@ UCamera* UEditor::GetCamera()
 
 void UEditor::RenderEditorBatched(int Idx)
 {
+	TIME_PROFILE(RenderEditBatched)
+
 	ULineBatchRenderer& LineBatch = ULineBatchRenderer::GetInstance();
 
 	/** 모든 라인 렌더링을 하나의 배치로 통합 */
