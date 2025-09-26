@@ -25,6 +25,7 @@ public:
 	bool IsValid() const;
 	bool Contains(const FVector& Point) const;
 	bool Intersects(const FAABB& Other) const;
+	bool IntersectsRay(const FVector4& RayOrigin, const FVector4& RayDirection, float* Distance = nullptr) const;
 
 	FAABB TransformBy(const FMatrix& Transform) const;
 

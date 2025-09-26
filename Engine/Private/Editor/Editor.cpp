@@ -18,6 +18,7 @@
 #include "Manager/Viewport/ViewportManager.h"
 #include "Slate/Viewport.h"
 #include "Global/PlatformTime.h"
+#include "Mesh/TextComponent.h"
 #if IS_OBJ_VIEWER
 #include "Render/UI/Widget/TargetActorTransformWidget.h"
 #include "Utility/ObjectPreviewScene.h"
@@ -282,15 +283,15 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 			if (PrimitiveCollided)
 			{
 				ActorPicked = PrimitiveCollided->GetOwner();
-
-				// 퍼포먼스 측정 종료 및 시간 누적
-				LastPickTime = PickingCounter.Finish();
-				TotalPickTime += LastPickTime;
 			}
 			else
 			{
 				ActorPicked = nullptr;
 			}
+
+			// 퍼포먼스 측정 종료 및 시간 누적
+			LastPickTime = PickingCounter.Finish();
+			TotalPickTime += LastPickTime;
 		}
 
 		/** 기즈모에 호버링되거나 클릭되지 않았을 때. Actor 업데이트해줌. */
@@ -332,6 +333,12 @@ TArray<UPrimitiveComponent*> UEditor::FindCandidatePrimitives(ULevel* InLevel)
 	{
 		for (auto& ActorComponent : Actor->GetOwnedComponents())
 		{
+			// UUID Text는 피킹에서 제외
+			if (ActorComponent->IsA(UTextComponent::StaticClass()))
+			{
+				continue;
+			}
+
 			UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(ActorComponent);
 			if (Primitive)
 			{

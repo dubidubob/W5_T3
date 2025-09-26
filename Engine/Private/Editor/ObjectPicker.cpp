@@ -37,6 +37,12 @@ UPrimitiveComponent* UObjectPicker::PickPrimitive(const FRay& WorldRay, TArray<U
 	
 	for (UPrimitiveComponent* Primitive : Candidate)
 	{
+		FAABB WorldBounds = Primitive->GetWorldBounds();
+		if (!WorldBounds.IntersectsRay(WorldRay.Origin, WorldRay.Direction))
+		{
+			continue;
+		}
+
 		FMatrix ModelMat = Primitive->GetWorldTransformMatrix();
 		FRay ModelRay = GetModelRay(WorldRay, Primitive);
 		if (IsRayPrimitiveCollided(ModelRay, Primitive, ModelMat, &PrimitiveDistance))
