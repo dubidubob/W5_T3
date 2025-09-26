@@ -2,13 +2,14 @@
 #include "Global/Types.h"
 
 
-#ifdef _DEVELOP
+#ifdef _DEVELOP //_DEVELOP 이 정의 되어 있을때만 측정
 #define TIME_PROFILE(Key)\
-FScopeCycleCounter Key##Counter(#Key);
+FScopeCycleCounter Key##Counter(#Key); //현재 스코프 단위로 측정
 #else
-#define TIME_PROFILE(Key)
+#define TIME_PROFILE(Key) //_DEVELOP 미정의시 빈칸
 #endif
 
+//스코프단위를 직접 만들기 위한 START, END
 #ifdef _DEVELOP
 #define TIME_PROFILE_START(Key)\
 {\
@@ -104,8 +105,8 @@ class FScopeCycleCounter
 {
 public:
 	FScopeCycleCounter(TStatId StatId)
-		: StartCycles(FPlatformTime::Cycles64())
-		, UsedStatId(StatId)
+		: StartCycles(FPlatformTime::Cycles64()) //생성 시 사이클 저장
+		, UsedStatId(StatId) //키값 저장
 	{
 	}
 	FScopeCycleCounter() : StartCycles(FPlatformTime::Cycles64()), UsedStatId()
@@ -118,7 +119,7 @@ public:
 
 	~FScopeCycleCounter()
 	{
-		Finish();
+		Finish(); //소멸 시 현재 사이클 구해서 현재 - 생성 사이클로 시간 측정
 	}
 
 	double Finish()
@@ -129,7 +130,7 @@ public:
 		double Milliseconds = FWindowsPlatformTime::ToMilliseconds(CycleDiff);
 		if (UsedStatId.Key.empty() == false)
 		{
-			AddTimeProfile(UsedStatId, Milliseconds);
+			AddTimeProfile(UsedStatId, Milliseconds); //키 값이 있을경우 Map에 저장
 		}
 		return Milliseconds;
 	}
