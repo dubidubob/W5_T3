@@ -5,9 +5,10 @@
 #include "Mesh/SceneComponent.h"
 #include "Mesh/Actor.h"
 #include "Manager/Input/InputManager.h"
+#include "Manager/Level/LevelManager.h"
+#include "Level/Level.h"
 #include "Core/AppWindow.h"
 #include "ImGui/imgui.h"
-#include "Level/Level.h"
 #include "Render/Renderer/DeviceResources.h"
 
 IMPLEMENT_CLASS(UObjectPicker, UObject)
@@ -66,7 +67,7 @@ UPrimitiveComponent* UObjectPicker::PickPrimitive(const FRay& WorldRay, TArray<U
 	return ShortestPrimitive;
 }
 
-UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 MouseY, TArray<UPrimitiveComponent*> Candidate)
+UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 MouseY)
 {
 	if (!DeviceResources)
 	{
@@ -82,6 +83,14 @@ UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 Mou
 	}
 
 	// Find the primitive component with matching UUID
+	ULevelManager& LevelManager = ULevelManager::GetInstance();
+	const ULevel* CurrentLevel = LevelManager.GetCurrentLevel();
+	if (!CurrentLevel)
+	{
+		return nullptr;
+	}
+
+	const TArray<UPrimitiveComponent*> Candidate = CurrentLevel->GetLevelPrimitiveComponents();
 	for (UPrimitiveComponent* Primitive : Candidate)
 	{
 		if (Primitive->GetOwner() && Primitive->GetOwner()->GetUUID() == pixelValue)
@@ -89,6 +98,19 @@ UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 Mou
 			return Primitive;
 		}
 	}
+
+	/*AActor* Actor = Cast<AActor>(GUObjectArray[pixelValue]);
+	if (Actor)
+	{
+		for (auto& ActorComponent : Actor->GetOwnedComponents())
+		{
+			UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(ActorComponent);
+			if (Primitive)
+			{
+				return Primitive;
+			}
+		}
+	}*/
 
 	return nullptr;
 }

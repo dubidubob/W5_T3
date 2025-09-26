@@ -19,7 +19,7 @@ public:
 	void SetDeviceResources(UDeviceResources* InDeviceResources);
 
 	UPrimitiveComponent* PickPrimitive( const FRay& WorldRay, TArray<UPrimitiveComponent*> Candidate, float* Distance);
-	UPrimitiveComponent* PickPrimitiveByColor(int32 MouseX, int32 MouseY, TArray<UPrimitiveComponent*> Candidate);
+	UPrimitiveComponent* PickPrimitiveByColor(int32 MouseX, int32 MouseY);
 
 	void PickGizmo(const FRay& WorldRay, UGizmo* Gizmo, FVector& CollisionPoint);
 	bool IsRayCollideWithPlane(const FRay& WorldRay, FVector PlanePoint, FVector Normal, FVector& PointOnPlane);

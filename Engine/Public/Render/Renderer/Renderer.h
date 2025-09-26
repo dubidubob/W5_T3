@@ -218,6 +218,7 @@ private:
 	// ================== Vertex Strides ==================
 	uint32 Stride = 0;
 	uint32 StaticStride = 0;
+	FViewProjConstants CachedViewProj{};
 	uint32 StrideTextVertex = 0;
 	uint32 StrideTextInstance = 0;
 

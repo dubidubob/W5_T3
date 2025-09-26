@@ -42,6 +42,7 @@ private:
 
 	void HandleGizmo(ULevel* InLevel, FRay InWorldRay);
 	TArray<class UPrimitiveComponent*> FindCandidatePrimitives(ULevel* InLevel);
+	TArray<class UPrimitiveComponent*> GetAllPrimitives(ULevel* InLevel);
 
 	FVector GetGizmoDragLocation(const FRay& WorldRay);
 	FVector GetGizmoDragRotation(const FRay& WorldRay);
