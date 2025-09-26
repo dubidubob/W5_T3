@@ -39,13 +39,13 @@ void ExtractFrustumPlanes(const FViewProjConstants& VP, TStaticArray<FVector4, 6
 bool TestAABBFrustum(const FAABB& Box, const TStaticArray<FVector4, 6>& Planes)
 {
     if (!Box.IsValid()) return false;
+    const FVector c = (Box.Min + Box.Max) * 0.5f;
+    const FVector e = (Box.Max - Box.Min) * 0.5f;
     for (const auto& P : Planes)
     {
-        float x = (P.X >= 0.0f) ? Box.Min.X : Box.Max.X;
-        float y = (P.Y >= 0.0f) ? Box.Min.Y : Box.Max.Y;
-        float z = (P.Z >= 0.0f) ? Box.Min.Z : Box.Max.Z;
-        float d = P.X * x + P.Y * y + P.Z * z + P.W;
-        if (d < 0.0f) return false;
+        const float r = std::fabs(P.X) * e.X + std::fabs(P.Y) * e.Y + std::fabs(P.Z) * e.Z;
+        const float s = P.X * c.X + P.Y * c.Y + P.Z * c.Z + P.W;
+        if (s + r < 0.0f) return false;
     }
     return true;
 }
