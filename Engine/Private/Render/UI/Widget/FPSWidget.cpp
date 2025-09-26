@@ -3,6 +3,7 @@
 
 #include "Manager/Time/TimeManager.h"
 #include "Render/Renderer/Renderer.h"
+#include "Global/PlatformTime.h"
 
 constexpr float REFRESH_INTERVAL = 0.1f;
 
@@ -60,7 +61,8 @@ void UFPSWidget::Update()
 void UFPSWidget::RenderWidget()
 {
 	// 러프한 일정 간격으로 FPS 및 Delta Time 정보 출력
-	if (TotalGameTime - PreviousTime > REFRESH_INTERVAL)
+	bool bRefresh = TotalGameTime - PreviousTime > REFRESH_INTERVAL;
+	if (bRefresh)
 	{
 		PrintFPS = CurrentFPS;
 		PrintDeltaTime = CurrentDeltaTime * 1000.0f;
@@ -79,11 +81,31 @@ void UFPSWidget::RenderWidget()
 
 #ifdef _DEVELOP
 	ImGui::Text("Profiling");
-	ImGui::Text("Material Change : %s", to_string(Renderer.GetMaterialChangeCount()));
-	ImGui::Text("StaticMesh Change : %s", to_string(Renderer.GetStaticMeshChangeCount()));
-	ImGui::Text("StaticMeshComponent Change : %s", to_string(Renderer.GetStaticMeshComponentChagneCount()));
-	ImGui::Text("MeshSectionDraw Count : %s", to_string(Renderer.GetMeshSectionDrawCount()));
+	ImGui::Text("Material Change : %s", to_string(Renderer.GetMaterialChangeCount()).c_str());
+	ImGui::Text("StaticMesh Change : %s", to_string(Renderer.GetStaticMeshChangeCount()).c_str());
+	ImGui::Text("StaticMeshComponent Change : %s", to_string(Renderer.GetStaticMeshComponentChagneCount()).c_str());
+	ImGui::Text("MeshSectionDraw Count : %s", to_string(Renderer.GetMeshSectionDrawCount()).c_str());
+
+
+	static TArray<FString> TimeProfileKeys;
+	static TArray<FTimeProfile> TimeProfileValues;
+	if (bRefresh)
+	{
+		TimeProfileKeys = FScopeCycleCounter::GetTimeProfileKeys();
+		TimeProfileValues = FScopeCycleCounter::GetTimeProfileValues();	
+	}
+
+	int TimeProfileSize = TimeProfileKeys.size();
+	for (int i = 0; i < TimeProfileSize; i++)
+	{
+		FString Text = TimeProfileKeys[i] + TimeProfileValues[i].GetConstChar();
+		ImGui::Text(Text.c_str());
+	}
+
+	FScopeCycleCounter::TimeProfileInit();
 #endif
+
+
 
 	ImGui::Checkbox("Show Details", &bShowGraph);
 

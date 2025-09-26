@@ -202,7 +202,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_DEVELOP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(ProjectDir)Private;$(ProjectDir)Public;$(ProjectDir);$(SolutionDir)External\Include</AdditionalIncludeDirectories>
@@ -404,6 +404,7 @@
   <ItemGroup>
     <ClCompile Include="Global\Name.cpp" />
     <ClCompile Include="Global\NameTable.cpp" />
+    <ClCompile Include="Global\PlatformTime.cpp" />
     <ClCompile Include="Private\Archive\Archive.cpp" />
     <ClCompile Include="Private\Manager\Viewport\ViewportManager.cpp" />
     <ClCompile Include="Private\Math\AABB.cpp" />

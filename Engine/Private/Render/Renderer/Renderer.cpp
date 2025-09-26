@@ -16,6 +16,11 @@
 #include "Slate/Viewport.h"
 #include "Manager/Input/InputManager.h"
 #include "Math/Frustum.h"
+
+#ifdef _DEVELOP
+#include "Global/PlatformTime.h"
+#endif
+
 #if IS_OBJ_VIEWER
 #include "Utility/ObjectPreviewScene.h"
 #endif
@@ -352,6 +357,12 @@ void URenderer::UpdateInstanceDrawConstants(bool UseInstancing, uint32 BaseOffse
 
 void URenderer::Update(UEditor* Editor)
 {
+	FScopeCycleCounter Counter("Update");
+	TIME_PROFILE(TEST)
+	TIME_PROFILE_START(TEST2)
+	TIME_PROFILE_START(TEST3)
+	TIME_PROFILE_END(TEST2)
+	TIME_PROFILE_END(TEST3)
 	RenderBegin();
 
 	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
