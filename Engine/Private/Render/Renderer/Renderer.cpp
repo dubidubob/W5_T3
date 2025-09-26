@@ -579,6 +579,13 @@ void URenderer::RenderSortingBatchMap()
             SetupStaticMeshAsset(StaticMeshKey);
             TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>& SortingMeshComponentMap = SortingMaterialMap[StaticMeshKey];
             TArray<UStaticMeshComponent*> MeshComponentKeys = SortingMeshComponentMap.GetKeys();
+            TArray<UStaticMeshComponent*> Filtered;
+            Filtered.Reserve(MeshComponentKeys.Num());
+            for (auto* CompKey : MeshComponentKeys)
+            {
+                if (CandidateSet.Contains(CompKey)) Filtered.push_back(CompKey);
+            }
+            MeshComponentKeys = std::move(Filtered);
 #if SIMD_LEVEL >= 1
 			int32 NumComponents = MeshComponentKeys.Num();
 
