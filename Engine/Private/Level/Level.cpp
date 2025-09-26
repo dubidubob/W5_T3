@@ -3,6 +3,7 @@
 
 #include "Mesh/Actor.h"
 #include "Mesh/TextComponent.h"
+#include "Render/Renderer/Renderer.h"
 
 IMPLEMENT_CLASS(ULevel, UObject)
 
@@ -76,6 +77,11 @@ void ULevel::Cleanup()
 		SafeDelete(Actor);
 	}
 	LevelActors.Empty();
+}
+void ULevel::AddLevelActor(AActor* Actor)
+{
+	URenderer::GetInstance().SetSortingBatchMapDirty();
+	LevelActors.Add(Actor);
 }
 
 void ULevel::AddLevelPrimitiveComponent(AActor* Actor)
@@ -163,6 +169,7 @@ bool ULevel::DestroyActor(AActor* InActor)
 	{
 		return false;
 	}
+	URenderer::GetInstance().SetSortingBatchMapDirty();
 
 	// LevelActors 리스트에서 제거
 	for (auto Iterator = LevelActors.begin(); Iterator != LevelActors.end(); ++Iterator)
