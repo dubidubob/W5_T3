@@ -461,6 +461,7 @@ void URenderer::ReSetSortingBatchMap()
         return;
     }
 
+	TIME_PROFILE(ReSetSortingBatchMap)
     bSortingBatchMapDirty = false;
     const TArray<UPrimitiveComponent*>& PrimitiveComponents =
         ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
@@ -529,6 +530,7 @@ void URenderer::ReSetSortingBatchMap()
 
 void URenderer::RenderLevel()
 {
+	TIME_PROFILE(RenderLevel)
 	Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
 	Pipeline->SetConstantBuffer(2, false, ConstantBufferColor);
 	
@@ -568,6 +570,7 @@ void URenderer::RenderSortingBatchMap()
     TSet<UStaticMeshComponent*> CandidateSet;
     for (auto* C : Candidates) CandidateSet.Add(C);
     TArray<FStaticMaterial*> MaterialKeys = SortingBatchMap.GetKeys();
+
     for (FStaticMaterial* MaterialKey : MaterialKeys)
     {
         SetupMaterial(MaterialKey);
@@ -626,7 +629,11 @@ void URenderer::RenderSortingBatchMap()
 						TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
 						for (FStaticMeshSection* Section : SectionArray)
 						{
+							TIME_PROFILE(Draw)
 							Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+#ifdef _DEVELOP
+							MeshSectionDrawCount++;
+#endif
 						}
 					}
 				}
@@ -644,6 +651,9 @@ void URenderer::RenderSortingBatchMap()
 				for (FStaticMeshSection* Section : SectionArray)
 				{
 					Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+#ifdef _DEVELOP
+					MeshSectionDrawCount++;
+#endif
 				}
 			}
 #endif
