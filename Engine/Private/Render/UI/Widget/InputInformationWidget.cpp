@@ -2,6 +2,7 @@
 #include "Render/UI/Widget/InputInformationWidget.h"
 
 #include "Manager/Input/InputManager.h"
+#include "Editor/Editor.h"
 
 constexpr uint8 MaxKeyHistory = 10;
 
@@ -93,6 +94,12 @@ void UInputInformationWidget::RenderWidget()
 		if (ImGui::BeginTabItem("Statistics"))
 		{
 			RenderKeyStatistics();
+			ImGui::EndTabItem();
+		}
+
+		// 피킹 옵션
+		if (ImGui::BeginTabItem("Picking Options"))
+		{
 			ImGui::EndTabItem();
 		}
 

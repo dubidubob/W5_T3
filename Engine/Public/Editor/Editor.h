@@ -65,4 +65,9 @@ private:
 	double TotalPickTime = 0.0;
 	uint32_t TotalPickCount = 0;
 	double LastPickTime = 0.0;
+
+	bool bTrianglePicking = true;
+	bool bColorPicking = false;
+	bool bUUIDColorPicking = true;
+	bool bIndexColorPicking = false;
 };

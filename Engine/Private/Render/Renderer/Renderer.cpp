@@ -717,8 +717,8 @@ void URenderer::SetupPickingMeshRendering(UStaticMeshComponent* Component, FStat
 	PickingConstants PickingCB;
 	if (Component->GetOwner())
 	{
-		PickingCB.ObjectID = Component->GetOwner()->GetUUID();
-		//PickingCB.ObjectID = Component->GetOwner()->GetInternalIndex();
+		//PickingCB.ObjectID = Component->GetOwner()->GetUUID();
+		PickingCB.ObjectID = Component->GetOwner()->GetInternalIndex();
 	}
 	UpdateBuffer(ConstantBufferPicking, PickingCB);
 

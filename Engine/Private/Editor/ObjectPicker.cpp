@@ -90,16 +90,16 @@ UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 Mou
 		return nullptr;
 	}
 
-	const TArray<UPrimitiveComponent*> Candidate = CurrentLevel->GetLevelPrimitiveComponents();
+	/*const TArray<UPrimitiveComponent*> Candidate = CurrentLevel->GetLevelPrimitiveComponents();
 	for (UPrimitiveComponent* Primitive : Candidate)
 	{
 		if (Primitive->GetOwner() && Primitive->GetOwner()->GetUUID() == pixelValue)
 		{
 			return Primitive;
 		}
-	}
+	}*/
 
-	/*AActor* Actor = Cast<AActor>(GUObjectArray[pixelValue]);
+	const AActor* Actor = Cast<AActor>(GUObjectArray[pixelValue]);
 	if (Actor)
 	{
 		for (auto& ActorComponent : Actor->GetOwnedComponents())
@@ -110,7 +110,7 @@ UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 Mou
 				return Primitive;
 			}
 		}
-	}*/
+	}
 
 	return nullptr;
 }

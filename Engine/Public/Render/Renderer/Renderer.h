@@ -150,8 +150,11 @@ public:
 	ID3D11DepthStencilState* GetDefaultDepthStencilState() const { return DefaultDepthStencilState; }
 	ID3D11RasterizerState* GetRasterizerState(const FRenderState& RenderState);
 
-private:
+	void SetEditor(UEditor* InEditor) { Editor = InEditor; }
+	UEditor* GetEditor() { return Editor; }
 
+private:
+	UEditor* Editor = nullptr;
 	bool bSortingBatchMapDirty = true;
 	TMap<FStaticMaterial*, TMap<FStaticMesh*, TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>>> SortingBatchMap;
 		// ================== Core Components ==================
