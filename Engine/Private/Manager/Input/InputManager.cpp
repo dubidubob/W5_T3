@@ -108,14 +108,6 @@ void UInputManager::Update(FAppWindow* InWindow)
 		int32 VirtualKey = Pair.first;
 		EKeyInput KeyInput = Pair.second;
 
-		// 마우스 버튼은 GetAsyncKeyState가 잘 작동하지 않을 수 있으므로 메시지 기반으로 처리
-		if (KeyInput == EKeyInput::MouseLeft || KeyInput == EKeyInput::MouseRight || KeyInput ==
-			EKeyInput::MouseMiddle)
-		{
-			// 마우스 버튼은 ProcessKeyMessage에서 처리
-			continue;
-		}
-
 		// GetAsyncKeyState의 반환값에서 최상위 비트가 1이면 키가 눌린 상태
 		bool IsKeyDown = (GetAsyncKeyState(VirtualKey) & 0x8000) != 0;
 		CurrentKeyState[KeyInput] = IsKeyDown;

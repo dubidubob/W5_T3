@@ -44,6 +44,7 @@ public:
 	void RenderEnd() const;
 	void RenderLevel();
 	void RenderColorPicking();
+	bool ShouldPerformColorPicking();
 	void RenderText(const FVector& CameraLocation);
 	void RenderSlate(UEditor* Editor);
 	void RenderEditorPrimitive(FEditorPrimitive& Primitive, FRenderState& RenderState);
