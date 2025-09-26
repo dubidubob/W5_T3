@@ -274,14 +274,19 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 			// 전체 Picking 횟수 누적
 			++TotalPickCount;
 
+			UPrimitiveComponent* PrimitiveCollided = nullptr;
 
 			// 피킹 시도
-			//TArray<UPrimitiveComponent*> Candidate = FindCandidatePrimitives(InLevel);
-			//UPrimitiveComponent* PrimitiveCollided = ObjectPicker->PickPrimitive(InWorldRay, Candidate, &ActorDistance);
-
-
-			FVector2 MousePosition = InputManager.GetMousePosition();
-			UPrimitiveComponent* PrimitiveCollided = ObjectPicker->PickPrimitiveByColor(MousePosition.X, MousePosition.Y);
+			if (bTrianglePicking == true && bColorPicking == false)
+			{
+				TArray<UPrimitiveComponent*> Candidate = FindCandidatePrimitives(InLevel);
+				PrimitiveCollided = ObjectPicker->PickPrimitive(InWorldRay, Candidate, &ActorDistance);
+			}
+			if (bTrianglePicking == false && bColorPicking == true)
+			{
+				FVector2 MousePosition = InputManager.GetMousePosition();
+				PrimitiveCollided = ObjectPicker->PickPrimitiveByColor(MousePosition.X, MousePosition.Y);
+			}
 
 			// 피킹된 프리미티브의 액터를 선택
 			if (PrimitiveCollided)

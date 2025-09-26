@@ -85,6 +85,7 @@ int FClientApp::InitializeSystem()
 	// UIManager Initialize
 	auto& UiManager = UUIManager::GetInstance();
 	UiManager.Initialize(Window->GetWindowHandle());
+
 	UUIWindowFactory::CreateDefaultUILayout();
 
 	UResourceManager::GetInstance().Initialize();
@@ -102,6 +103,7 @@ int FClientApp::InitializeSystem()
 
 	// Initialize Editor
 	Editor = NewObject<UEditor>();
+	Renderer.SetEditor(Editor);
 
 	// Create Default Level
 	// TODO(KHJ): 나중에 Init에서 처리하도록 하는 게 맞을 듯

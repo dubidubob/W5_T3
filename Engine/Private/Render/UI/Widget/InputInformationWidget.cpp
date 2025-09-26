@@ -2,6 +2,8 @@
 #include "Render/UI/Widget/InputInformationWidget.h"
 
 #include "Manager/Input/InputManager.h"
+#include "Editor/Editor.h"
+#include "Render/Renderer/Renderer.h"
 
 constexpr uint8 MaxKeyHistory = 10;
 
@@ -93,6 +95,77 @@ void UInputInformationWidget::RenderWidget()
 		if (ImGui::BeginTabItem("Statistics"))
 		{
 			RenderKeyStatistics();
+			ImGui::EndTabItem();
+		}
+
+		// 피킹 옵션
+		if (ImGui::BeginTabItem("Picking Options"))
+		{
+			URenderer& Renderer = URenderer::GetInstance();
+			UEditor* Editor = Renderer.GetEditor();
+
+			if (Editor)
+			{
+				ImGui::Text("Picking Method Options:");
+				ImGui::Separator();
+
+				// Triangle Picking (기존 Ray-AABB 방식)
+				if (ImGui::Checkbox("Triangle Picking (Ray-AABB-Triangle)", &Editor->bTrianglePicking))
+				{
+					// 삼각형 피킹이 활성화되면 컬러 피킹을 비활성화
+					if (Editor->bTrianglePicking)
+					{
+						Editor->bColorPicking = false;
+					}
+				}
+
+				// Color Picking (컬러 피킹 방식)
+				if (ImGui::Checkbox("Color Picking (GPU-based)", &Editor->bColorPicking))
+				{
+					// 컬러 피킹이 활성화되면 삼각형 피킹을 비활성화
+					if (Editor->bColorPicking)
+					{
+						Editor->bTrianglePicking = false;
+					}
+				}
+
+				// Color Picking 하위 옵션들 (들여쓰기)
+				if (Editor->bColorPicking)
+				{
+					ImGui::Indent(20.0f);
+
+					ImGui::Text("Color Picking Mode:");
+
+					if (ImGui::RadioButton("UUID Color Picking", Editor->bUUIDColorPicking))
+					{
+						Editor->bUUIDColorPicking = true;
+						Editor->bIndexColorPicking = false;
+					}
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("Uses object UUIDs as color IDs.");
+					}
+
+					if (ImGui::RadioButton("Index Color Picking", Editor->bIndexColorPicking))
+					{
+						Editor->bUUIDColorPicking = false;
+						Editor->bIndexColorPicking = true;
+					}
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("Uses object indices as color IDs.");
+					}
+
+					ImGui::Unindent(20.0f);
+				}
+
+				ImGui::Separator();
+			}
+			else
+			{
+				ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.5f, 1.0f), "Editor not available");
+			}
+
 			ImGui::EndTabItem();
 		}
 
