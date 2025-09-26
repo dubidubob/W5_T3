@@ -426,7 +426,6 @@ void URenderer::RenderMultiViewport(UEditor* Editor)
 
 void URenderer::RenderScene(UEditor* Editor, int Idx)
 {
-	TIME_PROFILE(RenderScene)
 	RenderLevel();
 	Editor->RenderEditorBatched(Idx);
 	RenderText(Editor->GetCameraLocation());
@@ -461,7 +460,6 @@ void URenderer::ReSetSortingBatchMap()
         return;
     }
 
-	TIME_PROFILE(ReSetSortingBatchMap)
     bSortingBatchMapDirty = false;
     const TArray<UPrimitiveComponent*>& PrimitiveComponents =
         ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
@@ -565,10 +563,27 @@ void URenderer::RenderSortingBatchMap()
     SetupStaticMeshCommon();
     TStaticArray<FVector4, 6> Planes;
     ExtractFrustumPlanes(CachedViewProj, Planes);
-    TArray<UStaticMeshComponent*> Candidates;
+    
     SceneBVH.QueryFrustum(Planes, Candidates);		
-    TSet<UStaticMeshComponent*> CandidateSet;
-    for (auto* C : Candidates) CandidateSet.Add(C);
+    FrameStamp++;
+    uint32 MaxId = 0;
+    for (auto* C : Candidates)
+    {
+        if (!C) continue;
+        uint32 Id = static_cast<uint32>(C->GetInternalIndex());
+        if (Id > MaxId) MaxId = Id;
+    }
+    if (VisibleStamp.Num() <= MaxId)
+    {
+        VisibleStamp.Reserve(MaxId + 1);
+        while (VisibleStamp.Num() <= MaxId) VisibleStamp.push_back(0u);
+    }
+    for (auto* C : Candidates)
+    {
+        if (!C) continue;
+        uint32 Id = static_cast<uint32>(C->GetInternalIndex());
+        VisibleStamp[Id] = FrameStamp;
+    }
     TArray<FStaticMaterial*> MaterialKeys = SortingBatchMap.GetKeys();
 
     for (FStaticMaterial* MaterialKey : MaterialKeys)
@@ -580,12 +595,17 @@ void URenderer::RenderSortingBatchMap()
         {
             SetupStaticMeshAsset(StaticMeshKey);
             TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>& SortingMeshComponentMap = SortingMaterialMap[StaticMeshKey];
-            TArray<UStaticMeshComponent*> MeshComponentKeys = SortingMeshComponentMap.GetKeys();
+            TArray<UStaticMeshComponent*> MeshComponentKeys = SortingMeshComponentMap.GetKeys(); //병목지점 fix 여부(x)
             TArray<UStaticMeshComponent*> Filtered;
             Filtered.Reserve(MeshComponentKeys.Num());
             for (auto* CompKey : MeshComponentKeys)
             {
-                if (CandidateSet.Contains(CompKey)) Filtered.push_back(CompKey);
+                if (!CompKey) continue;
+                uint32 Id = static_cast<uint32>(CompKey->GetInternalIndex());
+                if (Id < VisibleStamp.Num() && VisibleStamp[Id] == FrameStamp)
+                {
+                    Filtered.push_back(CompKey);
+                }
             }
             MeshComponentKeys = std::move(Filtered);
 #if SIMD_LEVEL >= 1
@@ -608,14 +628,17 @@ void URenderer::RenderSortingBatchMap()
 			// TArray를 직접 루프 돌지 않고 인덱스로 순회
 			for (int32 i = 0; i < NumComponents; i += 4)
 			{
+
 				// 1. FAABB 4개 추출
 				FAABB chunk_aabb[4];
 				int32 chunk_size = std::min(4, NumComponents - i);
 
 				// 2. AOS (chunk_aabb) -> SOA (simd_chunk) 변환
 				FAABB_SIMD_Chunk simd_chunk;
+
 				for (int32 j = 0; j < chunk_size; ++j) {
-					chunk_aabb[j] = MeshComponentKeys[i + j]->GetWorldBounds();
+
+					chunk_aabb[j] = MeshComponentKeys[i + j]->GetWorldBounds(); //병목지점 fix 여부(x)
 
 					simd_chunk.MinX[j] = chunk_aabb[j].Min.X;
 					simd_chunk.MinY[j] = chunk_aabb[j].Min.Y;
@@ -625,6 +648,7 @@ void URenderer::RenderSortingBatchMap()
 					simd_chunk.MaxY[j] = chunk_aabb[j].Max.Y;
 					simd_chunk.MaxZ[j] = chunk_aabb[j].Max.Z;
 				}
+
 				// SIMD 안전을 위해 모든 필드를 무효 AABB 값(FLT_MAX)으로 초기화
 				for (int32 j = chunk_size; j < 4; j++)
 				{
@@ -641,23 +665,26 @@ void URenderer::RenderSortingBatchMap()
 				__m128 render_mask = TestAABBFrustum_Chunk_SIMD(simd_chunk, Planes);
 				int32 mask_int = _mm_movemask_ps(render_mask); // 4비트 정수 마스크로 변환
 
+
+
 				// 4. 마스크를 사용하여 개별 액터 처리
 				for (int32 j = 0; j < chunk_size; ++j) {
 					if ((mask_int >> j) & 1) // j번째 비트가 1이면 렌더링 대상
 					{
 						UStaticMeshComponent* MeshComponentKey = MeshComponentKeys[i + j];
-						SetupStaticMeshComponent(MeshComponentKey);
-						TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
+						SetupStaticMeshComponent(MeshComponentKey); //병목지점 fix 여부(x)
+						TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];  //병목지점 fix 여부(x)
 						for (FStaticMeshSection* Section : SectionArray)
 						{
-							TIME_PROFILE(Draw)
 							Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
 #ifdef _DEVELOP
 							MeshSectionDrawCount++;
 #endif
 						}
+
 					}
 				}
+
 			}
             }
 #elif
@@ -734,6 +761,7 @@ void URenderer::SetupStaticMeshAsset(FStaticMesh* StaticMeshAsset)
 }
 void URenderer::SetupStaticMeshComponent(UStaticMeshComponent* StaticMeshComponent)
 {
+TIME_PROFILE(SetupStaticMeshComponent)
 	UpdateBuffer(ConstantBufferModels, StaticMeshComponent->GetWorldTransformMatrix());
 #ifdef _DEVELOP
 	StaticMeshComponentChagneCount++;
@@ -744,7 +772,7 @@ bool URenderer::ShouldPerformColorPicking()
 {
 	// Check if mouse is pressed
 	UInputManager& InputManager = UInputManager::GetInstance();
-	bool bMousePressed = InputManager.IsKeyDown(EKeyInput::MouseLeft);
+	bool bMousePressed = InputManager.IsKeyDown(EKeyInput::MouseLeft) || InputManager.IsKeyDown(EKeyInput::MouseRight);
 	if (!bMousePressed)
 	{
 		return false;
@@ -775,8 +803,12 @@ void URenderer::RenderColorPicking()
 	GetDeviceContext()->ClearRenderTargetView(ColorPickingRTV, ClearColorPicking);
 	GetDeviceContext()->ClearDepthStencilView(ColorPickingDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	// Set render targets
+	// Set render targets and scaled viewport for resolution optimization
 	GetDeviceContext()->OMSetRenderTargets(1, &ColorPickingRTV, ColorPickingDSV);
+
+	// Set scaled viewport for color picking
+	D3D11_VIEWPORT ColorPickingViewport = DeviceResources->GetColorPickingViewport();
+	GetDeviceContext()->RSSetViewports(1, &ColorPickingViewport);
 
 	// Set constant buffers
 	Pipeline->SetConstantBuffer(2, true, ConstantBufferPicking);
@@ -785,9 +817,9 @@ void URenderer::RenderColorPicking()
 	const TArray<UPrimitiveComponent*>& PrimitiveComponents =
 		ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
 
-	for (UPrimitiveComponent* Component : PrimitiveComponents)
+	for (UPrimitiveComponent* Candidate : Candidates)
 	{
-		RenderStaticMeshComponentForPicking(Component);
+		RenderStaticMeshComponentForPicking(Candidate);
 	}
 
 	DisableInstancing();
@@ -895,13 +927,6 @@ void URenderer::SetupPickingMeshRendering(UStaticMeshComponent* Component, FStat
 	}
 	UpdateBuffer(ConstantBufferPicking, PickingCB);
 
-	Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
-	InstanceDrawConstants InstanceConstants{};
-	InstanceConstants.bUseInstancing = 0;
-	InstanceConstants.BaseInstanceOffset = 0;
-	InstanceConstants.InstanceCount = 0;
-	UpdateBuffer(ConstantBufferInstance, InstanceConstants);
-
 	// Set buffers and topology
 	UINT Offset = 0;
 	GetDeviceContext()->IASetVertexBuffers(0, 1, &MeshData->VertexBuffer, &StaticStride, &Offset);
@@ -920,7 +945,6 @@ void URenderer::RenderStaticMeshSections(const UStaticMeshComponent* OwnerCompon
 
 void URenderer::SetupMaterialForSection(const UStaticMeshComponent* OwnerComponent, FStaticMesh* MeshData, const FStaticMeshSection& Section)
 {
-
 	ID3D11ShaderResourceView* SRV = nullptr;
 	FMaterialParamsCB MaterialParams{};
 
@@ -1214,6 +1238,7 @@ void URenderer::OnResize(uint32 Width, uint32 Height)
 	if (!DeviceResources || !GetDevice() || !GetDeviceContext() || !GetSwapChain()) return;
 
 	// Release current resources
+	DeviceResources->ReleaseColorPickingResources();
 	DeviceResources->ReleaseFrameBuffer();
 	DeviceResources->ReleaseDepthBuffer();
 	GetDeviceContext()->OMSetRenderTargets(0, nullptr, nullptr);
@@ -1229,6 +1254,7 @@ void URenderer::OnResize(uint32 Width, uint32 Height)
 	DeviceResources->UpdateViewport();
 	DeviceResources->CreateFrameBuffer();
 	DeviceResources->CreateDepthBuffer();
+	DeviceResources->CreateColorPickingResources();
 
 	// Reset render targets
 	ID3D11RenderTargetView* RenderTargetView = DeviceResources->GetRenderTargetView();

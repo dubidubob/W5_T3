@@ -299,7 +299,6 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 			{
 				ActorPicked = nullptr;
 			}
-
 			// 퍼포먼스 측정 종료 및 시간 누적
 			LastPickTime = PickingCounter.Finish();
 			TotalPickTime += LastPickTime;

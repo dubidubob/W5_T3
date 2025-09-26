@@ -233,6 +233,7 @@ private:
 	ID3D11InputLayout* LineInstancedInputLayout = nullptr;
 
     FBVH SceneBVH;
+	TArray<UStaticMeshComponent*> Candidates;
 	// ================== Picking Shader Set ==================
 	ID3D11PixelShader* PickingPixelShader = nullptr;
 
@@ -242,6 +243,10 @@ private:
 	FViewProjConstants CachedViewProj{};
 	uint32 StrideTextVertex = 0;
 	uint32 StrideTextInstance = 0;
+
+	// Frame-stamp visibility marking to avoid per-frame TSet construction
+	TArray<uint32> VisibleStamp;
+	uint32 FrameStamp = 1;
 
 	// ================== Batching Structures ==================
 	struct FPrimitiveBatchKey

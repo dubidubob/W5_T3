@@ -156,6 +156,28 @@ void UInputInformationWidget::RenderWidget()
 						ImGui::SetTooltip("Uses object indices as color IDs.");
 					}
 
+					ImGui::Separator();
+
+					// Resolution Scale Setting
+					ImGui::Text("Performance Options:");
+					UDeviceResources* DeviceResources = Renderer.GetDeviceResources();
+					if (DeviceResources)
+					{
+						float currentScale = DeviceResources->GetColorPickingScale();
+						if (ImGui::SliderFloat("Resolution Scale", &currentScale, 0.1f, 1.0f, "%.2f"))
+						{
+							DeviceResources->SetColorPickingScale(currentScale);
+						}
+						if (ImGui::IsItemHovered())
+						{
+							ImGui::SetTooltip("Lower values improve performance but reduce picking accuracy.\n0.25 = 1/4 resolution, 1.0 = full resolution");
+						}
+
+						uint32 scaledWidth = DeviceResources->GetColorPickingWidth();
+						uint32 scaledHeight = DeviceResources->GetColorPickingHeight();
+						ImGui::Text("Current Picking Resolution: %ux%u", scaledWidth, scaledHeight);
+					}
+
 					ImGui::Unindent(20.0f);
 				}
 
