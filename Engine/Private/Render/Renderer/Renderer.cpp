@@ -1238,6 +1238,7 @@ void URenderer::OnResize(uint32 Width, uint32 Height)
 	if (!DeviceResources || !GetDevice() || !GetDeviceContext() || !GetSwapChain()) return;
 
 	// Release current resources
+	DeviceResources->ReleaseColorPickingResources();
 	DeviceResources->ReleaseFrameBuffer();
 	DeviceResources->ReleaseDepthBuffer();
 	GetDeviceContext()->OMSetRenderTargets(0, nullptr, nullptr);
@@ -1253,6 +1254,7 @@ void URenderer::OnResize(uint32 Width, uint32 Height)
 	DeviceResources->UpdateViewport();
 	DeviceResources->CreateFrameBuffer();
 	DeviceResources->CreateDepthBuffer();
+	DeviceResources->CreateColorPickingResources();
 
 	// Reset render targets
 	ID3D11RenderTargetView* RenderTargetView = DeviceResources->GetRenderTargetView();
