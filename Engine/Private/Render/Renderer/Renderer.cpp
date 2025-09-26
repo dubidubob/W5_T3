@@ -413,7 +413,7 @@ void URenderer::RenderMultiViewport(UEditor* Editor)
 	}
 
 	// Render color picking pass (off-screen) after all viewports
-	RenderColorPicking();
+	//RenderColorPicking();
 }
 
 void URenderer::RenderScene(UEditor* Editor, int Idx)
