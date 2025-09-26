@@ -151,6 +151,9 @@ public:
 	ID3D11DepthStencilState* GetDefaultDepthStencilState() const { return DefaultDepthStencilState; }
 	ID3D11RasterizerState* GetRasterizerState(const FRenderState& RenderState);
 
+	UEditor* GetEditor() { return Editor; }
+	void SetEditor(UEditor* InEditor) { Editor = InEditor; }
+
 #ifdef _DEVELOP
 	const uint32 GetMaterialChangeCount() const { return MaterialChangeCount; }
 	const uint32 GetStaticMeshChangeCount() const { return StaticMeshChangeCount; }
