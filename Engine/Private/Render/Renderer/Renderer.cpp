@@ -564,7 +564,7 @@ void URenderer::RenderSortingBatchMap()
     TStaticArray<FVector4, 6> Planes;
     ExtractFrustumPlanes(CachedViewProj, Planes);
     TArray<UStaticMeshComponent*> Candidates;
-    SceneBVH.QueryFrustum(Planes, Candidates);
+    SceneBVH.QueryFrustum(Planes, Candidates);		
     TSet<UStaticMeshComponent*> CandidateSet;
     for (auto* C : Candidates) CandidateSet.Add(C); //병목지점 fix 여부(x)
     TArray<FStaticMaterial*> MaterialKeys = SortingBatchMap.GetKeys();
@@ -578,10 +578,29 @@ void URenderer::RenderSortingBatchMap()
         {
             SetupStaticMeshAsset(StaticMeshKey);
             TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>& SortingMeshComponentMap = SortingMaterialMap[StaticMeshKey];
-
-			TArray<UStaticMeshComponent*> MeshComponentKeys = SortingMeshComponentMap.GetKeys(); //병목지점 fix 여부(x)
-
+            TArray<UStaticMeshComponent*> MeshComponentKeys = SortingMeshComponentMap.GetKeys(); //병목지점 fix 여부(x)
+            TArray<UStaticMeshComponent*> Filtered;
+            Filtered.Reserve(MeshComponentKeys.Num());
+            for (auto* CompKey : MeshComponentKeys)
+            {
+                if (CandidateSet.Contains(CompKey)) Filtered.push_back(CompKey);
+            }
+            MeshComponentKeys = std::move(Filtered);
 #if SIMD_LEVEL >= 1
+            if (true)
+            {
+                for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
+                {
+                    SetupStaticMeshComponent(MeshComponentKey);
+                    TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
+                    for (FStaticMeshSection* Section : SectionArray)
+                    {
+                        Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+                    }
+                }
+            }
+            else
+            {
 			int32 NumComponents = MeshComponentKeys.Num();
 
 			// TArray를 직접 루프 돌지 않고 인덱스로 순회
@@ -645,7 +664,22 @@ void URenderer::RenderSortingBatchMap()
 				}
 
 			}
+            }
 #elif
+			if (true)
+			{
+				for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
+				{
+					SetupStaticMeshComponent(MeshComponentKey);
+					TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
+					for (FStaticMeshSection* Section : SectionArray)
+					{
+						Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+					}
+				}
+			}
+			else
+			{
 			for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
 			{
 				FAABB Bounds = MeshComponentKey->GetWorldBounds();
@@ -662,6 +696,7 @@ void URenderer::RenderSortingBatchMap()
 					MeshSectionDrawCount++;
 #endif
 				}
+			}
 			}
 #endif
         }
