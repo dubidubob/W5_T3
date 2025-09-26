@@ -376,9 +376,8 @@ void URenderer::Update(UEditor* Editor)
 		RenderObjectViewer(Editor);
 #endif
 
-    bool NeedPicking = UInputManager::GetInstance().IsKeyDown(EKeyInput::MouseLeft) ||
-                       UInputManager::GetInstance().IsKeyDown(EKeyInput::MouseRight);
-    if (NeedPicking)
+    // Only perform color picking when conditions are met
+    if (ShouldPerformColorPicking())
     {
         RenderColorPicking();
     }
@@ -691,6 +690,25 @@ void URenderer::SetupStaticMeshComponent(UStaticMeshComponent* StaticMeshCompone
 #ifdef _DEVELOP
 	StaticMeshComponentChagneCount++;
 #endif
+}
+
+bool URenderer::ShouldPerformColorPicking()
+{
+	// Check if mouse is pressed
+	UInputManager& InputManager = UInputManager::GetInstance();
+	bool bMousePressed = InputManager.IsKeyDown(EKeyInput::MouseLeft);
+	if (!bMousePressed)
+	{
+		return false;
+	}
+
+	// UI위에 마우스 있으면 안그림
+	if (ImGui::GetIO().WantCaptureMouse)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void URenderer::RenderColorPicking()
