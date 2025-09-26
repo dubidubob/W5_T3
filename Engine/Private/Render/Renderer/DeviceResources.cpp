@@ -22,10 +22,12 @@ void UDeviceResources::Create(HWND InWindowHandle)
 	CreateFrameBuffer();
 	CreateDepthBuffer();
 	CreateObjectViewerResources();
+	CreateColorPickingResources();
 }
 
 void UDeviceResources::Release()
 {
+	ReleaseColorPickingResources();
 	ReleaseObjectViewerResources();
 	ReleaseFrameBuffer();
 	ReleaseDepthBuffer();
@@ -287,4 +289,126 @@ void UDeviceResources::ReleaseObjectViewerResources()
 		ObjectViewerTexture->Release();
 		ObjectViewerTexture = nullptr;
 	}
+}
+
+void UDeviceResources::CreateColorPickingResources()
+{
+	// Create the render target texture
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = Width;
+	textureDesc.Height = Height;
+	textureDesc.MipLevels = 1;
+	textureDesc.ArraySize = 1;
+	textureDesc.Format = DXGI_FORMAT_R32_UINT;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.MiscFlags = 0;
+
+	HRESULT hr = Device->CreateTexture2D(&textureDesc, nullptr, &ColorPickingTexture);
+	if(FAILED(hr)) assert(!"Failed to create Color Picking Texture");
+
+	// Create the render target view (RTV)
+	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.Format = textureDesc.Format;
+	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	hr = Device->CreateRenderTargetView(ColorPickingTexture, &rtvDesc, &ColorPickingRTV);
+	if(FAILED(hr)) assert(!"Failed to create Color Picking RTV");
+
+	// Create the depth stencil texture
+	D3D11_TEXTURE2D_DESC depthDesc = {};
+	depthDesc.Width = Width;
+	depthDesc.Height = Height;
+	depthDesc.MipLevels = 1;
+	depthDesc.ArraySize = 1;
+	depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthDesc.SampleDesc.Count = 1;
+	depthDesc.SampleDesc.Quality = 0;
+	depthDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthDesc.CPUAccessFlags = 0;
+	depthDesc.MiscFlags = 0;
+
+	hr = Device->CreateTexture2D(&depthDesc, nullptr, &ColorPickingDepthTexture);
+	if(FAILED(hr)) assert(!"Failed to create Color Picking Depth Texture");
+
+	// Create the depth stencil view (DSV)
+	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+	dsvDesc.Format = depthDesc.Format;
+	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	dsvDesc.Texture2D.MipSlice = 0;
+	hr = Device->CreateDepthStencilView(ColorPickingDepthTexture, &dsvDesc, &ColorPickingDSV);
+	if(FAILED(hr)) assert(!"Failed to create Color Picking DSV");
+}
+
+void UDeviceResources::ReleaseColorPickingResources()
+{
+	if (ColorPickingDSV)
+	{
+		ColorPickingDSV->Release();
+		ColorPickingDSV = nullptr;
+	}
+	if (ColorPickingDepthTexture)
+	{
+		ColorPickingDepthTexture->Release();
+		ColorPickingDepthTexture = nullptr;
+	}
+	if (ColorPickingRTV)
+	{
+		ColorPickingRTV->Release();
+		ColorPickingRTV = nullptr;
+	}
+	if (ColorPickingTexture)
+	{
+		ColorPickingTexture->Release();
+		ColorPickingTexture = nullptr;
+	}
+}
+
+uint32 UDeviceResources::ReadPixelFromColorPickingTexture(int32 X, int32 Y)
+{
+	// Create a staging texture for CPU access
+	D3D11_TEXTURE2D_DESC stagingDesc = {};
+	stagingDesc.Width = 1;
+	stagingDesc.Height = 1;
+	stagingDesc.MipLevels = 1;
+	stagingDesc.ArraySize = 1;
+	stagingDesc.Format = DXGI_FORMAT_R32_UINT;
+	stagingDesc.SampleDesc.Count = 1;
+	stagingDesc.Usage = D3D11_USAGE_STAGING;
+	stagingDesc.BindFlags = 0;
+	stagingDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+	stagingDesc.MiscFlags = 0;
+
+	ID3D11Texture2D* stagingTexture = nullptr;
+	HRESULT hr = Device->CreateTexture2D(&stagingDesc, nullptr, &stagingTexture);
+	if (FAILED(hr)) return 0;
+
+	// Copy the specific pixel from the color picking texture
+	D3D11_BOX sourceBox = {};
+	sourceBox.left = X;
+	sourceBox.right = X + 1;
+	sourceBox.top = Y;
+	sourceBox.bottom = Y + 1;
+	sourceBox.front = 0;
+	sourceBox.back = 1;
+
+	DeviceContext->CopySubresourceRegion(stagingTexture, 0, 0, 0, 0, ColorPickingTexture, 0, &sourceBox);
+
+	// Map the staging texture and read the pixel data
+	D3D11_MAPPED_SUBRESOURCE mappedResource = {};
+	hr = DeviceContext->Map(stagingTexture, 0, D3D11_MAP_READ, 0, &mappedResource);
+
+	uint32 pixelValue = 0;
+	if (SUCCEEDED(hr))
+	{
+		pixelValue = *static_cast<uint32*>(mappedResource.pData);
+		DeviceContext->Unmap(stagingTexture, 0);
+	}
+
+	// Release the staging texture
+	stagingTexture->Release();
+
+	return pixelValue;
 }
