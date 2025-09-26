@@ -8,6 +8,7 @@
 #include "Core/AppWindow.h"
 #include "ImGui/imgui.h"
 #include "Level/Level.h"
+#include "Render/Renderer/DeviceResources.h"
 
 IMPLEMENT_CLASS(UObjectPicker, UObject)
 
@@ -16,6 +17,11 @@ UObjectPicker::UObjectPicker() = default;
 void UObjectPicker::SetCamera(UCamera* InCamera)
 {
 	Camera = InCamera;
+}
+
+void UObjectPicker::SetDeviceResources(UDeviceResources* InDeviceResources)
+{
+	DeviceResources = InDeviceResources;
 }
 
 FRay UObjectPicker::GetModelRay(const FRay& Ray, UPrimitiveComponent* Primitive)
@@ -58,6 +64,33 @@ UPrimitiveComponent* UObjectPicker::PickPrimitive(const FRay& WorldRay, TArray<U
 	*Distance = ShortestDistance;
 
 	return ShortestPrimitive;
+}
+
+UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 MouseY, TArray<UPrimitiveComponent*> Candidate)
+{
+	if (!DeviceResources)
+	{
+		return nullptr;
+	}
+
+	// Read the pixel value from the color picking texture
+	uint32 pixelValue = DeviceResources->ReadPixelFromColorPickingTexture(MouseX, MouseY);
+
+	if (pixelValue == 0)
+	{
+		return nullptr; // No object at this position
+	}
+
+	// Find the primitive component with matching UUID
+	for (UPrimitiveComponent* Primitive : Candidate)
+	{
+		if (Primitive->GetOwner() && Primitive->GetOwner()->GetUUID() == pixelValue)
+		{
+			return Primitive;
+		}
+	}
+
+	return nullptr;
 }
 
 void UObjectPicker::PickGizmo( const FRay& WorldRay, UGizmo* Gizmo, FVector& CollisionPoint)

@@ -6,6 +6,7 @@ class AActor;
 class ULevel;
 class UCamera;
 class UGizmo;
+class UDeviceResources;
 struct FRay;
 
 class UObjectPicker : public UObject
@@ -15,7 +16,11 @@ class UObjectPicker : public UObject
 public:
 	UObjectPicker();
 	void SetCamera(UCamera* Camera);
+	void SetDeviceResources(UDeviceResources* InDeviceResources);
+
 	UPrimitiveComponent* PickPrimitive( const FRay& WorldRay, TArray<UPrimitiveComponent*> Candidate, float* Distance);
+	UPrimitiveComponent* PickPrimitiveByColor(int32 MouseX, int32 MouseY, TArray<UPrimitiveComponent*> Candidate);
+
 	void PickGizmo(const FRay& WorldRay, UGizmo* Gizmo, FVector& CollisionPoint);
 	bool IsRayCollideWithPlane(const FRay& WorldRay, FVector PlanePoint, FVector Normal, FVector& PointOnPlane);
 
@@ -26,4 +31,5 @@ private:
 		const FMatrix& ModelMatrix, float* Distance);
 
 	UCamera* Camera;
+	UDeviceResources* DeviceResources;
 };

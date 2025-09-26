@@ -30,6 +30,7 @@ UEditor::UEditor()
 {
 	Camera = NewObject<UCamera>();
 	ObjectPicker = NewObject<UObjectPicker>();
+	ObjectPicker->SetDeviceResources(URenderer::GetInstance().GetDeviceResources());
 	ViewportManager = NewObject<UViewportManager>();
 #if IS_OBJ_VIEWER
 	ObjPreview = NewObject<UObjectPreviewScene>();
