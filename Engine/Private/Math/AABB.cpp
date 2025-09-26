@@ -105,42 +105,67 @@ bool FAABB::IntersectsRay(const FVector4& RayOrigin, const FVector4& RayDirectio
 	FVector Origin(RayOrigin.X, RayOrigin.Y, RayOrigin.Z);
 	FVector Direction(RayDirection.X, RayDirection.Y, RayDirection.Z);
 
-	float tMin = 0.0f;
-	float tMax = FLT_MAX;
+	float TMin = 0.0f;
+	float TMax = FLT_MAX;
 
 	for (int i = 0; i < 3; ++i)
 	{
-		float dirComponent = (i == 0) ? Direction.X : (i == 1) ? Direction.Y : Direction.Z;
-		float originComponent = (i == 0) ? Origin.X : (i == 1) ? Origin.Y : Origin.Z;
-		float minComponent = (i == 0) ? Min.X : (i == 1) ? Min.Y : Min.Z;
-		float maxComponent = (i == 0) ? Max.X : (i == 1) ? Max.Y : Max.Z;
+		float DirComponent, OriginComponent, MinComponent, MaxComponent;
 
-		if (std::abs(dirComponent) < SMALL_NUMBER)
+		if (i == 0)
 		{
-			if (originComponent < minComponent || originComponent > maxComponent)
-				return false;
+			DirComponent = Direction.X;
+			OriginComponent = Origin.X;
+			MinComponent = Min.X;
+			MaxComponent = Max.X;
+		}
+		else if (i == 1)
+		{
+			DirComponent = Direction.Y;
+			OriginComponent = Origin.Y;
+			MinComponent = Min.Y;
+			MaxComponent = Max.Y;
 		}
 		else
 		{
-			float invDir = 1.0f / dirComponent;
-			float t1 = (minComponent - originComponent) * invDir;
-			float t2 = (maxComponent - originComponent) * invDir;
+			DirComponent = Direction.Z;
+			OriginComponent = Origin.Z;
+			MinComponent = Min.Z;
+			MaxComponent = Max.Z;
+		}
 
-			if (t1 > t2) std::swap(t1, t2);
+		// 해당 축 성분이 0이면, 광선은 해당 슬랩 평면과 평행해진다.
+		if (std::abs(DirComponent) < SMALL_NUMBER)
+		{
+			// 거기다가 Ray의 위치가 AABB를 벗어난다면
+			if (OriginComponent < MinComponent || OriginComponent > MaxComponent)
+			{
+				// Ray와 AABB는 만날 수 없다.
+				return false;
+			}
+		}
+		else
+		{
+			float InvDir = 1.0f / DirComponent;
+			float T1 = (MinComponent - OriginComponent) * InvDir;
+			float T2 = (MaxComponent - OriginComponent) * InvDir;
 
-			tMin = std::max(tMin, t1);
-			tMax = std::min(tMax, t2);
+			if (T1 > T2) std::swap(T1, T2);
 
-			if (tMin > tMax) return false;
+			TMin = std::max(TMin, T1);	// 시작점 중에 가장 큰 값
+			TMax = std::min(TMax, T2);	// 끝점 중에 가장 작은 값
+
+			// 한번이라도 TMin이 TMax보다 커진다면, 그 광선은 AABB를 벗어난 것
+			if (TMin > TMax) return false;
 		}
 	}
 
-	if (Distance && tMin >= 0.0f)
+	if (Distance && TMin >= 0.0f)
 	{
-		*Distance = tMin;
+		*Distance = TMin;
 	}
 
-	return tMin <= tMax && tMax >= 0.0f;
+	return TMin <= TMax && TMax >= 0.0f;
 }
 
 FAABB FAABB::TransformBy(const FMatrix& Transform) const

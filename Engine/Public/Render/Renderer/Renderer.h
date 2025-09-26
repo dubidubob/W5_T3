@@ -42,6 +42,7 @@ public:
 	void RenderBegin();
 	void RenderEnd() const;
 	void RenderLevel();
+	void RenderColorPicking();
 	void RenderText(const FVector& CameraLocation);
 	void RenderSlate(UEditor* Editor);
 	void RenderEditorPrimitive(FEditorPrimitive& Primitive, FRenderState& RenderState);
@@ -143,6 +144,7 @@ public:
 	ID3D11PixelShader* GetDefaultPixelShader() const { return DefaultPixelShader; }
 	ID3D11PixelShader* GetStaticPixelShader() const { return StaticPixelShader; }
 	ID3D11PixelShader* GetLineInstancedPixelShader() const { return LineInstancedPixelShader; }
+	ID3D11PixelShader* GetPickingPixelShader() const { return PickingPixelShader; }
 
 	// State Access
 	ID3D11DepthStencilState* GetDefaultDepthStencilState() const { return DefaultDepthStencilState; }
@@ -192,6 +194,7 @@ private:
 	ID3D11Buffer* ConstantBufferCharTable = nullptr;
 	ID3D11Buffer* ConstantBufferInstance = nullptr;
 	ID3D11Buffer* ConstantBufferMaterialParam = nullptr;
+	ID3D11Buffer* ConstantBufferPicking = nullptr;
 
 	// ================== Instance Buffers ==================
 	ID3D11Buffer* TextInstanceBuffer = nullptr;
@@ -224,11 +227,13 @@ private:
 	ID3D11PixelShader* LineInstancedPixelShader = nullptr;
 	ID3D11InputLayout* LineInstancedInputLayout = nullptr;
 
-    // ================== Vertex Strides ==================
-    uint32 Stride = 0;
-    uint32 StaticStride = 0;
+	// ================== Picking Shader Set ==================
+	ID3D11PixelShader* PickingPixelShader = nullptr;
 
-    FViewProjConstants CachedViewProj{};
+	// ================== Vertex Strides ==================
+	uint32 Stride = 0;
+	uint32 StaticStride = 0;
+	FViewProjConstants CachedViewProj{};
 	uint32 StrideTextVertex = 0;
 	uint32 StrideTextInstance = 0;
 
@@ -349,7 +354,9 @@ private:
 	void RenderMultiViewport(UEditor* Editor);
 	void RenderScene(UEditor* Editor, int Idx = 0);
 	void RenderStaticMeshComponent(UPrimitiveComponent* Component);
+	void RenderStaticMeshComponentForPicking(UPrimitiveComponent* Component);
 	void SetupStaticMeshRendering(UStaticMeshComponent* Component, FStaticMesh* MeshData);
+	void SetupPickingMeshRendering(UStaticMeshComponent* Component, FStaticMesh* MeshData);
 	void RenderStaticMeshSections(const UStaticMeshComponent* OwnerComponent, FStaticMesh* MeshData);
 	void SetupMaterialForSection(const UStaticMeshComponent* OwnerComponent, FStaticMesh* MeshData, const struct FStaticMeshSection& Section);
 	void SetupTextRendering();

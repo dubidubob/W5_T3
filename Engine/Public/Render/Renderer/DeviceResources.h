@@ -17,6 +17,8 @@ public:
 	void ReleaseDepthBuffer();
 	void CreateObjectViewerResources();
 	void ReleaseObjectViewerResources();
+	void CreateColorPickingResources();
+	void ReleaseColorPickingResources();
 
 	ID3D11Device* GetDevice() const { return Device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return DeviceContext; }
@@ -29,6 +31,14 @@ public:
 	ID3D11RenderTargetView* GetObjectViewerRTV() const { return ObjectViewerRTV; }
 	ID3D11DepthStencilView* GetObjectViewerDSV() const { return ObjectViewerDSV; }
 	ID3D11ShaderResourceView* GetObjectViewerSRV() const { return ObjectViewerSRV; }
+
+	// Color Picking Getters
+	ID3D11RenderTargetView* GetColorPickingRTV() const { return ColorPickingRTV; }
+	ID3D11DepthStencilView* GetColorPickingDSV() const { return ColorPickingDSV; }
+	ID3D11Texture2D* GetColorPickingTexture() const { return ColorPickingTexture; }
+
+	// Color Picking Utility
+	uint32 ReadPixelFromColorPickingTexture(int32 X, int32 Y);
 
 	void UpdateViewport();
 
@@ -54,4 +64,10 @@ private:
 	ID3D11ShaderResourceView* ObjectViewerSRV = nullptr;
 	ID3D11Texture2D*        ObjectViewerDepthTexture = nullptr;
 	ID3D11DepthStencilView* ObjectViewerDSV = nullptr;
+
+	// Resources for Color Picking Render Target
+	ID3D11Texture2D*        ColorPickingTexture = nullptr;
+	ID3D11RenderTargetView* ColorPickingRTV = nullptr;
+	ID3D11Texture2D*        ColorPickingDepthTexture = nullptr;
+	ID3D11DepthStencilView* ColorPickingDSV = nullptr;
 };

@@ -30,6 +30,7 @@ UEditor::UEditor()
 {
 	Camera = NewObject<UCamera>();
 	ObjectPicker = NewObject<UObjectPicker>();
+	ObjectPicker->SetDeviceResources(URenderer::GetInstance().GetDeviceResources());
 	ViewportManager = NewObject<UViewportManager>();
 #if IS_OBJ_VIEWER
 	ObjPreview = NewObject<UObjectPreviewScene>();
@@ -273,11 +274,14 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 			// 전체 Picking 횟수 누적
 			++TotalPickCount;
 
-			// 피킹 후보들 찾기
-			TArray<UPrimitiveComponent*> Candidate = FindCandidatePrimitives(InLevel);
 
 			// 피킹 시도
-			UPrimitiveComponent* PrimitiveCollided = ObjectPicker->PickPrimitive(InWorldRay, Candidate, &ActorDistance);
+			//TArray<UPrimitiveComponent*> Candidate = FindCandidatePrimitives(InLevel);
+			//UPrimitiveComponent* PrimitiveCollided = ObjectPicker->PickPrimitive(InWorldRay, Candidate, &ActorDistance);
+
+
+			FVector2 MousePosition = InputManager.GetMousePosition();
+			UPrimitiveComponent* PrimitiveCollided = ObjectPicker->PickPrimitiveByColor(MousePosition.X, MousePosition.Y);
 
 			// 피킹된 프리미티브의 액터를 선택
 			if (PrimitiveCollided)
@@ -348,6 +352,23 @@ TArray<UPrimitiveComponent*> UEditor::FindCandidatePrimitives(ULevel* InLevel)
 	}
 
 	return Candidate;
+}
+
+TArray<class UPrimitiveComponent*> UEditor::GetAllPrimitives(ULevel* InLevel)
+{
+	TArray<UPrimitiveComponent*> Primitives;
+	for (AActor* Actor : InLevel->GetLevelActors())
+	{
+		for (auto& ActorComponent : Actor->GetOwnedComponents())
+		{
+			UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(ActorComponent);
+			if (Primitive)
+			{
+				Primitives.push_back(Primitive);
+			}
+		}
+	}
+	return Primitives;
 }
 
 FVector UEditor::GetGizmoDragLocation(const FRay& WorldRay)

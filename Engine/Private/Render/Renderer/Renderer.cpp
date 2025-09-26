@@ -139,6 +139,36 @@ void URenderer::InitializeShaders()
 			{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1}
 		},
 		LineInstancedVertexShader, LineInstancedPixelShader, LineInstancedInputLayout);
+
+	// Create Picking Pixel Shader (uses existing vertex shaders)
+	ID3DBlob* PixelShaderBlob = nullptr;
+	HRESULT hr = D3DCompileFromFile(
+		L"Data/Shader/PickingShader.hlsl",
+		nullptr,
+		nullptr,
+		"mainPS",
+		"ps_5_0",
+		0,
+		0,
+		&PixelShaderBlob,
+		nullptr
+	);
+
+	if (SUCCEEDED(hr))
+	{
+		hr = GetDevice()->CreatePixelShader(
+			PixelShaderBlob->GetBufferPointer(),
+			PixelShaderBlob->GetBufferSize(),
+			nullptr,
+			&PickingPixelShader
+		);
+		PixelShaderBlob->Release();
+	}
+
+	if (FAILED(hr))
+	{
+		assert(!"Failed to create Picking Pixel Shader");
+	}
 }
 
 void URenderer::InitializeBuffers()
@@ -148,6 +178,14 @@ void URenderer::InitializeBuffers()
 	CreateConstantBuffer(ConstantBufferPerFrame, sizeof(FViewProjConstants));
 	CreateConstantBuffer(ConstantBufferInstance, sizeof(InstanceDrawConstants));
 	CreateConstantBuffer(ConstantBufferMaterialParam, sizeof(FMaterialParamsCB));
+
+	// Create picking constant buffer with same structure as PickingShader.hlsl
+	struct PickingCB {
+		uint32 Pick;
+		uint32 ObjectID;
+		int32 Padding[2];
+	};
+	CreateConstantBuffer(ConstantBufferPicking, sizeof(PickingCB));
 
 	CreateCharacterTableBuffer();
 
@@ -332,6 +370,16 @@ void URenderer::Update(UEditor* Editor)
 	if (Editor->GetObjPreview()->SelectActivated())
 		RenderObjectViewer(Editor);
 #endif
+
+	// Render color picking pass (off-screen)
+	RenderColorPicking();
+
+	// Switch back to main render target for UI rendering
+	ID3D11RenderTargetView* MainRTV = DeviceResources->GetRenderTargetView();
+	ID3D11DepthStencilView* MainDSV = DeviceResources->GetDepthStencilView();
+	GetDeviceContext()->OMSetRenderTargets(1, &MainRTV, MainDSV);
+	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
+
 	UUIManager::GetInstance().Render();
 	RenderEnd();
 }
@@ -363,6 +411,9 @@ void URenderer::RenderMultiViewport(UEditor* Editor)
 
 		RenderScene(Editor, Idx);
 	}
+
+	// Render color picking pass (off-screen) after all viewports
+	RenderColorPicking();
 }
 
 void URenderer::RenderScene(UEditor* Editor, int Idx)
@@ -563,6 +614,56 @@ void URenderer::SetupStaticMeshComponent(UStaticMeshComponent* StaticMeshCompone
 #endif
 }
 
+void URenderer::RenderColorPicking()
+{
+	if (!ULevelManager::GetInstance().GetCurrentLevel())
+	{
+		return;
+	}
+
+	// Switch to color picking render target
+	ID3D11RenderTargetView* ColorPickingRTV = DeviceResources->GetColorPickingRTV();
+	ID3D11DepthStencilView* ColorPickingDSV = DeviceResources->GetColorPickingDSV();
+
+	// Clear color picking render target (0 = no object)
+	const FLOAT ClearColorPicking[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	GetDeviceContext()->ClearRenderTargetView(ColorPickingRTV, ClearColorPicking);
+	GetDeviceContext()->ClearDepthStencilView(ColorPickingDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	// Set render targets
+	GetDeviceContext()->OMSetRenderTargets(1, &ColorPickingRTV, ColorPickingDSV);
+
+	// Set constant buffers
+	Pipeline->SetConstantBuffer(2, true, ConstantBufferPicking);
+	Pipeline->SetConstantBuffer(2, false, ConstantBufferPicking);
+
+	const TArray<UPrimitiveComponent*>& PrimitiveComponents =
+		ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
+
+	for (UPrimitiveComponent* Component : PrimitiveComponents)
+	{
+		RenderStaticMeshComponentForPicking(Component);
+	}
+
+	DisableInstancing();
+}
+
+void URenderer::RenderStaticMeshComponentForPicking(UPrimitiveComponent* Component)
+{
+	UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Component);
+	if (!StaticMeshComponent || !StaticMeshComponent->IsVisible()) return;
+
+	UStaticMesh* StaticMesh = StaticMeshComponent->GetStaticMesh();
+	if (!StaticMesh) return;
+
+	FStaticMesh* MeshData = StaticMesh->GetStaticMeshAsset();
+	if (!MeshData) return;
+
+	// Set up picking-specific rendering
+	SetupPickingMeshRendering(StaticMeshComponent, MeshData);
+	RenderStaticMeshSections(StaticMeshComponent, MeshData);
+}
+
 void URenderer::RenderStaticMeshComponent(UPrimitiveComponent* Component)
 {
 	UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Component);
@@ -602,6 +703,55 @@ void URenderer::SetupStaticMeshRendering(UStaticMeshComponent* Component, FStati
 	GetDeviceContext()->IASetIndexBuffer(MeshData->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	GetDeviceContext()->PSSetSamplers(0, 1, &DiffuseSampler);
+}
+
+void URenderer::SetupPickingMeshRendering(UStaticMeshComponent* Component, FStaticMesh* MeshData)
+{
+	// Create render state for picking (no culling, solid fill)
+	FRenderState PickingRenderState = Component->GetRenderState();
+	PickingRenderState.CullMode = ECullMode::None;
+	PickingRenderState.FillMode = EFillMode::Solid;
+
+	// Create pipeline info with picking pixel shader
+	FPipelineInfo PipelineInfo = CreatePipelineInfo(PickingRenderState);
+	PipelineInfo.PixelShader = PickingPixelShader;
+
+	Pipeline->UpdatePipeline(PipelineInfo);
+
+	// Set constant buffers
+	Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
+
+	// Update constants
+	UpdateBuffer(ConstantBufferModels, Component->GetWorldTransformMatrix());
+
+	// Update picking constant buffer with object UUID
+	struct PickingConstants
+	{
+		uint32 Pick = 1;
+		uint32 ObjectID = 0;
+		int32 Padding[2] = {0, 0};
+	};
+
+	PickingConstants PickingCB;
+	if (Component->GetOwner())
+	{
+		PickingCB.ObjectID = Component->GetOwner()->GetUUID();
+		//PickingCB.ObjectID = Component->GetOwner()->GetInternalIndex();
+	}
+	UpdateBuffer(ConstantBufferPicking, PickingCB);
+
+	Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
+	InstanceDrawConstants InstanceConstants{};
+	InstanceConstants.bUseInstancing = 0;
+	InstanceConstants.BaseInstanceOffset = 0;
+	InstanceConstants.InstanceCount = 0;
+	UpdateBuffer(ConstantBufferInstance, InstanceConstants);
+
+	// Set buffers and topology
+	UINT Offset = 0;
+	GetDeviceContext()->IASetVertexBuffers(0, 1, &MeshData->VertexBuffer, &StaticStride, &Offset);
+	GetDeviceContext()->IASetIndexBuffer(MeshData->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 void URenderer::RenderStaticMeshSections(const UStaticMeshComponent* OwnerComponent, FStaticMesh* MeshData)
@@ -979,6 +1129,7 @@ void URenderer::CleanupShaders()
 	ReleaseShaderSet(TextVertexShader, TextPixelShader, TextInputLayout);
 	ReleaseShaderSet(SlateVertexShader, SlatePixelShader, SlateInputLayout);
 	ReleaseShaderSet(LineInstancedVertexShader, LineInstancedPixelShader, LineInstancedInputLayout);
+	SafeRelease(PickingPixelShader);
 }
 
 void URenderer::CleanupBuffers()
@@ -989,6 +1140,7 @@ void URenderer::CleanupBuffers()
 	SafeRelease(ConstantBufferInstance);
 	SafeRelease(ConstantBufferCharTable);
 	SafeRelease(ConstantBufferMaterialParam);
+	SafeRelease(ConstantBufferPicking);
 	SafeRelease(TextInstanceBuffer);
 	SafeRelease(DiffuseSampler);
 
