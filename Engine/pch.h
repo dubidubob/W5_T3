@@ -89,3 +89,12 @@ using filesystem::create_directories;
 #ifndef IS_OBJ_VIEWER
 #define IS_OBJ_VIEWER 0
 #endif
+
+// 0=스칼라, 1=SSE2(128b), 2=AVX2(256b) /*AVX2 Not Implemented, yet*/
+#ifndef SIMD_LEVEL
+#define SIMD_LEVEL 1
+#endif
+
+#if SIMD_LEVEL >= 1
+#include <immintrin.h>
+#endif

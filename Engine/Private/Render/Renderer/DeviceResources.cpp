@@ -38,6 +38,8 @@ void UDeviceResources::Release()
  */
 void UDeviceResources::CreateDeviceAndSwapChain(HWND InWindowHandle)
 {
+;
+
 	// 지원하는 Direct3D 기능 레벨을 정의
 	D3D_FEATURE_LEVEL featurelevels[] = {D3D_FEATURE_LEVEL_11_0};
 

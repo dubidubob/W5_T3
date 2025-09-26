@@ -42,3 +42,8 @@ public:
 private:
 	static const float SMALL_NUMBER;
 };
+
+struct alignas(16) FAABB_SIMD_Chunk {
+	float MinX[4], MinY[4], MinZ[4];
+	float MaxX[4], MaxY[4], MaxZ[4];
+};
