@@ -26,6 +26,13 @@ public:
 	virtual FAABB GetWorldBounds() const;
 	UStaticMesh* GetStaticMesh() { return StaticMesh; }
 
+private:
+	FAABB GetLocalBounds() const;
+	mutable FAABB CachedLocalBounds;
+	mutable bool bIsLocalBoundsDirty = true;
+
+public:
+
 	// Override
 	virtual const void* GetRawVertexData() const;
 	virtual uint32 GetVertexCount() const;

@@ -111,23 +111,21 @@ void UEditor::RenderEditorBatched(int Idx)
 
 		/** AABB 라인들 추가 (Min/Max 입력 기반, 인스턴싱) */
 		URenderer& Renderer = URenderer::GetInstance();
-		if (Renderer.IsShowFlagEnabled(EEngineShowFlags::SF_Bounds))
+		ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
+		if (Level)
 		{
-			ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
-			if (Level)
+			const TArray<UPrimitiveComponent*>& Primitives = Level->GetLevelPrimitiveComponents();
+			for (UPrimitiveComponent* Prim : Primitives)
 			{
-				const TArray<UPrimitiveComponent*>& Primitives = Level->GetLevelPrimitiveComponents();
-				for (UPrimitiveComponent* Prim : Primitives)
+				if (!Prim) { continue; }
+				UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Prim);
+				if (StaticMeshComponent)
 				{
-					if (!Prim) { continue; }
-					UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Prim);
-					if (StaticMeshComponent)
+					FAABB Bounds = StaticMeshComponent->GetWorldBounds();
+					if (!Bounds.IsValid()) { continue; }
+					if (Renderer.IsShowFlagEnabled(EEngineShowFlags::SF_Bounds))
 					{
-						FAABB Bounds = StaticMeshComponent->GetWorldBounds();
-						//FAABB Bounds = Prim->GetWorldBounds();
-						if (!Bounds.IsValid()) { continue; }
 						LineBatch.AddAABB(Bounds.Min, Bounds.Max, FVector4(0, 1, 0, 1));
-
 					}
 				}
 			}
@@ -157,7 +155,6 @@ void UEditor::RenderEditorBatched(int Idx)
 	}
 	else
 	{
-
 		float CachedScale = ViewportManager->GetViewportInfo(Idx)->GizmoScale;
 		if(CachedScale > 0 && CachedScale<2000)
 			Gizmo->RenderGizmo(ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor(), Camera->GetLocation(), false, CachedScale, CachedScale);

@@ -9,11 +9,13 @@ IMPLEMENT_CLASS(UStaticMeshComponent, UMeshComponent)
 void UStaticMeshComponent::SetStaticMeshByPath(path Path)
 {
 	StaticMesh = FObjManager::GetInstance().LoadObjStaticMesh(Path);
+	bIsLocalBoundsDirty = true;
 }
 
 void UStaticMeshComponent::SetStaticMesh(UStaticMesh* InMesh)
 {
 	StaticMesh = InMesh;
+	bIsLocalBoundsDirty = true;
 }
 
 void UStaticMeshComponent::SetUseUVScroll(bool bEnable)
@@ -47,22 +49,42 @@ float UStaticMeshComponent::GetUVScrollTimeForShader() const
     return UVScrollAccumTime;
 }
 
+FAABB UStaticMeshComponent::GetLocalBounds() const
+{
+	if (bIsLocalBoundsDirty && StaticMesh && StaticMesh->GetStaticMeshAsset())
+	{
+		const auto& Vertices = StaticMesh->GetStaticMeshAsset()->Vertices;
+		if (Vertices.empty())
+		{
+			CachedLocalBounds = FAABB();
+		}
+		else
+		{
+			CachedLocalBounds.Reset();
+			for (const FNormalVertex& Vertex : Vertices)
+			{
+				CachedLocalBounds.AddPoint(Vertex.Pos);
+			}
+		}
+		bIsLocalBoundsDirty = false;
+	}
+	return CachedLocalBounds;
+}
+
 FAABB UStaticMeshComponent::GetWorldBounds() const
 {
-	if (GetStaticMesh()->GetStaticMeshAsset()->Vertices.empty())
+	if (!StaticMesh || !StaticMesh->GetStaticMeshAsset())
 	{
 		return FAABB();
 	}
 
-	FAABB Bounds;
-	const FMatrix& Transform = GetWorldTransformMatrix();
-
-	for (const FNormalVertex& Vertex : GetStaticMesh()->GetStaticMeshAsset()->Vertices)
+	const FAABB LocalBounds = GetLocalBounds();
+	if (!LocalBounds.IsValid())
 	{
-		FVector4 TransformedPoint = FVector4(Vertex.Pos.X, Vertex.Pos.Y, Vertex.Pos.Z, 1.0f) * Transform;
-		Bounds.AddPoint(FVector(TransformedPoint.X, TransformedPoint.Y, TransformedPoint.Z));
+		return FAABB();
 	}
-	return Bounds;
+
+	return LocalBounds.TransformBy(GetWorldTransformMatrix());
 }
 
 const void* UStaticMeshComponent::GetRawVertexData() const
