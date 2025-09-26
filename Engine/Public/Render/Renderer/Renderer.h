@@ -159,7 +159,7 @@ public:
 #endif
 
 private:
-
+	UEditor* Editor = nullptr;
 	bool bSortingBatchMapDirty = true;
 	TMap<FStaticMaterial*, TMap<FStaticMesh*, TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>>> SortingBatchMap;
 

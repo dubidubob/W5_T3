@@ -747,9 +747,23 @@ void URenderer::SetupPickingMeshRendering(UStaticMeshComponent* Component, FStat
         int32 Padding[2] = {0, 0};
     };
 
-    PickingConstants PickingCB;
-    PickingCB.ObjectID = Component->GetInternalIndex();
-    UpdateBuffer(ConstantBufferPicking, PickingCB);
+	PickingConstants PickingCB;
+	if (Component->GetOwner())
+	{
+		bool bIsUUIDPicking = Editor->bUUIDColorPicking;
+		bool bIsIndexPicking = Editor->bIndexColorPicking;
+
+		if (bIsUUIDPicking == true && bIsIndexPicking == false)
+		{
+			PickingCB.ObjectID = Component->GetOwner()->GetUUID();
+		}
+
+		if (bIsUUIDPicking == false && bIsIndexPicking == true)
+		{
+			PickingCB.ObjectID = Component->GetOwner()->GetInternalIndex();
+		}
+	}
+	UpdateBuffer(ConstantBufferPicking, PickingCB);
 
 	Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
 	InstanceDrawConstants InstanceConstants{};
