@@ -349,6 +349,77 @@ bool UObjectPicker::IsRayTriangleCollided(const FRay& Ray, const FVector& Vertex
 	return false;
 }
 
+struct alignas(16) FVertexSIMD {
+	float Vertex1[4], Vertex2[4], Vertex3[4];
+};
+
+struct alignas(16) FVectorSIMD {
+	float Vector3[4];
+};
+
+bool UObjectPicker::IsRayTriangleCollided_SIMD(const FRay& Ray, FVertexSIMD Vertexes, const FMatrix& ModelMatrix, float* Distance)
+{
+	FVector CameraForward = Camera->GetForward(); //카메라 정보 필요
+	float NearZ = Camera->GetNearZ();
+	float FarZ = Camera->GetFarZ();
+
+	FVector RayDirection{ Ray.Direction.X, Ray.Direction.Y, Ray.Direction.Z };
+	FVector RayOrigin{ Ray.Origin.X, Ray.Origin.Y, Ray.Origin.Z };
+
+	__m128 rayOrigin = _mm_set_ps({ Ray.Origin.X, Ray.Origin.Y, Ray.Origin.Z, 0});
+	__m128 vertex1 = _mm_load_ps(Vertexes.Vertex1);
+	__m128 vertex2 = _mm_load_ps(Vertexes.Vertex2);
+	__m128 vertex3 = _mm_load_ps(Vertexes.Vertex3);
+
+	__m128 E1 = _mm_sub_ps(vertex2, vertex1);
+	__m128 E2 = _mm_sub_ps(vertex3, vertex1);
+	
+	__m128 Result = (RayOrigin, vertex1); //[E1 E2 -RayDirection]x = [RayOrigin - Vertex1.Position] 의 result임.
+
+
+	FVector CrossE2Ray = E2.Cross(RayDirection);
+	FVector CrossE1Result = E1.Cross(Result);
+
+	float Determinant = E1.Dot(CrossE2Ray);
+
+	float NoInverse = 0.0001f; //0.0001이하면 determinant가 0이라고 판단=>역행렬 존재 X
+	if (abs(Determinant) <= NoInverse)
+	{
+		return false;
+	}
+
+
+	float V = Result.Dot(CrossE2Ray) / Determinant; //cramer's rule로 해를 구했음. 이게 0미만 1초과면 충돌하지 않음.
+
+	if (V < 0 || V > 1)
+	{
+		return false;
+	}
+
+	float U = RayDirection.Dot(CrossE1Result) / Determinant;
+	if (U < 0 || U + V > 1)
+	{
+		return false;
+	}
+
+
+	float T = E2.Dot(CrossE1Result) / Determinant;
+
+	FVector HitPoint = RayOrigin + RayDirection * T; //모델 좌표계에서의 충돌점
+	FVector4 HitPoint4{ HitPoint.X, HitPoint.Y, HitPoint.Z, 1 };
+	//이제 이것을 월드 좌표계로 변환해서 view Frustum안에 들어가는지 판단할 것임.(near, far plane만 테스트하면 됨)
+
+	FVector4 HitPointWorld = HitPoint4 * ModelMatrix;
+	FVector4 RayOriginWorld = Ray.Origin * ModelMatrix;
+
+	FVector4 DistanceVec = HitPointWorld - RayOriginWorld;
+	if (DistanceVec.Dot3(CameraForward) >= NearZ && DistanceVec.Dot3(CameraForward) <= FarZ)
+	{
+		*Distance = DistanceVec.Length();
+		return true;
+	}
+	return false;
+}
 
 bool UObjectPicker::IsRayCollideWithPlane(const FRay& WorldRay, FVector PlanePoint, FVector Normal, FVector& PointOnPlane)
 {
