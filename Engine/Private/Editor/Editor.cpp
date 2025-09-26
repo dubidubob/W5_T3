@@ -278,7 +278,10 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 			TArray<UPrimitiveComponent*> Candidate = FindCandidatePrimitives(InLevel);
 
 			// 피킹 시도
-			UPrimitiveComponent* PrimitiveCollided = ObjectPicker->PickPrimitive(InWorldRay, Candidate, &ActorDistance);
+			//UPrimitiveComponent* PrimitiveCollided = ObjectPicker->PickPrimitive(InWorldRay, Candidate, &ActorDistance);
+
+			FVector2 MousePosition = InputManager.GetMousePosition();
+			UPrimitiveComponent* PrimitiveCollided = ObjectPicker->PickPrimitiveByColor(MousePosition.X, MousePosition.Y, Candidate);
 
 			// 피킹된 프리미티브의 액터를 선택
 			if (PrimitiveCollided)

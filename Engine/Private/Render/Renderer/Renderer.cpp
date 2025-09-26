@@ -142,7 +142,7 @@ void URenderer::InitializeShaders()
 	// Create Picking Pixel Shader (uses existing vertex shaders)
 	ID3DBlob* PixelShaderBlob = nullptr;
 	HRESULT hr = D3DCompileFromFile(
-		L"Engine/Data/Shader/PickingShader.hlsl",
+		L"Data/Shader/PickingShader.hlsl",
 		nullptr,
 		nullptr,
 		"mainPS",
@@ -360,6 +360,16 @@ void URenderer::Update(UEditor* Editor)
 	if(Editor->GetObjPreview()->SelectActivated())
 		RenderObjectViewer(Editor);
 #endif
+
+	// Render color picking pass (off-screen)
+	RenderColorPicking();
+
+	// Switch back to main render target for UI rendering
+	ID3D11RenderTargetView* MainRTV = DeviceResources->GetRenderTargetView();
+	ID3D11DepthStencilView* MainDSV = DeviceResources->GetDepthStencilView();
+	GetDeviceContext()->OMSetRenderTargets(1, &MainRTV, MainDSV);
+	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
+
 	UUIManager::GetInstance().Render();
 	RenderEnd();
 }
@@ -390,6 +400,9 @@ void URenderer::RenderMultiViewport(UEditor* Editor)
 
 		RenderScene(Editor, Idx);
 	}
+
+	// Render color picking pass (off-screen) after all viewports
+	RenderColorPicking();
 }
 
 void URenderer::RenderScene(UEditor* Editor, int Idx)
