@@ -117,6 +117,10 @@ FVector4::FVector4(const FVector4& InOther)
 		: X(InOther.X), Y(InOther.Y), Z(InOther.Z), W(InOther.W)
 {
 }
+FVector4::FVector4(const FVector& InVector3, const float InW)
+	: X(InVector3.X), Y(InVector3.Y), Z(InVector3.Z), W(InW)
+{
+}
 
 
 /**

@@ -156,6 +156,8 @@ struct FVector4
 	 */
 	FVector4(const FVector4& InOther);
 
+	FVector4(const FVector& InVector3, const float InW);
+
 	/**
 	 * @brief 두 벡터를 더한 새로운 벡터를 반환하는 함수
 	 */

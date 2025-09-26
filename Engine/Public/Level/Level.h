@@ -49,6 +49,8 @@ public:
 	UCamera* GetCamera() const { return CameraPtr; }
 
 private:
+
+	void AddLevelActor(AActor* Actor);
 	TArray<AActor*> LevelActors;
 	TArray<UPrimitiveComponent*> LevelPrimitiveComponents;
 	TArray<UTextComponent*> TextComponents;
@@ -79,6 +81,7 @@ private:
 template <typename T, typename ... Args>
 T* ULevel::SpawnActor(const FString& InName)
 {
+
 	T* NewActor = NewObject<T>();
 
 	///////////////////////////////////////////
@@ -88,7 +91,7 @@ T* ULevel::SpawnActor(const FString& InName)
 	//Outer 설정 시 Outer의 메모리 카운트에 자신의 메모리 합산 작업 수행
 
 	if (!InName.empty()) { NewActor->SetName(InName); }
-	LevelActors.Add(NewActor);
+	AddLevelActor(NewActor);
 	NewActor->BeginPlay();
 
 	UE_LOG("%s", NewActor->GetName().c_str());

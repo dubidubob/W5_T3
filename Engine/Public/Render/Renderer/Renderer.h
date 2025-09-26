@@ -44,6 +44,7 @@ public:
 	void RenderText(const FVector& CameraLocation);
 	void RenderSlate(UEditor* Editor);
 	void RenderEditorPrimitive(FEditorPrimitive& Primitive, FRenderState& RenderState);
+	void RenderSortingBatchMap();
 
 	// ================== Buffer Creation Templates ==================
 	template<typename T>
@@ -97,6 +98,14 @@ public:
 	void UpdateInstance(const TArray<FTextInstance>* Instances);
 	void UpdateInstanceDrawConstants(bool UseInstancing, uint32 BaseOffset, uint32 InstanceCount) const;
 
+	// ================== Sorting Batch ==================
+	void SetSortingBatchMapDirty()
+	{
+		bSortingBatchMapDirty = true;
+	}
+	void ReSetSortingBatchMap();
+	void CleanUpSortingBatch();
+
 	// ================== View Mode Management ==================
 	void SetViewMode(EViewportRenderMode ViewMode) { CurrentRenderMode = ViewMode; }
 	EViewportRenderMode GetViewMode() const { return CurrentRenderMode; }
@@ -139,7 +148,10 @@ public:
 	ID3D11RasterizerState* GetRasterizerState(const FRenderState& RenderState);
 
 private:
-	// ================== Core Components ==================
+
+	bool bSortingBatchMapDirty = true;
+	TMap<FStaticMaterial*, TMap<FStaticMesh*, TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>>> SortingBatchMap;
+		// ================== Core Components ==================
 	UPipeline* Pipeline = nullptr;
 	UDeviceResources* DeviceResources = nullptr;
 
@@ -308,6 +320,11 @@ private:
 	void CreateSamplerState();
 
 	// ================== Rendering Functions ==================
+	void SetupStaticMeshCommon();
+	void SetupMaterial(FStaticMaterial* Material);
+	void SetupStaticMeshAsset(FStaticMesh* StaticMeshAsset);
+	void SetupStaticMeshComponent(UStaticMeshComponent* StaticMeshComponent);
+	
 	void RenderMultiViewport(UEditor* Editor);
 	void RenderScene(UEditor* Editor, int Idx = 0);
 	void RenderStaticMeshComponent(UPrimitiveComponent* Component);

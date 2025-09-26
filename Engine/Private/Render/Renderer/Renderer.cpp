@@ -319,7 +319,7 @@ void URenderer::Update(UEditor* Editor)
 	}
 
 #if IS_OBJ_VIEWER
-	if(Editor->GetObjPreview()->SelectActivated())
+	if (Editor->GetObjPreview()->SelectActivated())
 		RenderObjectViewer(Editor);
 #endif
 	UUIManager::GetInstance().Render();
@@ -378,27 +378,160 @@ void URenderer::RenderEnd() const
 	GetSwapChain()->Present(0, 0);
 }
 
+// ================== Sorting Batch ==================
+void URenderer::CleanUpSortingBatch()
+{
+	SortingBatchMap.clear();
+}
+void URenderer::ReSetSortingBatchMap()
+{
+	if (bSortingBatchMapDirty == false)
+	{
+		return;
+	}
+
+	bSortingBatchMapDirty = false;
+	const TArray<UPrimitiveComponent*>& PrimitiveComponents =
+		ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
+
+	CleanUpSortingBatch();
+
+	for (auto& Primitive : PrimitiveComponents)
+	{
+		UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Primitive);
+		if (StaticMeshComponent != nullptr)
+		{
+			FStaticMesh* StaticMeshAsset = StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset();
+			int MaterialSize = StaticMeshAsset->Materials.size();
+			for (int i = 0; i < MaterialSize; i++)
+			{
+				FStaticMaterial* pMaterial = &StaticMeshAsset->Materials[i];
+				//마테리얼 없으면 추가
+				
+				if (SortingBatchMap.Contains(pMaterial) == false)
+				{
+					SortingBatchMap[pMaterial] =
+					{
+						{
+							{StaticMeshAsset, {	{StaticMeshComponent, {}}}}
+						}
+					};
+				}
+				else
+				{
+					//마테리얼 안에 메쉬가 없으면 추가
+					if (SortingBatchMap[pMaterial].Contains(StaticMeshAsset) == false)
+					{
+						SortingBatchMap[pMaterial][StaticMeshAsset] = { {StaticMeshComponent, {}} };
+					}
+					else
+					{
+						//마테리얼-> 메쉬 안에 StaticMeshComponent 추가
+						SortingBatchMap[pMaterial][StaticMeshAsset][StaticMeshComponent] = {};
+					}
+				}
+			}
+
+			TArray<FStaticMeshSection>& Sections = StaticMeshAsset->Sections;
+			int SectionSize = StaticMeshAsset->Sections.size();
+			for (int i = 0; i < SectionSize; i++)
+			{
+				FStaticMeshSection* pSection = &Sections[i];
+				FStaticMaterial* SectionMaterial = &StaticMeshAsset->Materials[pSection->MaterialIndex];
+				SortingBatchMap[SectionMaterial][StaticMeshAsset][StaticMeshComponent].Push(pSection);
+			}
+		}
+	}
+}
+
 // ================== Specific Rendering Functions ==================
 
 void URenderer::RenderLevel()
 {
 	Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
 	Pipeline->SetConstantBuffer(2, false, ConstantBufferColor);
+	
 	if (!ULevelManager::GetInstance().GetCurrentLevel() ||
 		!IsShowFlagEnabled(EEngineShowFlags::SF_Primitives))
 	{
 		return;
 	}
 
-	const TArray<UPrimitiveComponent*>& PrimitiveComponents =
+	//렌더스테이트 배치
+	ReSetSortingBatchMap();
+	RenderSortingBatchMap();
+
+	//Legacy
+	/*const TArray<UPrimitiveComponent*>& PrimitiveComponents =
 		ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
 
 	for (UPrimitiveComponent* Component : PrimitiveComponents)
 	{
 		RenderStaticMeshComponent(Component);
-	}
+	}*/
 	
-	DisableInstancing();
+	//DisableInstancing();
+}
+
+void URenderer::RenderSortingBatchMap()
+{
+	SetupStaticMeshCommon();
+	TArray<FStaticMaterial*> MaterialKeys = SortingBatchMap.GetKeys();
+	for (FStaticMaterial* MaterialKey : MaterialKeys)
+	{
+		SetupMaterial(MaterialKey);
+		TMap<FStaticMesh*, TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>>& SortingMaterialMap = SortingBatchMap[MaterialKey];
+		TArray<FStaticMesh*> StaticMeshKeys = SortingMaterialMap.GetKeys();
+		for (FStaticMesh* StaticMeshKey : StaticMeshKeys)
+		{
+			SetupStaticMeshAsset(StaticMeshKey);
+			TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>& SortingMeshComponentMap = SortingMaterialMap[StaticMeshKey];
+			TArray<UStaticMeshComponent*> MeshComponentKeys = SortingMeshComponentMap.GetKeys();
+			for(UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
+			{
+				SetupStaticMeshComponent(MeshComponentKey);
+				TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
+				for (FStaticMeshSection* Section : SectionArray)
+				{
+					Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+				}
+			}
+		}
+	}
+}
+void URenderer::SetupStaticMeshCommon()
+{
+	FRenderState RenderState;
+	RenderState.CullMode = ECullMode::Back;
+	RenderState.FillMode = EFillMode::Solid;
+
+	Pipeline->UpdatePipeline(CreatePipelineInfo(RenderState));
+	GetDeviceContext()->PSSetSamplers(0, 1, &DiffuseSampler);
+
+}
+void URenderer::SetupMaterial(FStaticMaterial* Material)
+{
+	ID3D11ShaderResourceView* SRV = nullptr;
+	FMaterialParamsCB MaterialParams{};
+	MaterialParams.DiffuseColor = FVector4(Material->DiffuseColor, 1);
+	MaterialParams.UseTexture = Material->bUseTexture ? 1 : 0;
+	if (MaterialParams.UseTexture) { SRV = Material->TextureSRV; }
+
+	GetDeviceContext()->PSSetShaderResources(1, 1, &SRV);
+	Pipeline->SetConstantBuffer(4, false, ConstantBufferMaterialParam);
+	UpdateBuffer(ConstantBufferMaterialParam, MaterialParams);
+}
+void URenderer::SetupStaticMeshAsset(FStaticMesh* StaticMeshAsset)
+{
+	// Set buffers and topology
+	UINT Offset = 0;
+	GetDeviceContext()->IASetVertexBuffers(0, 1, &StaticMeshAsset->VertexBuffer, &StaticStride, &Offset);
+	GetDeviceContext()->IASetIndexBuffer(StaticMeshAsset->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+}
+void URenderer::SetupStaticMeshComponent(UStaticMeshComponent* StaticMeshComponent)
+{
+	UpdateBuffer(ConstantBufferModels, StaticMeshComponent->GetWorldTransformMatrix());
 }
 
 void URenderer::RenderStaticMeshComponent(UPrimitiveComponent* Component)
@@ -427,12 +560,12 @@ void URenderer::SetupStaticMeshRendering(UStaticMeshComponent* Component, FStati
 	UpdateBuffer(ConstantBufferModels, Component->GetWorldTransformMatrix());
 	UpdateBuffer(ConstantBufferColor, FVector4(0.f, 0.f, 0.f, 0.f));
 
-	Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
+	//Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
 	InstanceDrawConstants InstanceConstants{};
 	InstanceConstants.bUseInstancing = 0;
 	InstanceConstants.BaseInstanceOffset = 0;
 	InstanceConstants.InstanceCount = 0;
-	UpdateBuffer(ConstantBufferInstance, InstanceConstants);
+	//UpdateBuffer(ConstantBufferInstance, InstanceConstants);
 
 	// Set buffers and topology
 	UINT Offset = 0;
@@ -793,6 +926,7 @@ void URenderer::CleanupAll()
 	CleanupBuffers();
 	CleanupShaders();
 	CleanupRenderStates();
+	CleanUpSortingBatch();
 }
 
 void URenderer::CleanupRenderStates()
