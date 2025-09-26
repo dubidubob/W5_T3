@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <FxCompile Include="Asset\Shader\LineInstanced.hlsl">
@@ -295,5 +295,11 @@
     <Filter Include="ImGui">
       <UniqueIdentifier>{dc154a9e-b7a2-49e7-aa4f-28f386c885e4}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup xmlns="">
+    <ClCompile Include="Private\Math\BVH.cpp" />
+  </ItemGroup>
+  <ItemGroup xmlns="">
+    <ClInclude Include="Public\Math\BVH.h" />
   </ItemGroup>
 </Project>

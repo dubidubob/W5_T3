@@ -74,30 +74,24 @@ UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 Mou
 		return nullptr;
 	}
 
-	// Read the pixel value from the color picking texture
-	uint32 pixelValue = DeviceResources->ReadPixelFromColorPickingTexture(MouseX, MouseY);
+    uint32 pixelValue = DeviceResources->ReadPixelFromColorPickingTexture(MouseX, MouseY);
 
 	if (pixelValue == 0)
 	{
 		return nullptr; // No object at this position
 	}
 
-	// Find the primitive component with matching UUID
-	ULevelManager& LevelManager = ULevelManager::GetInstance();
-	const ULevel* CurrentLevel = LevelManager.GetCurrentLevel();
-	if (!CurrentLevel)
-	{
-		return nullptr;
-	}
-
-	const TArray<UPrimitiveComponent*> Candidate = CurrentLevel->GetLevelPrimitiveComponents();
-	for (UPrimitiveComponent* Primitive : Candidate)
-	{
-		if (Primitive->GetOwner() && Primitive->GetOwner()->GetUUID() == pixelValue)
-		{
-			return Primitive;
-		}
-	}
+    if (pixelValue < GUObjectArray.Num())
+    {
+        UObject* Obj = GUObjectArray[pixelValue];
+        if (Obj)
+        {
+            if (UPrimitiveComponent* Prim = Cast<UPrimitiveComponent>(Obj))
+            {
+                return Prim;
+            }
+        }
+    }
 
 	/*AActor* Actor = Cast<AActor>(GUObjectArray[pixelValue]);
 	if (Actor)

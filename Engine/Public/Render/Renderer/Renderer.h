@@ -7,6 +7,7 @@
 #include "ViewportTypes.h"
 #include "Mesh/StaticMesh/StaticMesh.h"
 #include "Global/CoreTypes.h"
+#include "Math/BVH.h"
 
 class UPipeline;
 class UDeviceResources;
@@ -227,6 +228,7 @@ private:
 	ID3D11PixelShader* LineInstancedPixelShader = nullptr;
 	ID3D11InputLayout* LineInstancedInputLayout = nullptr;
 
+    FBVH SceneBVH;
 	// ================== Picking Shader Set ==================
 	ID3D11PixelShader* PickingPixelShader = nullptr;
 
