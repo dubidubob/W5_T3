@@ -9,7 +9,16 @@ struct FMatrix
 	*/
 	float Data[4][4];
 
+	static void* operator new(size_t size)
+	{
+		// C++17 이후의 std::aligned_alloc 또는 _mm_malloc 사용
+		return _aligned_malloc(size, 16); // 또는 std::aligned_alloc(16, size);
+	}
 
+	static void operator delete(void* ptr, size_t size)
+	{
+		_aligned_free(ptr); // 또는 std::free(ptr);
+	}
 	/**
 	* @brief float 타입의 배열을 사용한 FMatrix의 기본 생성자
 	*/

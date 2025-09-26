@@ -399,6 +399,7 @@
     <ClInclude Include="Public\\Utility\\LevelSerializer.h" />
     <ClInclude Include="Public\\Utility\\Metadata.h" />
     <ClInclude Include="Global\Rect.h" />
+    <ClInclude Include="SIMD.h" />
     <ClInclude Include="ViewportTypes.h" />
   </ItemGroup>
   <ItemGroup>

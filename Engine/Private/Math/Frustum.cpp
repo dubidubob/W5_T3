@@ -8,7 +8,7 @@ static inline void NormalizePlane(FVector4& P)
 	assert((reinterpret_cast<uintptr_t>(&P) % 16) == 0);
 
 	// v = [x y z w], len = sqrt(x^2+y^2+z^2)
-	__m128 v = _mm_loadu_ps(&P.X);
+	__m128 v = _mm_load_ps(&P.X);
 	const __m128 zeroW = _mm_castsi128_ps(_mm_set_epi32(0, -1, -1, -1)); // w=0 만드는 용도(XYZ만)
 	__m128 xyz = _mm_and_ps(v, zeroW);  // w=0
 
@@ -30,7 +30,7 @@ static inline void NormalizePlane(FVector4& P)
 		// 전체 성분에 동일 스칼라 곱
 		__m128 s = _mm_shuffle_ps(invLen, invLen, _MM_SHUFFLE(0, 0, 0, 0));
 		__m128 out = _mm_mul_ps(v, s);
-		_mm_storeu_ps(&P.X, out);
+		_mm_store_ps(&P.X, out);
 	}
 #else
     float L = std::sqrtf(P.X * P.X + P.Y * P.Y + P.Z * P.Z);
