@@ -3,16 +3,16 @@
 
 TMap<FString, FTimeProfile> TimeProfileMap;
 
-void FScopeCycleCounter::AddTimeProfile(const TStatId& Key, double InMilliseconds, uint64 InCycles)
+void FScopeCycleCounter::AddTimeProfile(const TStatId& Key, double InMilliseconds)
 {
 	if (TimeProfileMap.Contains(Key.Key) == false)
 	{
-		TimeProfileMap[Key.Key] = FTimeProfile{ InMilliseconds, InCycles };
+		TimeProfileMap[Key.Key] = FTimeProfile{ InMilliseconds, 1 };
 	}
 	else
 	{
 		TimeProfileMap[Key.Key].Milliseconds += InMilliseconds;
-		TimeProfileMap[Key.Key].Cycles += InCycles;
+		TimeProfileMap[Key.Key].CallCount++;
 	}
 }
 void FScopeCycleCounter::TimeProfileInit()
@@ -21,7 +21,7 @@ void FScopeCycleCounter::TimeProfileInit()
 	for (const FString& Key : Keys)
 	{
 		TimeProfileMap[Key].Milliseconds = 0;
-		TimeProfileMap[Key].Cycles = 0;
+		TimeProfileMap[Key].CallCount = 0;
 	}
 }
 //const TMap<FString, FTimeProfile>& FScopeCycleCounter::GetTimeProfiles()

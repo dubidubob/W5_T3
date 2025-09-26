@@ -88,12 +88,12 @@ struct TStatId
 struct FTimeProfile
 {
 	double Milliseconds;
-	uint64 Cycles;
+	uint32 CallCount;
 
 	const char* GetConstChar() const
 	{
 		static char buffer[64]; // static으로 해야 반환 가능
-		snprintf(buffer, sizeof(buffer), " : %.3fms, Cycle : %llu", Milliseconds, Cycles);
+		snprintf(buffer, sizeof(buffer), " : %.3fms, Call : %llu", Milliseconds, CallCount);
 		return buffer;
 	}
 };
@@ -129,12 +129,12 @@ public:
 		double Milliseconds = FWindowsPlatformTime::ToMilliseconds(CycleDiff);
 		if (UsedStatId.Key.empty() == false)
 		{
-			AddTimeProfile(UsedStatId, Milliseconds, CycleDiff);
+			AddTimeProfile(UsedStatId, Milliseconds);
 		}
 		return Milliseconds;
 	}
 
-	static void AddTimeProfile(const TStatId& Key, double InMilliseconds, uint64 InCycles);
+	static void AddTimeProfile(const TStatId& Key, double InMilliseconds);
 	static void TimeProfileInit();
 
 	//이거 왜 안됨?
