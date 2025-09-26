@@ -208,7 +208,7 @@ bool ULevel::DestroyActor(AActor* InActor)
 	// Remove
 	delete InActor;
 
-	UE_LOG("Level: Actor Destroyed Successfully");
+	//UE_LOG("Level: Actor Destroyed Successfully");
 	return true;
 }
 
@@ -219,7 +219,7 @@ void ULevel::MarkActorForDeletion(AActor* InActor)
 {
 	if (!InActor)
 	{
-		UE_LOG("Level: MarkActorForDeletion: InActor Is Null");
+		//UE_LOG("Level: MarkActorForDeletion: InActor Is Null");
 		return;
 	}
 
@@ -228,14 +228,14 @@ void ULevel::MarkActorForDeletion(AActor* InActor)
 	{
 		if (PendingActor == InActor)
 		{
-			UE_LOG("Level: Actor Already Marked For Deletion");
+			//UE_LOG("Level: Actor Already Marked For Deletion");
 			return;
 		}
 	}
 
 	// 삭제 대기 리스트에 추가
 	ActorsToDelete.push_back(InActor);
-	UE_LOG("Level: Actor Marked For Deletion In Next Tick: %p", InActor);
+	//UE_LOG("Level: Actor Marked For Deletion In Next Tick: %p", InActor);
 
 	// 선택 해제는 바로 처리
 	if (SelectedActor == InActor)
@@ -262,7 +262,7 @@ void ULevel::ProcessPendingDeletions()
 		return;
 	}
 
-	UE_LOG("[Level] Processing %zu Pending Deletions", ActorsToDelete.size());
+	//UE_LOG("[Level] Processing %zu Pending Deletions", ActorsToDelete.size());
 
 	// 대기 중인 액터들을 삭제
 	for (AActor* ActorToDelete : ActorsToDelete)
@@ -303,10 +303,10 @@ void ULevel::ProcessPendingDeletions()
 
 		// Release Memory
 		delete ActorToDelete;
-		UE_LOG("[Level] Actor Deleted: %p", ActorToDelete);
+		//UE_LOG("[Level] Actor Deleted: %p", ActorToDelete);
 	}
 
 	// Clear TArray
 	ActorsToDelete.Empty();
-	UE_LOG("[Level] All Pending Deletions Processed");
+	//UE_LOG("[Level] All Pending Deletions Processed");
 }

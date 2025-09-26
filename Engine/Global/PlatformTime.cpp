@@ -2,7 +2,7 @@
 #include "PlatformTime.h"
 
 TMap<FString, FTimeProfile> TimeProfileMap;
-
+//Map에 이미 있으면 시간, 콜스택 추가
 void FScopeCycleCounter::AddTimeProfile(const TStatId& Key, double InMilliseconds)
 {
 	if (TimeProfileMap.Contains(Key.Key) == false)
@@ -15,6 +15,7 @@ void FScopeCycleCounter::AddTimeProfile(const TStatId& Key, double InMillisecond
 		TimeProfileMap[Key.Key].CallCount++;
 	}
 }
+//시간, 콜스택 초기화
 void FScopeCycleCounter::TimeProfileInit()
 {
 	const TArray<FString> Keys = TimeProfileMap.GetKeys();

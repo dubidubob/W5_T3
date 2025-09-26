@@ -156,8 +156,8 @@ FPrimitiveMetadata FLevelSerializer::JsonToPrimitive(const JSON& InJsonData, uin
 					PrimitiveMeta.ObjStaticMeshAsset = InJsonData.at("ObjStaticMeshAsset").ToString();
 				}
 			}
-			UE_LOG("LevelSerializer: JsonToPrimitive: ID: %d | Scale: (%.3f, %.3f, %.3f)",
-			       InID, PrimitiveMeta.Scale.X, PrimitiveMeta.Scale.Y, PrimitiveMeta.Scale.Z);
+			//UE_LOG("LevelSerializer: JsonToPrimitive: ID: %d | Scale: (%.3f, %.3f, %.3f)",
+			       //InID, PrimitiveMeta.Scale.X, PrimitiveMeta.Scale.Y, PrimitiveMeta.Scale.Z);
 		}
 	}
 	catch (const exception&)

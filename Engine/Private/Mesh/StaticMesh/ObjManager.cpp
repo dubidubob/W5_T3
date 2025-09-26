@@ -52,7 +52,7 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 	if (It != StaticMeshAssetMap.end())
 	{
 		// Already Cached
-		UE_LOG("FStaticMesh asset '%s' found in cache.", PathFileName.c_str());
+		//UE_LOG("FStaticMesh asset '%s' found in cache.", PathFileName.c_str());
 		return It->second;
 	}
 
@@ -93,7 +93,7 @@ UStaticMesh* FObjManager::LoadObjStaticMesh(path Path)
 		UStaticMesh* CachedMesh = StaticMeshMap[PathFileName];
 		if (CachedMesh)
 		{
-			UE_LOG("UStaticMesh object '%s' found in cache.", PathFileName.c_str());
+			//UE_LOG("UStaticMesh object '%s' found in cache.", PathFileName.c_str());
 			return CachedMesh;
 		}
 		StaticMeshMap.Remove(PathFileName);

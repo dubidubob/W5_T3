@@ -94,7 +94,7 @@ T* ULevel::SpawnActor(const FString& InName)
 	AddLevelActor(NewActor);
 	NewActor->BeginPlay();
 
-	UE_LOG("%s", NewActor->GetName().c_str());
+	//UE_LOG("%s", NewActor->GetName().c_str());
 
 	return NewActor;
 }
