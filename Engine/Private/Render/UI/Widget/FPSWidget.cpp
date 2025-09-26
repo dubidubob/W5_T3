@@ -2,6 +2,7 @@
 #include "Render/UI/Widget/FPSWidget.h"
 
 #include "Manager/Time/TimeManager.h"
+#include "Render/Renderer/Renderer.h"
 
 constexpr float REFRESH_INTERVAL = 0.1f;
 
@@ -65,6 +66,7 @@ void UFPSWidget::RenderWidget()
 		PrintDeltaTime = CurrentDeltaTime * 1000.0f;
 		PreviousTime = TotalGameTime;
 	}
+	URenderer& Renderer = URenderer::GetInstance();
 
 	ImVec4 FPSColor = GetFPSColor(CurrentFPS);
 	ImGui::TextColored(FPSColor, "FPS: %.1f (%.2f ms)", PrintFPS, PrintDeltaTime);
@@ -74,6 +76,14 @@ void UFPSWidget::RenderWidget()
 	ImGui::Text("Object Count: %s", to_string(TotalAllocationCount).c_str());
 	ImGui::Text("Memory Byte: %s", to_string(TotalAllocationBytes).c_str());
 	ImGui::Separator();
+
+#ifdef _DEVELOP
+	ImGui::Text("Profiling");
+	ImGui::Text("Material Change : %s", to_string(Renderer.GetMaterialChangeCount()));
+	ImGui::Text("StaticMesh Change : %s", to_string(Renderer.GetStaticMeshChangeCount()));
+	ImGui::Text("StaticMeshComponent Change : %s", to_string(Renderer.GetStaticMeshComponentChagneCount()));
+	ImGui::Text("MeshSectionDraw Count : %s", to_string(Renderer.GetMeshSectionDrawCount()));
+#endif
 
 	ImGui::Checkbox("Show Details", &bShowGraph);
 
