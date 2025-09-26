@@ -243,6 +243,10 @@ private:
 	uint32 StrideTextVertex = 0;
 	uint32 StrideTextInstance = 0;
 
+	// Frame-stamp visibility marking to avoid per-frame TSet construction
+	TArray<uint32> VisibleStamp;
+	uint32 FrameStamp = 1;
+
 	// ================== Batching Structures ==================
 	struct FPrimitiveBatchKey
 	{

@@ -565,8 +565,25 @@ void URenderer::RenderSortingBatchMap()
     ExtractFrustumPlanes(CachedViewProj, Planes);
     TArray<UStaticMeshComponent*> Candidates;
     SceneBVH.QueryFrustum(Planes, Candidates);		
-    TSet<UStaticMeshComponent*> CandidateSet;
-    for (auto* C : Candidates) CandidateSet.Add(C); //병목지점 fix 여부(x)
+    FrameStamp++;
+    uint32 MaxId = 0;
+    for (auto* C : Candidates)
+    {
+        if (!C) continue;
+        uint32 Id = static_cast<uint32>(C->GetInternalIndex());
+        if (Id > MaxId) MaxId = Id;
+    }
+    if (VisibleStamp.Num() <= MaxId)
+    {
+        VisibleStamp.Reserve(MaxId + 1);
+        while (VisibleStamp.Num() <= MaxId) VisibleStamp.push_back(0u);
+    }
+    for (auto* C : Candidates)
+    {
+        if (!C) continue;
+        uint32 Id = static_cast<uint32>(C->GetInternalIndex());
+        VisibleStamp[Id] = FrameStamp;
+    }
     TArray<FStaticMaterial*> MaterialKeys = SortingBatchMap.GetKeys();
 
     for (FStaticMaterial* MaterialKey : MaterialKeys)
@@ -583,7 +600,12 @@ void URenderer::RenderSortingBatchMap()
             Filtered.Reserve(MeshComponentKeys.Num());
             for (auto* CompKey : MeshComponentKeys)
             {
-                if (CandidateSet.Contains(CompKey)) Filtered.push_back(CompKey);
+                if (!CompKey) continue;
+                uint32 Id = static_cast<uint32>(CompKey->GetInternalIndex());
+                if (Id < VisibleStamp.Num() && VisibleStamp[Id] == FrameStamp)
+                {
+                    Filtered.push_back(CompKey);
+                }
             }
             MeshComponentKeys = std::move(Filtered);
 #if SIMD_LEVEL >= 1
