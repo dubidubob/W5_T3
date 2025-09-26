@@ -46,7 +46,7 @@ bool ULevelManager::Init(UCamera* InCamera)
 	CurrentLevel->SetCamera(InCamera);
 	CurrentLevel->Init();
 
-	UE_LOG("LevelManager: Successfully Created New Level '%s'", CurrentLevel->GetName().c_str());
+	////UE_LOG("LevelManager: Successfully Created New Level '%s'", CurrentLevel->GetName().c_str());
 	return true;
 }
 
@@ -65,7 +65,7 @@ bool ULevelManager::CreateNewLevel()
 	CurrentLevel->SetCamera(Camera);
 	CurrentLevel->Init();
 
-	UE_LOG("LevelManager: Successfully Created New Level '%s'", CurrentLevel->GetName().c_str());
+	////UE_LOG("LevelManager: Successfully Created New Level '%s'", CurrentLevel->GetName().c_str());
 	return true;
 }
 
@@ -74,7 +74,7 @@ bool ULevelManager::CreateNewLevel()
  */
 bool ULevelManager::LoadLevel(const FString& InFilePath)
 {
-	UE_LOG("LevelManager: Loading Level From: %s", InFilePath.c_str());
+	//UE_LOG("LevelManager: Loading Level From: %s", InFilePath.c_str());
 
 	try
 	{
@@ -84,7 +84,7 @@ bool ULevelManager::LoadLevel(const FString& InFilePath)
 		bool bLoadSuccess = FLevelSerializer::LoadLevelFromFile(Metadata, InFilePath);
 		if (!bLoadSuccess)
 		{
-			UE_LOG("LevelManager: Failed To Load Level From: %s", InFilePath.c_str());
+			//UE_LOG("LevelManager: Failed To Load Level From: %s", InFilePath.c_str());
 			return false;
 		}
 
@@ -92,7 +92,7 @@ bool ULevelManager::LoadLevel(const FString& InFilePath)
 		FString ErrorMessage;
 		if (!FLevelSerializer::ValidateLevelData(Metadata, ErrorMessage))
 		{
-			UE_LOG("LevelManager: Level Validation Failed: %s", ErrorMessage.c_str());
+			//UE_LOG("LevelManager: Level Validation Failed: %s", ErrorMessage.c_str());
 			return false;
 		}
 		UCamera* CameraPtr = CurrentLevel->GetCamera();
@@ -115,19 +115,19 @@ bool ULevelManager::LoadLevel(const FString& InFilePath)
 		bool bSuccess = LoadLevelFromMetadata(CurrentLevel, Metadata);
 		if (!bSuccess)
 		{
-			UE_LOG("LevelManager: Failed To Create Level From Metadata");
+			//UE_LOG("LevelManager: Failed To Create Level From Metadata");
 			SafeDelete(CurrentLevel);
 			CurrentLevel = nullptr;
 			return false;
 		}
 
 		CurrentLevel->Init();
-		UE_LOG("LevelManager: Level Successfully Loaded");
+		//UE_LOG("LevelManager: Level Successfully Loaded");
 		return true;
 	}
 	catch (const exception& Exception)
 	{
-		UE_LOG("LevelManager: Exception During Load: %s", Exception.what());
+		//UE_LOG("LevelManager: Exception During Load: %s", Exception.what());
 		return false;
 	}
 }
@@ -139,7 +139,7 @@ bool ULevelManager::SaveCurrentLevel(const FString& InFilePath) const
 {
 	if (!CurrentLevel)
 	{
-		UE_LOG("LevelManager: No Current Level To Save");
+		//UE_LOG("LevelManager: No Current Level To Save");
 		return false;
 	}
 
@@ -150,7 +150,7 @@ bool ULevelManager::SaveCurrentLevel(const FString& InFilePath) const
 		FilePath = GenerateLevelFilePath(CurrentLevel->GetName().empty() ? "Untitled" : CurrentLevel->GetName());
 	}
 
-	UE_LOG("LevelManager: Saving Current Level To: %s", FilePath.string().c_str());
+	//UE_LOG("LevelManager: Saving Current Level To: %s", FilePath.string().c_str());
 
 	try
 	{
@@ -162,18 +162,18 @@ bool ULevelManager::SaveCurrentLevel(const FString& InFilePath) const
 
 		if (bSuccess)
 		{
-			UE_LOG("LevelManager: Level Saved Successfully");
+			//UE_LOG("LevelManager: Level Saved Successfully");
 		}
 		else
 		{
-			UE_LOG("LevelManager: Failed To Save Level");
+			//UE_LOG("LevelManager: Failed To Save Level");
 		}
 
 		return bSuccess;
 	}
 	catch (const exception& Exception)
 	{
-		UE_LOG("LevelManager: Exception During Save: %s", Exception.what());
+		//UE_LOG("LevelManager: Exception During Save: %s", Exception.what());
 		return false;
 	}
 }
@@ -208,7 +208,7 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 
 	if (!InLevel)
 	{
-		UE_LOG("LevelManager: ConvertLevelToMetadata: Level Is Null");
+		//UE_LOG("LevelManager: ConvertLevelToMetadata: Level Is Null");
 		return Metadata;
 	}
 
@@ -253,7 +253,7 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 		}
 		else
 		{
-			UE_LOG("LevelManager: Unknown Actor Type, Skipping...");
+			//UE_LOG("LevelManager: Unknown Actor Type, Skipping...");
 			continue;
 		}
 
@@ -275,7 +275,7 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 
 	//Metadata.NextUUID = CurrentID;
 
-	UE_LOG("LevelManager: Converted %zu Actors To Metadata", Metadata.Primitives.size());
+	//UE_LOG("LevelManager: Converted %zu Actors To Metadata", Metadata.Primitives.size());
 	return Metadata;
 }
 
@@ -286,11 +286,11 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 {
 	if (!InLevel)
 	{
-		UE_LOG("LevelManager: LoadLevelFromMetadata: InLevel Is Null");
+		//UE_LOG("LevelManager: LoadLevelFromMetadata: InLevel Is Null");
 		return false;
 	}
 
-	UE_LOG("LevelManager: Loading %zu Primitives From Metadata", InMetadata.Primitives.size());
+	//UE_LOG("LevelManager: Loading %zu Primitives From Metadata", InMetadata.Primitives.size());
 
 	// Metadata의 각 Primitive를 Actor로 생성
 	for (const auto& [ID, PrimitiveMeta] : InMetadata.Primitives)
@@ -324,7 +324,7 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 			break;
 		}
 		default:
-			UE_LOG("LevelManager: Unknown Primitive Type: %d", static_cast<int32>(PrimitiveMeta.Type));
+			//UE_LOG("LevelManager: Unknown Primitive Type: %d", static_cast<int32>(PrimitiveMeta.Type));
 			continue;
 		}
 
@@ -338,7 +338,7 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 		}
 		else
 		{
-			UE_LOG("LevelManager: Failed to create Actor (Primitive ID: %d)", ID);
+			//UE_LOG("LevelManager: Failed to create Actor (Primitive ID: %d)", ID);
 		}
 	}
 
@@ -355,6 +355,6 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 	}
 	UEngineStatics::SetNextUUID(InMetadata.NextUUID);
 
-	UE_LOG("LevelManager: Level successfully loaded from metadata");
+	//UE_LOG("LevelManager: Level successfully loaded from metadata");
 	return true;
 }
