@@ -133,7 +133,6 @@ void UUIManager::Update()
  */
 void UUIManager::Render()
 {
-	TIME_PROFILE(UIRender)
 	if (!bIsInitialized)
 	{
 		return;

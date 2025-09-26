@@ -12,8 +12,7 @@ FScopeCycleCounter Key##Counter(#Key); //현재 스코프 단위로 측정
 //스코프단위를 직접 만들기 위한 START, END
 #ifdef _DEVELOP
 #define TIME_PROFILE_START(Key)\
-{\
-	FScopeCycleCounter Key##Counter(#Key); //Key를 변수값으로 사용해 중복안되도록 
+FScopeCycleCounter Key##Counter(#Key); //Key를 변수값으로 사용해 중복안되도록 
 #else
 #define TIME_PROFILE_START(Key)
 #endif
@@ -21,7 +20,7 @@ FScopeCycleCounter Key##Counter(#Key); //현재 스코프 단위로 측정
 
 #ifdef _DEVELOP
 #define TIME_PROFILE_END(Key)\
-}
+Key##Counter.Finish();
 #else
 #define TIME_PROFILE_END(Key)
 #endif
@@ -124,6 +123,11 @@ public:
 
 	double Finish()
 	{
+		if (bIsFinish == true)
+		{
+			return 0;
+		}
+		bIsFinish = true;
 		const uint64 EndCycles = FPlatformTime::Cycles64();
 		const uint64 CycleDiff = EndCycles - StartCycles;
 
@@ -145,6 +149,7 @@ public:
 	static const TArray<FTimeProfile> GetTimeProfileValues();
 	static const FTimeProfile& GetTimeProfile(const FString& Key);
 private:
+	bool bIsFinish = false;
 	uint64 StartCycles;
 	TStatId UsedStatId;
 
