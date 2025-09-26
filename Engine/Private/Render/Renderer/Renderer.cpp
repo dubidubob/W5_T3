@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Render/Renderer/Renderer.h"
 
 #include "Level/Level.h"
@@ -573,16 +573,75 @@ void URenderer::RenderSortingBatchMap()
             SetupStaticMeshAsset(StaticMeshKey);
             TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>& SortingMeshComponentMap = SortingMaterialMap[StaticMeshKey];
             TArray<UStaticMeshComponent*> MeshComponentKeys = SortingMeshComponentMap.GetKeys();
-            for(UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
-            {
-                if (!CandidateSet.Contains(MeshComponentKey)) continue;
-                SetupStaticMeshComponent(MeshComponentKey);
-                TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
-                for (FStaticMeshSection* Section : SectionArray)
-                {
-                    Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
-                }
-            }
+#if SIMD_LEVEL >= 1
+			int32 NumComponents = MeshComponentKeys.Num();
+
+			// TArray를 직접 루프 돌지 않고 인덱스로 순회
+			for (int32 i = 0; i < NumComponents; i += 4)
+			{
+				// 1. FAABB 4개 추출
+				FAABB chunk_aabb[4];
+				int32 chunk_size = std::min(4, NumComponents - i);
+
+				// 2. AOS (chunk_aabb) -> SOA (simd_chunk) 변환
+				FAABB_SIMD_Chunk simd_chunk;
+				for (int32 j = 0; j < chunk_size; ++j) {
+					chunk_aabb[j] = MeshComponentKeys[i + j]->GetWorldBounds();
+
+					simd_chunk.MinX[j] = chunk_aabb[j].Min.X;
+					simd_chunk.MinY[j] = chunk_aabb[j].Min.Y;
+					simd_chunk.MinZ[j] = chunk_aabb[j].Min.Z;
+
+					simd_chunk.MaxX[j] = chunk_aabb[j].Max.X;
+					simd_chunk.MaxY[j] = chunk_aabb[j].Max.Y;
+					simd_chunk.MaxZ[j] = chunk_aabb[j].Max.Z;
+				}
+				// SIMD 안전을 위해 모든 필드를 무효 AABB 값(FLT_MAX)으로 초기화
+				for (int32 j = chunk_size; j < 4; j++)
+				{
+					simd_chunk.MinX[j] = FLT_MAX;
+					simd_chunk.MinY[j] = FLT_MAX;
+					simd_chunk.MinZ[j] = FLT_MAX;
+
+					simd_chunk.MaxX[j] = -FLT_MAX;
+					simd_chunk.MaxY[j] = -FLT_MAX;
+					simd_chunk.MaxZ[j] = -FLT_MAX;
+				}
+
+				// 3. SIMD 컬링 함수 호출
+				__m128 render_mask = TestAABBFrustum_Chunk_SIMD(simd_chunk, Planes);
+				int32 mask_int = _mm_movemask_ps(render_mask); // 4비트 정수 마스크로 변환
+
+				// 4. 마스크를 사용하여 개별 액터 처리
+				for (int32 j = 0; j < chunk_size; ++j) {
+					if ((mask_int >> j) & 1) // j번째 비트가 1이면 렌더링 대상
+					{
+						UStaticMeshComponent* MeshComponentKey = MeshComponentKeys[i + j];
+						SetupStaticMeshComponent(MeshComponentKey);
+						TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
+						for (FStaticMeshSection* Section : SectionArray)
+						{
+							Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+						}
+					}
+				}
+			}
+#elif
+			for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
+			{
+				FAABB Bounds = MeshComponentKey->GetWorldBounds();
+				if (!TestAABBFrustum(Bounds, Planes))
+				{
+					continue;
+				}
+				SetupStaticMeshComponent(MeshComponentKey);
+				TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
+				for (FStaticMeshSection* Section : SectionArray)
+				{
+					Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+				}
+			}
+#endif
         }
     }
 }
