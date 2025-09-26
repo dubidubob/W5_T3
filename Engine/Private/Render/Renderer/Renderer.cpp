@@ -717,8 +717,18 @@ void URenderer::SetupPickingMeshRendering(UStaticMeshComponent* Component, FStat
 	PickingConstants PickingCB;
 	if (Component->GetOwner())
 	{
-		//PickingCB.ObjectID = Component->GetOwner()->GetUUID();
-		PickingCB.ObjectID = Component->GetOwner()->GetInternalIndex();
+		bool bIsUUIDPicking = Editor->bUUIDColorPicking;
+		bool bIsIndexPicking = Editor->bIndexColorPicking;
+
+		if (bIsUUIDPicking == true && bIsIndexPicking == false)
+		{
+			PickingCB.ObjectID = Component->GetOwner()->GetUUID();
+		}
+
+		if (bIsUUIDPicking == false && bIsIndexPicking == true)
+		{
+			PickingCB.ObjectID = Component->GetOwner()->GetInternalIndex();
+		}
 	}
 	UpdateBuffer(ConstantBufferPicking, PickingCB);
 

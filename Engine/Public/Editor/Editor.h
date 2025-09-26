@@ -36,6 +36,16 @@ public:
 	double GetTotalPickTime() const { return TotalPickTime; }
 	double GetLastPickTime() const { return LastPickTime; }
 	uint32_t GetTotalPickCount() const { return TotalPickCount; }
+
+	/** Performance Metrics Management */
+	void ResetPickingStatistics() { TotalPickTime = 0.0; TotalPickCount = 0; LastPickTime = 0.0; }
+
+	/** Picking Configuration Variables */
+	bool bTrianglePicking = true;
+	bool bColorPicking = false;
+	bool bUUIDColorPicking = true;
+	bool bIndexColorPicking = false;
+
 private:
 	void ProcessKeyboardInput();
 	void ProcessMouseInput(ULevel* InLevel);
@@ -65,9 +75,4 @@ private:
 	double TotalPickTime = 0.0;
 	uint32_t TotalPickCount = 0;
 	double LastPickTime = 0.0;
-
-	bool bTrianglePicking = true;
-	bool bColorPicking = false;
-	bool bUUIDColorPicking = true;
-	bool bIndexColorPicking = false;
 };

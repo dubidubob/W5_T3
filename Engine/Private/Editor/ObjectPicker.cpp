@@ -2,6 +2,7 @@
 #include "Editor/ObjectPicker.h"
 #include "Editor/Camera.h"
 #include "Editor/Gizmo.h"
+#include "Editor/Editor.h"
 #include "Mesh/SceneComponent.h"
 #include "Mesh/Actor.h"
 #include "Manager/Input/InputManager.h"
@@ -9,7 +10,7 @@
 #include "Level/Level.h"
 #include "Core/AppWindow.h"
 #include "ImGui/imgui.h"
-#include "Render/Renderer/DeviceResources.h"
+#include "Render/Renderer/Renderer.h"
 
 IMPLEMENT_CLASS(UObjectPicker, UObject)
 
@@ -75,9 +76,9 @@ UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 Mou
 	}
 
 	// Read the pixel value from the color picking texture
-	uint32 pixelValue = DeviceResources->ReadPixelFromColorPickingTexture(MouseX, MouseY);
+	uint32 PixelValue = DeviceResources->ReadPixelFromColorPickingTexture(MouseX, MouseY);
 
-	if (pixelValue == 0)
+	if (PixelValue == 0)
 	{
 		return nullptr; // No object at this position
 	}
@@ -90,24 +91,34 @@ UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 Mou
 		return nullptr;
 	}
 
-	/*const TArray<UPrimitiveComponent*> Candidate = CurrentLevel->GetLevelPrimitiveComponents();
-	for (UPrimitiveComponent* Primitive : Candidate)
-	{
-		if (Primitive->GetOwner() && Primitive->GetOwner()->GetUUID() == pixelValue)
-		{
-			return Primitive;
-		}
-	}*/
+	UEditor* Editor = URenderer::GetInstance().GetEditor();
+	bool bIsUUIDPicking = Editor->bUUIDColorPicking;
+	bool bIsIndexPicking = Editor->bIndexColorPicking;
 
-	const AActor* Actor = Cast<AActor>(GUObjectArray[pixelValue]);
-	if (Actor)
+	if (bIsUUIDPicking == true && bIsIndexPicking == false)
 	{
-		for (auto& ActorComponent : Actor->GetOwnedComponents())
+		const TArray<UPrimitiveComponent*> Candidate = CurrentLevel->GetLevelPrimitiveComponents();
+		for (UPrimitiveComponent* Primitive : Candidate)
 		{
-			UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(ActorComponent);
-			if (Primitive)
+			if (Primitive->GetOwner() && Primitive->GetOwner()->GetUUID() == PixelValue)
 			{
 				return Primitive;
+			}
+		}
+	}
+
+	if (bIsUUIDPicking == false && bIsIndexPicking == true)
+	{
+		const AActor* Actor = Cast<AActor>(GUObjectArray[PixelValue]);
+		if (Actor)
+		{
+			for (auto& ActorComponent : Actor->GetOwnedComponents())
+			{
+				UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(ActorComponent);
+				if (Primitive)
+				{
+					return Primitive;
+				}
 			}
 		}
 	}
