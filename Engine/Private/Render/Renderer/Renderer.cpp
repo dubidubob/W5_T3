@@ -566,7 +566,7 @@ void URenderer::RenderSortingBatchMap()
     TStaticArray<FVector4, 6> Planes;
     ExtractFrustumPlanes(CachedViewProj, Planes);
     TArray<UStaticMeshComponent*> Candidates;
-    SceneBVH.QueryFrustum(Planes, Candidates);
+    SceneBVH.QueryFrustum(Planes, Candidates);		
     TSet<UStaticMeshComponent*> CandidateSet;
     for (auto* C : Candidates) CandidateSet.Add(C);
     TArray<FStaticMaterial*> MaterialKeys = SortingBatchMap.GetKeys();
@@ -589,6 +589,20 @@ void URenderer::RenderSortingBatchMap()
             }
             MeshComponentKeys = std::move(Filtered);
 #if SIMD_LEVEL >= 1
+            if (true)
+            {
+                for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
+                {
+                    SetupStaticMeshComponent(MeshComponentKey);
+                    TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
+                    for (FStaticMeshSection* Section : SectionArray)
+                    {
+                        Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+                    }
+                }
+            }
+            else
+            {
 			int32 NumComponents = MeshComponentKeys.Num();
 
 			// TArray를 직접 루프 돌지 않고 인덱스로 순회
@@ -645,7 +659,22 @@ void URenderer::RenderSortingBatchMap()
 					}
 				}
 			}
+            }
 #elif
+			if (true)
+			{
+				for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
+				{
+					SetupStaticMeshComponent(MeshComponentKey);
+					TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
+					for (FStaticMeshSection* Section : SectionArray)
+					{
+						Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+					}
+				}
+			}
+			else
+			{
 			for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
 			{
 				FAABB Bounds = MeshComponentKey->GetWorldBounds();
@@ -662,6 +691,7 @@ void URenderer::RenderSortingBatchMap()
 					MeshSectionDrawCount++;
 #endif
 				}
+			}
 			}
 #endif
         }
