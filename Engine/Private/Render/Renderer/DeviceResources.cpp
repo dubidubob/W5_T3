@@ -197,6 +197,32 @@ void UDeviceResources::UpdateViewport()
 	Height = SwapChainDescription.BufferDesc.Height;
 }
 
+D3D11_VIEWPORT UDeviceResources::GetColorPickingViewport() const
+{
+	D3D11_VIEWPORT colorPickingViewport = {};
+	colorPickingViewport.TopLeftX = 0.0f;
+	colorPickingViewport.TopLeftY = 0.0f;
+	colorPickingViewport.Width = static_cast<float>(GetColorPickingWidth());
+	colorPickingViewport.Height = static_cast<float>(GetColorPickingHeight());
+	colorPickingViewport.MinDepth = 0.0f;
+	colorPickingViewport.MaxDepth = 1.0f;
+	return colorPickingViewport;
+}
+
+void UDeviceResources::SetColorPickingScale(float InScale)
+{
+	if (ColorPickingScale != InScale)
+	{
+		ColorPickingScale = InScale;
+
+		// Recreate color picking resources with new scale
+		ReleaseColorPickingResources();
+		//ReleaseColorPickingStagingTexture();
+		CreateColorPickingResources();
+		//CreateColorPickingStagingTexture();
+	}
+}
+
 void UDeviceResources::CreateObjectViewerResources()
 {
 	// Define the size of the Object Viewer texture
@@ -293,52 +319,55 @@ void UDeviceResources::ReleaseObjectViewerResources()
 
 void UDeviceResources::CreateColorPickingResources()
 {
-	// Create the render target texture
-	D3D11_TEXTURE2D_DESC textureDesc = {};
-	textureDesc.Width = Width;
-	textureDesc.Height = Height;
-	textureDesc.MipLevels = 1;
-	textureDesc.ArraySize = 1;
-	textureDesc.Format = DXGI_FORMAT_R32_UINT;
-	textureDesc.SampleDesc.Count = 1;
-	textureDesc.Usage = D3D11_USAGE_DEFAULT;
-	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	textureDesc.CPUAccessFlags = 0;
-	textureDesc.MiscFlags = 0;
+	// Create the render target texture with scaled resolution for optimization
+	uint32 PickingWidth = GetColorPickingWidth();
+	uint32 PickingHeight = GetColorPickingHeight();
 
-	HRESULT hr = Device->CreateTexture2D(&textureDesc, nullptr, &ColorPickingTexture);
+	D3D11_TEXTURE2D_DESC TextureDesc = {};
+	TextureDesc.Width = PickingWidth;
+	TextureDesc.Height = PickingHeight;
+	TextureDesc.MipLevels = 1;
+	TextureDesc.ArraySize = 1;
+	TextureDesc.Format = DXGI_FORMAT_R32_UINT;
+	TextureDesc.SampleDesc.Count = 1;
+	TextureDesc.Usage = D3D11_USAGE_DEFAULT;
+	TextureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	TextureDesc.CPUAccessFlags = 0;
+	TextureDesc.MiscFlags = 0;
+
+	HRESULT hr = Device->CreateTexture2D(&TextureDesc, nullptr, &ColorPickingTexture);
 	if(FAILED(hr)) assert(!"Failed to create Color Picking Texture");
 
 	// Create the render target view (RTV)
-	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-	rtvDesc.Format = textureDesc.Format;
-	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-	hr = Device->CreateRenderTargetView(ColorPickingTexture, &rtvDesc, &ColorPickingRTV);
+	D3D11_RENDER_TARGET_VIEW_DESC RtvDesc = {};
+	RtvDesc.Format = TextureDesc.Format;
+	RtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	hr = Device->CreateRenderTargetView(ColorPickingTexture, &RtvDesc, &ColorPickingRTV);
 	if(FAILED(hr)) assert(!"Failed to create Color Picking RTV");
 
 	// Create the depth stencil texture
-	D3D11_TEXTURE2D_DESC depthDesc = {};
-	depthDesc.Width = Width;
-	depthDesc.Height = Height;
-	depthDesc.MipLevels = 1;
-	depthDesc.ArraySize = 1;
-	depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	depthDesc.SampleDesc.Count = 1;
-	depthDesc.SampleDesc.Quality = 0;
-	depthDesc.Usage = D3D11_USAGE_DEFAULT;
-	depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	depthDesc.CPUAccessFlags = 0;
-	depthDesc.MiscFlags = 0;
+	D3D11_TEXTURE2D_DESC DepthDesc = {};
+	DepthDesc.Width = PickingWidth;
+	DepthDesc.Height = PickingHeight;
+	DepthDesc.MipLevels = 1;
+	DepthDesc.ArraySize = 1;
+	DepthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	DepthDesc.SampleDesc.Count = 1;
+	DepthDesc.SampleDesc.Quality = 0;
+	DepthDesc.Usage = D3D11_USAGE_DEFAULT;
+	DepthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	DepthDesc.CPUAccessFlags = 0;
+	DepthDesc.MiscFlags = 0;
 
-	hr = Device->CreateTexture2D(&depthDesc, nullptr, &ColorPickingDepthTexture);
+	hr = Device->CreateTexture2D(&DepthDesc, nullptr, &ColorPickingDepthTexture);
 	if(FAILED(hr)) assert(!"Failed to create Color Picking Depth Texture");
 
 	// Create the depth stencil view (DSV)
-	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-	dsvDesc.Format = depthDesc.Format;
-	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	dsvDesc.Texture2D.MipSlice = 0;
-	hr = Device->CreateDepthStencilView(ColorPickingDepthTexture, &dsvDesc, &ColorPickingDSV);
+	D3D11_DEPTH_STENCIL_VIEW_DESC DsvDesc = {};
+	DsvDesc.Format = DepthDesc.Format;
+	DsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	DsvDesc.Texture2D.MipSlice = 0;
+	hr = Device->CreateDepthStencilView(ColorPickingDepthTexture, &DsvDesc, &ColorPickingDSV);
 	if(FAILED(hr)) assert(!"Failed to create Color Picking DSV");
 }
 
@@ -368,47 +397,55 @@ void UDeviceResources::ReleaseColorPickingResources()
 
 uint32 UDeviceResources::ReadPixelFromColorPickingTexture(int32 X, int32 Y)
 {
-	// Create a staging texture for CPU access
-	D3D11_TEXTURE2D_DESC stagingDesc = {};
-	stagingDesc.Width = 1;
-	stagingDesc.Height = 1;
-	stagingDesc.MipLevels = 1;
-	stagingDesc.ArraySize = 1;
-	stagingDesc.Format = DXGI_FORMAT_R32_UINT;
-	stagingDesc.SampleDesc.Count = 1;
-	stagingDesc.Usage = D3D11_USAGE_STAGING;
-	stagingDesc.BindFlags = 0;
-	stagingDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-	stagingDesc.MiscFlags = 0;
+	// Scale mouse coordinates to match the color picking texture resolution
+	int32 ScaledX = static_cast<int32>(X * ColorPickingScale);
+	int32 ScaledY = static_cast<int32>(Y * ColorPickingScale);
 
-	ID3D11Texture2D* stagingTexture = nullptr;
-	HRESULT hr = Device->CreateTexture2D(&stagingDesc, nullptr, &stagingTexture);
+	// Clamp coordinates to texture bounds
+	ScaledX = std::max(0, std::min(ScaledX, static_cast<int32>(GetColorPickingWidth()) - 1));
+	ScaledY = std::max(0, std::min(ScaledY, static_cast<int32>(GetColorPickingHeight()) - 1));
+
+	// Create a staging texture for CPU access
+	D3D11_TEXTURE2D_DESC StagingDesc = {};
+	StagingDesc.Width = 1;
+	StagingDesc.Height = 1;
+	StagingDesc.MipLevels = 1;
+	StagingDesc.ArraySize = 1;
+	StagingDesc.Format = DXGI_FORMAT_R32_UINT;
+	StagingDesc.SampleDesc.Count = 1;
+	StagingDesc.Usage = D3D11_USAGE_STAGING;
+	StagingDesc.BindFlags = 0;
+	StagingDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+	StagingDesc.MiscFlags = 0;
+
+	ID3D11Texture2D* StagingTexture = nullptr;
+	HRESULT hr = Device->CreateTexture2D(&StagingDesc, nullptr, &StagingTexture);
 	if (FAILED(hr)) return 0;
 
-	// Copy the specific pixel from the color picking texture
-	D3D11_BOX sourceBox = {};
-	sourceBox.left = X;
-	sourceBox.right = X + 1;
-	sourceBox.top = Y;
-	sourceBox.bottom = Y + 1;
-	sourceBox.front = 0;
-	sourceBox.back = 1;
+	// Copy the specific pixel from the color picking texture using scaled coordinates
+	D3D11_BOX SourceBox = {};
+	SourceBox.left = ScaledX;
+	SourceBox.right = ScaledX + 1;
+	SourceBox.top = ScaledY;
+	SourceBox.bottom = ScaledY + 1;
+	SourceBox.front = 0;
+	SourceBox.back = 1;
 
-	DeviceContext->CopySubresourceRegion(stagingTexture, 0, 0, 0, 0, ColorPickingTexture, 0, &sourceBox);
+	DeviceContext->CopySubresourceRegion(StagingTexture, 0, 0, 0, 0, ColorPickingTexture, 0, &SourceBox);
 
 	// Map the staging texture and read the pixel data
-	D3D11_MAPPED_SUBRESOURCE mappedResource = {};
-	hr = DeviceContext->Map(stagingTexture, 0, D3D11_MAP_READ, 0, &mappedResource);
+	D3D11_MAPPED_SUBRESOURCE MappedResource = {};
+	hr = DeviceContext->Map(StagingTexture, 0, D3D11_MAP_READ, 0, &MappedResource);
 
-	uint32 pixelValue = 0;
+	uint32 PixelValue = 0;
 	if (SUCCEEDED(hr))
 	{
-		pixelValue = *static_cast<uint32*>(mappedResource.pData);
-		DeviceContext->Unmap(stagingTexture, 0);
+		PixelValue = *static_cast<uint32*>(MappedResource.pData);
+		DeviceContext->Unmap(StagingTexture, 0);
 	}
 
 	// Release the staging texture
-	stagingTexture->Release();
+	StagingTexture->Release();
 
-	return pixelValue;
+	return PixelValue;
 }

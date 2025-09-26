@@ -563,7 +563,7 @@ void URenderer::RenderSortingBatchMap()
     SetupStaticMeshCommon();
     TStaticArray<FVector4, 6> Planes;
     ExtractFrustumPlanes(CachedViewProj, Planes);
-    TArray<UStaticMeshComponent*> Candidates;
+    
     SceneBVH.QueryFrustum(Planes, Candidates);		
     FrameStamp++;
     uint32 MaxId = 0;
@@ -772,7 +772,7 @@ bool URenderer::ShouldPerformColorPicking()
 {
 	// Check if mouse is pressed
 	UInputManager& InputManager = UInputManager::GetInstance();
-	bool bMousePressed = InputManager.IsKeyDown(EKeyInput::MouseLeft);
+	bool bMousePressed = InputManager.IsKeyDown(EKeyInput::MouseLeft) || InputManager.IsKeyDown(EKeyInput::MouseRight);
 	if (!bMousePressed)
 	{
 		return false;
@@ -803,8 +803,12 @@ void URenderer::RenderColorPicking()
 	GetDeviceContext()->ClearRenderTargetView(ColorPickingRTV, ClearColorPicking);
 	GetDeviceContext()->ClearDepthStencilView(ColorPickingDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	// Set render targets
+	// Set render targets and scaled viewport for resolution optimization
 	GetDeviceContext()->OMSetRenderTargets(1, &ColorPickingRTV, ColorPickingDSV);
+
+	// Set scaled viewport for color picking
+	D3D11_VIEWPORT ColorPickingViewport = DeviceResources->GetColorPickingViewport();
+	GetDeviceContext()->RSSetViewports(1, &ColorPickingViewport);
 
 	// Set constant buffers
 	Pipeline->SetConstantBuffer(2, true, ConstantBufferPicking);
@@ -813,9 +817,9 @@ void URenderer::RenderColorPicking()
 	const TArray<UPrimitiveComponent*>& PrimitiveComponents =
 		ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
 
-	for (UPrimitiveComponent* Component : PrimitiveComponents)
+	for (UPrimitiveComponent* Candidate : Candidates)
 	{
-		RenderStaticMeshComponentForPicking(Component);
+		RenderStaticMeshComponentForPicking(Candidate);
 	}
 
 	DisableInstancing();
@@ -923,13 +927,6 @@ void URenderer::SetupPickingMeshRendering(UStaticMeshComponent* Component, FStat
 	}
 	UpdateBuffer(ConstantBufferPicking, PickingCB);
 
-	Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
-	InstanceDrawConstants InstanceConstants{};
-	InstanceConstants.bUseInstancing = 0;
-	InstanceConstants.BaseInstanceOffset = 0;
-	InstanceConstants.InstanceCount = 0;
-	UpdateBuffer(ConstantBufferInstance, InstanceConstants);
-
 	// Set buffers and topology
 	UINT Offset = 0;
 	GetDeviceContext()->IASetVertexBuffers(0, 1, &MeshData->VertexBuffer, &StaticStride, &Offset);
@@ -948,7 +945,6 @@ void URenderer::RenderStaticMeshSections(const UStaticMeshComponent* OwnerCompon
 
 void URenderer::SetupMaterialForSection(const UStaticMeshComponent* OwnerComponent, FStaticMesh* MeshData, const FStaticMeshSection& Section)
 {
-
 	ID3D11ShaderResourceView* SRV = nullptr;
 	FMaterialParamsCB MaterialParams{};
 

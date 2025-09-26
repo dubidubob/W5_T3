@@ -233,6 +233,7 @@ private:
 	ID3D11InputLayout* LineInstancedInputLayout = nullptr;
 
     FBVH SceneBVH;
+	TArray<UStaticMeshComponent*> Candidates;
 	// ================== Picking Shader Set ==================
 	ID3D11PixelShader* PickingPixelShader = nullptr;
 
