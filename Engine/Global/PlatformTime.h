@@ -94,7 +94,7 @@ struct FTimeProfile
 	const char* GetConstChar() const
 	{
 		static char buffer[64]; // static으로 해야 반환 가능
-		snprintf(buffer, sizeof(buffer), " : %.3fms, Call : %llu", Milliseconds, CallCount);
+		snprintf(buffer, sizeof(buffer), " : %.3fms, Call : %d", Milliseconds, CallCount);
 		return buffer;
 	}
 };

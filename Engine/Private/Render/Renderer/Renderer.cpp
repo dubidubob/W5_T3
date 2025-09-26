@@ -1069,7 +1069,7 @@ ID3D11RasterizerState* URenderer::GetRasterizerState(const FRenderState& RenderS
 	Desc.FillMode = Key.FillMode;
 	Desc.CullMode = Key.CullMode;
 	Desc.DepthClipEnable = TRUE;
-	Desc.FrontCounterClockwise = FALSE;
+	Desc.FrontCounterClockwise = TRUE;
 
 	if (SUCCEEDED(GetDevice()->CreateRasterizerState(&Desc, &RasterizerState)))
 	{
