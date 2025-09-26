@@ -3,6 +3,7 @@
 
 class UTextComponent : public UPrimitiveComponent
 {
+	DECLARE_CLASS(UTextComponent, UPrimitiveComponent)
 public:
 	UTextComponent();
 	~UTextComponent();

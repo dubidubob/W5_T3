@@ -4,6 +4,8 @@
 #include "Render/Renderer/Renderer.h"
 #include <string>
 
+IMPLEMENT_CLASS(UTextComponent, UPrimitiveComponent)
+
 UTextComponent::UTextComponent()
 {
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();

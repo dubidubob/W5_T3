@@ -98,6 +98,51 @@ bool FAABB::Intersects(const FAABB& Other) const
 		   Min.Z <= Other.Max.Z && Max.Z >= Other.Min.Z;
 }
 
+bool FAABB::IntersectsRay(const FVector4& RayOrigin, const FVector4& RayDirection, float* Distance) const
+{
+	if (!IsValid()) return false;
+
+	FVector Origin(RayOrigin.X, RayOrigin.Y, RayOrigin.Z);
+	FVector Direction(RayDirection.X, RayDirection.Y, RayDirection.Z);
+
+	float tMin = 0.0f;
+	float tMax = FLT_MAX;
+
+	for (int i = 0; i < 3; ++i)
+	{
+		float dirComponent = (i == 0) ? Direction.X : (i == 1) ? Direction.Y : Direction.Z;
+		float originComponent = (i == 0) ? Origin.X : (i == 1) ? Origin.Y : Origin.Z;
+		float minComponent = (i == 0) ? Min.X : (i == 1) ? Min.Y : Min.Z;
+		float maxComponent = (i == 0) ? Max.X : (i == 1) ? Max.Y : Max.Z;
+
+		if (std::abs(dirComponent) < SMALL_NUMBER)
+		{
+			if (originComponent < minComponent || originComponent > maxComponent)
+				return false;
+		}
+		else
+		{
+			float invDir = 1.0f / dirComponent;
+			float t1 = (minComponent - originComponent) * invDir;
+			float t2 = (maxComponent - originComponent) * invDir;
+
+			if (t1 > t2) std::swap(t1, t2);
+
+			tMin = std::max(tMin, t1);
+			tMax = std::min(tMax, t2);
+
+			if (tMin > tMax) return false;
+		}
+	}
+
+	if (Distance && tMin >= 0.0f)
+	{
+		*Distance = tMin;
+	}
+
+	return tMin <= tMax && tMax >= 0.0f;
+}
+
 FAABB FAABB::TransformBy(const FMatrix& Transform) const
 {
 	if (!IsValid()) return FAABB();
