@@ -371,8 +371,12 @@ void URenderer::Update(UEditor* Editor)
 		RenderObjectViewer(Editor);
 #endif
 
-	// Render color picking pass (off-screen)
-	RenderColorPicking();
+    bool NeedPicking = UInputManager::GetInstance().IsKeyDown(EKeyInput::MouseLeft) ||
+                       UInputManager::GetInstance().IsKeyDown(EKeyInput::MouseRight);
+    if (NeedPicking)
+    {
+        RenderColorPicking();
+    }
 
 	// Switch back to main render target for UI rendering
 	ID3D11RenderTargetView* MainRTV = DeviceResources->GetRenderTargetView();
@@ -456,18 +460,29 @@ void URenderer::ReSetSortingBatchMap()
     const TArray<UPrimitiveComponent*>& PrimitiveComponents =
         ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
 
-	CleanUpSortingBatch();
-	  
-	for (auto& Primitive : PrimitiveComponents)
-	{
-		UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Primitive);
-		if (StaticMeshComponent != nullptr)
-		{
-			FStaticMesh* StaticMeshAsset = StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset();
-			int MaterialSize = StaticMeshAsset->Materials.size();
-			for (int i = 0; i < MaterialSize; i++)
-			{
-				FStaticMaterial* pMaterial = &StaticMeshAsset->Materials[i];
+    CleanUpSortingBatch();
+
+    TArray<UStaticMeshComponent*> AllComps;
+    for (auto& Primitive : PrimitiveComponents)
+    {
+        if (UStaticMeshComponent* S = Cast<UStaticMeshComponent>(Primitive))
+        {
+            if (S->IsVisible()) AllComps.push_back(S);
+        }
+    }
+
+    SceneBVH.Build(AllComps);
+
+    for (auto& Primitive : PrimitiveComponents)
+    {
+        UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Primitive);
+        if (StaticMeshComponent != nullptr)
+        {
+            FStaticMesh* StaticMeshAsset = StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset();
+            int MaterialSize = StaticMeshAsset->Materials.size();
+            for (int i = 0; i < MaterialSize; i++)
+            {
+                FStaticMaterial* pMaterial = &StaticMeshAsset->Materials[i];
 				//마테리얼 없으면 추가
 				
 				if (SortingBatchMap.Contains(pMaterial) == false)
@@ -481,14 +496,14 @@ void URenderer::ReSetSortingBatchMap()
 				}
 				else
 				{
-					//���׸��� �ȿ� �޽��� ������ �߰�
+					//占쏙옙占쌓몌옙占쏙옙 占싫울옙 占쌨쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 占쌩곤옙
 					if (SortingBatchMap[pMaterial].Contains(StaticMeshAsset) == false)
 					{
 						SortingBatchMap[pMaterial][StaticMeshAsset] = { {StaticMeshComponent, {}} };
 					}
 					else
 					{
-						//���׸���-> �޽� �ȿ� StaticMeshComponent �߰�
+						//占쏙옙占쌓몌옙占쏙옙-> 占쌨쏙옙 占싫울옙 StaticMeshComponent 占쌩곤옙
 						SortingBatchMap[pMaterial][StaticMeshAsset][StaticMeshComponent] = {};
 					}
 				}
@@ -543,6 +558,10 @@ void URenderer::RenderSortingBatchMap()
     SetupStaticMeshCommon();
     TStaticArray<FVector4, 6> Planes;
     ExtractFrustumPlanes(CachedViewProj, Planes);
+    TArray<UStaticMeshComponent*> Candidates;
+    SceneBVH.QueryFrustum(Planes, Candidates);
+    TSet<UStaticMeshComponent*> CandidateSet;
+    for (auto* C : Candidates) CandidateSet.Add(C);
     TArray<FStaticMaterial*> MaterialKeys = SortingBatchMap.GetKeys();
     for (FStaticMaterial* MaterialKey : MaterialKeys)
     {
@@ -779,21 +798,17 @@ void URenderer::SetupPickingMeshRendering(UStaticMeshComponent* Component, FStat
 	// Update constants
 	UpdateBuffer(ConstantBufferModels, Component->GetWorldTransformMatrix());
 
-	// Update picking constant buffer with object UUID
-	struct PickingConstants
-	{
-		uint32 Pick = 1;
-		uint32 ObjectID = 0;
-		int32 Padding[2] = {0, 0};
-	};
+    // Update picking constant buffer with object ID
+    struct PickingConstants
+    {
+        uint32 Pick = 1;
+        uint32 ObjectID = 0;
+        int32 Padding[2] = {0, 0};
+    };
 
-	PickingConstants PickingCB;
-	if (Component->GetOwner())
-	{
-		PickingCB.ObjectID = Component->GetOwner()->GetUUID();
-		//PickingCB.ObjectID = Component->GetOwner()->GetInternalIndex();
-	}
-	UpdateBuffer(ConstantBufferPicking, PickingCB);
+    PickingConstants PickingCB;
+    PickingCB.ObjectID = Component->GetInternalIndex();
+    UpdateBuffer(ConstantBufferPicking, PickingCB);
 
 	Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
 	InstanceDrawConstants InstanceConstants{};
