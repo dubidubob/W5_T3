@@ -568,6 +568,7 @@ void URenderer::RenderSortingBatchMap()
     TArray<UStaticMeshComponent*> Candidates;
     SceneBVH.QueryFrustum(Planes, Candidates);		
     TSet<UStaticMeshComponent*> CandidateSet;
+	CandidateSet.reserve(Candidates.Num());
     for (auto* C : Candidates) CandidateSet.Add(C);
     TArray<FStaticMaterial*> MaterialKeys = SortingBatchMap.GetKeys();
 
