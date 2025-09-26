@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Render/Renderer/Renderer.h"
 
 #include "Level/Level.h"
@@ -388,29 +388,28 @@ void URenderer::CleanUpSortingBatch()
 }
 void URenderer::ReSetSortingBatchMap()
 {
-    if (bSortingBatchMapDirty == false)
-    {
-        return;
-    }
+	if (bSortingBatchMapDirty == false)
+	{
+		return;
+	}
 
-    bSortingBatchMapDirty = false;
-    const TArray<UPrimitiveComponent*>& PrimitiveComponents =
-        ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
+	bSortingBatchMapDirty = false;
+	const TArray<UPrimitiveComponent*>& PrimitiveComponents =
+		ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
 
-    CleanUpSortingBatch();
+	CleanUpSortingBatch();
 
-
-    for (auto& Primitive : PrimitiveComponents)
-    {
-        UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Primitive);
-        if (StaticMeshComponent != nullptr)
-        {
-            FStaticMesh* StaticMeshAsset = StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset();
-            int MaterialSize = StaticMeshAsset->Materials.size();
-            for (int i = 0; i < MaterialSize; i++)
-            {
-                FStaticMaterial* pMaterial = &StaticMeshAsset->Materials[i];
-				//���׸��� ������ �߰�
+	for (auto& Primitive : PrimitiveComponents)
+	{
+		UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Primitive);
+		if (StaticMeshComponent != nullptr)
+		{
+			FStaticMesh* StaticMeshAsset = StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset();
+			int MaterialSize = StaticMeshAsset->Materials.size();
+			for (int i = 0; i < MaterialSize; i++)
+			{
+				FStaticMaterial* pMaterial = &StaticMeshAsset->Materials[i];
+				//占쏙옙占쌓몌옙占쏙옙 占쏙옙占쏙옙占쏙옙 占쌩곤옙
 				
 				if (SortingBatchMap.Contains(pMaterial) == false)
 				{
@@ -423,14 +422,14 @@ void URenderer::ReSetSortingBatchMap()
 				}
 				else
 				{
-					//���׸��� �ȿ� �޽��� ������ �߰�
+					//占쏙옙占쌓몌옙占쏙옙 占싫울옙 占쌨쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 占쌩곤옙
 					if (SortingBatchMap[pMaterial].Contains(StaticMeshAsset) == false)
 					{
 						SortingBatchMap[pMaterial][StaticMeshAsset] = { {StaticMeshComponent, {}} };
 					}
 					else
 					{
-						//���׸���-> �޽� �ȿ� StaticMeshComponent �߰�
+						//占쏙옙占쌓몌옙占쏙옙-> 占쌨쏙옙 占싫울옙 StaticMeshComponent 占쌩곤옙
 						SortingBatchMap[pMaterial][StaticMeshAsset][StaticMeshComponent] = {};
 					}
 				}
@@ -461,7 +460,7 @@ void URenderer::RenderLevel()
 		return;
 	}
 
-	//렌더스테이트 배치
+	//?뚮뜑?ㅽ뀒?댄듃 諛곗튂
 	ReSetSortingBatchMap();
 	RenderSortingBatchMap();
 
@@ -479,36 +478,29 @@ void URenderer::RenderLevel()
 
 void URenderer::RenderSortingBatchMap()
 {
-    SetupStaticMeshCommon();
-    TStaticArray<FVector4, 6> Planes;
-    ExtractFrustumPlanes(CachedViewProj, Planes);
-    TArray<FStaticMaterial*> MaterialKeys = SortingBatchMap.GetKeys();
-    for (FStaticMaterial* MaterialKey : MaterialKeys)
-    {
-        SetupMaterial(MaterialKey);
-        TMap<FStaticMesh*, TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>>& SortingMaterialMap = SortingBatchMap[MaterialKey];
-        TArray<FStaticMesh*> StaticMeshKeys = SortingMaterialMap.GetKeys();
-        for (FStaticMesh* StaticMeshKey : StaticMeshKeys)
-        {
-            SetupStaticMeshAsset(StaticMeshKey);
-            TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>& SortingMeshComponentMap = SortingMaterialMap[StaticMeshKey];
-            TArray<UStaticMeshComponent*> MeshComponentKeys = SortingMeshComponentMap.GetKeys();
-            for(UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
-            {
-                FAABB Bounds = MeshComponentKey->GetWorldBounds();
-                if (!TestAABBFrustum(Bounds, Planes))
-                {
-                    continue;
-                }
-                SetupStaticMeshComponent(MeshComponentKey);
-                TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
-                for (FStaticMeshSection* Section : SectionArray)
-                {
-                    Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
-                }
-            }
-        }
-    }
+	SetupStaticMeshCommon();
+	TArray<FStaticMaterial*> MaterialKeys = SortingBatchMap.GetKeys();
+	for (FStaticMaterial* MaterialKey : MaterialKeys)
+	{
+		SetupMaterial(MaterialKey);
+		TMap<FStaticMesh*, TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>>& SortingMaterialMap = SortingBatchMap[MaterialKey];
+		TArray<FStaticMesh*> StaticMeshKeys = SortingMaterialMap.GetKeys();
+		for (FStaticMesh* StaticMeshKey : StaticMeshKeys)
+		{
+			SetupStaticMeshAsset(StaticMeshKey);
+			TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>& SortingMeshComponentMap = SortingMaterialMap[StaticMeshKey];
+			TArray<UStaticMeshComponent*> MeshComponentKeys = SortingMeshComponentMap.GetKeys();
+			for(UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
+			{
+				SetupStaticMeshComponent(MeshComponentKey);
+				TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
+				for (FStaticMeshSection* Section : SectionArray)
+				{
+					Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+				}
+			}
+		}
+	}
 }
 void URenderer::SetupStaticMeshCommon()
 {
@@ -1059,3 +1051,4 @@ void URenderer::RenderObjectViewer(UEditor* Editor)
 	SafeRelease(OriginalDSV);
 }
 #endif
+

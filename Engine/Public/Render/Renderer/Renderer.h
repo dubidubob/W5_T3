@@ -6,6 +6,7 @@
 #include "Editor/Camera.h"
 #include "ViewportTypes.h"
 #include "Mesh/StaticMesh/StaticMesh.h"
+#include "Global/CoreTypes.h"
 
 class UPipeline;
 class UDeviceResources;
@@ -208,9 +209,11 @@ private:
 	ID3D11PixelShader* LineInstancedPixelShader = nullptr;
 	ID3D11InputLayout* LineInstancedInputLayout = nullptr;
 
-	// ================== Vertex Strides ==================
-	uint32 Stride = 0;
-	uint32 StaticStride = 0;
+    // ================== Vertex Strides ==================
+    uint32 Stride = 0;
+    uint32 StaticStride = 0;
+
+    FViewProjConstants CachedViewProj{};
 	uint32 StrideTextVertex = 0;
 	uint32 StrideTextInstance = 0;
 

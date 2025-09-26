@@ -134,6 +134,7 @@
     <ClCompile Include="Private\Archive\Archive.cpp" />
     <ClCompile Include="Private\Utility\ObjectPreviewScene.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\PickingPerformanceWidget.cpp" />
+    <ClCompile Include="Private\Math\Frustum.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\\Core\\Object.h" />
@@ -276,6 +277,7 @@
     <ClInclude Include="Public\Utility\ObjectPreviewScene.h" />
     <ClInclude Include="Public\Render\UI\Widget\PickingPerformanceWidget.h" />
     <ClInclude Include="Global\PlatformTime.h" />
+    <ClInclude Include="Public\Math\Frustum.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />
