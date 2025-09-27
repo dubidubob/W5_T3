@@ -157,6 +157,8 @@ public:
 	UEditor* GetEditor() { return Editor; }
 	void SetEditor(UEditor* InEditor) { Editor = InEditor; }
 
+	void MarkForceReRenderPicking() { bForceReRenderPicking = true; }
+
 #ifdef _DEVELOP
 	const uint32 GetMaterialChangeCount() const { return MaterialChangeCount; }
 	const uint32 GetStaticMeshChangeCount() const { return StaticMeshChangeCount; }
@@ -176,6 +178,7 @@ private:
 	// ================== Color Picking Cache Optimization ==================
 	TArray<uint32> CachedColorPickingData; // CPU accessible color picking array
 	bool bPickingDataValid = false; // Whether cached data is valid
+	bool bForceReRenderPicking = false; // Force re-rendering of picking texture
 
 #ifdef _DEVELOP
 	uint32 MaterialChangeCount = 0;

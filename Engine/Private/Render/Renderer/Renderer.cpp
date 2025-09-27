@@ -380,9 +380,13 @@ void URenderer::Update(UEditor* Editor)
 		RenderObjectViewer(Editor);
 #endif
 
-    if (ShouldPerformColorPicking())
+    if (bForceReRenderPicking || ShouldPerformColorPicking())
     {
 		RenderColorPicking();
+		if (bForceReRenderPicking)
+		{
+			bForceReRenderPicking = false;
+		}
     }
 
 	// Switch back to main render target for UI rendering
@@ -1437,6 +1441,9 @@ void URenderer::OnResize(uint32 Width, uint32 Height)
 	ID3D11RenderTargetView* RenderTargetView = DeviceResources->GetRenderTargetView();
 	ID3D11RenderTargetView* RenderTargetViews[] = { RenderTargetView };
 	GetDeviceContext()->OMSetRenderTargets(1, RenderTargetViews, DeviceResources->GetDepthStencilView());
+
+	// Render Picking Texture
+	RenderColorPicking();
 }
 
 // ================== Utility Functions ==================

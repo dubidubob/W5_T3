@@ -14,6 +14,7 @@
 #include "Utility/LevelSerializer.h"
 #include "Utility/Metadata.h"
 #include "Public/Core/EngineStatics.h"
+#include "Render/Renderer/Renderer.h"
 
 IMPLEMENT_CLASS(ULevelManager, UObject)
 IMPLEMENT_SINGLETON(ULevelManager)
@@ -122,6 +123,7 @@ bool ULevelManager::LoadLevel(const FString& InFilePath)
 		}
 
 		CurrentLevel->Init();
+		URenderer::GetInstance().MarkForceReRenderPicking();
 		//UE_LOG("LevelManager: Level Successfully Loaded");
 		return true;
 	}
