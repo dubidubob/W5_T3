@@ -278,27 +278,22 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 
 			UPrimitiveComponent* PrimitiveCollided = nullptr;
 
-			// 피킹 시도
-			if (bTrianglePicking == true && bColorPicking == false)
+			// 피킹 방식에 따라 피킹 수행
+			if (bTrianglePicking && !bColorPicking)
 			{
-				TArray<UPrimitiveComponent*> Candidate = FindCandidatePrimitives(InLevel);
-				PrimitiveCollided = ObjectPicker->PickPrimitive(InWorldRay, Candidate, &ActorDistance);
+				// 캐시된 프리미티브 리스트 사용 또는 레벨에서 직접 가져오기
+				const TArray<UPrimitiveComponent*>& Candidates = InLevel->GetLevelPrimitiveComponents();
+				PrimitiveCollided = ObjectPicker->PickPrimitive(InWorldRay, Candidates, &ActorDistance);
 			}
-			if (bTrianglePicking == false && bColorPicking == true)
+			else if (!bTrianglePicking && bColorPicking)
 			{
-				FVector2 MousePosition = InputManager.GetMousePosition();
+				// 마우스 위치 한 번만 계산
+				const FVector2& MousePosition = InputManager.GetMousePosition();
 				PrimitiveCollided = ObjectPicker->PickPrimitiveByColor(MousePosition.X, MousePosition.Y);
 			}
 
 			// 피킹된 프리미티브의 액터를 선택
-			if (PrimitiveCollided)
-			{
-				ActorPicked = PrimitiveCollided->GetOwner();
-			}
-			else
-			{
-				ActorPicked = nullptr;
-			}
+			ActorPicked = PrimitiveCollided ? PrimitiveCollided->GetOwner() : nullptr;
 
 			// 퍼포먼스 측정 종료 및 시간 누적
 			LastPickTime = PickingCounter.Finish();
@@ -306,7 +301,7 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 		}
 
 		/** 기즈모에 호버링되거나 클릭되지 않았을 때. Actor 업데이트해줌. */
-		if (Gizmo->GetGizmoDirection() == EGizmoDirection::None)
+		if (Gizmo->GetGizmoDirection() == EGizmoDirection::None) 
 		{
 			/* todo : 매번 같은 애 다시 Update 해주고 있음 */
 			InLevel->SetSelectedActor(ActorPicked);
