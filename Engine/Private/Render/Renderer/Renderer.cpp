@@ -545,7 +545,6 @@ void URenderer::RenderLevel()
 	InitializeRenderStateChangeCount();
 #endif
 	//렌더스테이트 배치
-	bSortingBatchMapDirty = true;
 	ReSetSortingBatchMap();
 	RenderSortingBatchMap();
 
