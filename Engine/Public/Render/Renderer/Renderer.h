@@ -20,6 +20,7 @@ class SWindow;
 struct FPipelineInfo;
 struct FStaticMesh;
 class UStaticMeshComponent;
+class OverlayStat;
 
 /**
  * @brief Rendering Pipeline 전반을 처리하는 클래스
@@ -177,6 +178,9 @@ private:
 		// ================== Core Components ==================
 	UPipeline* Pipeline = nullptr;
 	UDeviceResources* DeviceResources = nullptr;
+
+	// ================== Overlay ==================
+	OverlayStat* Overlay = nullptr;
 
 	// ================== Render Settings ==================
 	EViewportRenderMode CurrentRenderMode = EViewportRenderMode::Lit;

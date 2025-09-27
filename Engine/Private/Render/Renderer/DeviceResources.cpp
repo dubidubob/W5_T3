@@ -21,14 +21,18 @@ void UDeviceResources::Create(HWND InWindowHandle)
 	CreateDeviceAndSwapChain(InWindowHandle);
 	CreateFrameBuffer();
 	CreateDepthBuffer();
+#if IS_OBJ_VIEWER
 	CreateObjectViewerResources();
+#endif
 	CreateColorPickingResources();
 }
 
 void UDeviceResources::Release()
 {
 	ReleaseColorPickingResources();
+#if IS_OBJ_VIEWER
 	ReleaseObjectViewerResources();
+#endif
 	ReleaseFrameBuffer();
 	ReleaseDepthBuffer();
 	ReleaseDeviceAndSwapChain();
@@ -196,7 +200,7 @@ void UDeviceResources::UpdateViewport()
 	Width = SwapChainDescription.BufferDesc.Width;
 	Height = SwapChainDescription.BufferDesc.Height;
 }
-
+#if IS_OBJ_VIEWER
 void UDeviceResources::CreateObjectViewerResources()
 {
 	// Define the size of the Object Viewer texture
@@ -260,7 +264,6 @@ void UDeviceResources::CreateObjectViewerResources()
 	hr = Device->CreateDepthStencilView(ObjectViewerDepthTexture, &dsvDesc, &ObjectViewerDSV);
 	if(FAILED(hr)) assert(!"Failed to create Object Viewer DSV");
 }
-
 void UDeviceResources::ReleaseObjectViewerResources()
 {
 	if (ObjectViewerSRV)
@@ -290,6 +293,7 @@ void UDeviceResources::ReleaseObjectViewerResources()
 		ObjectViewerTexture = nullptr;
 	}
 }
+#endif
 
 void UDeviceResources::CreateColorPickingResources()
 {

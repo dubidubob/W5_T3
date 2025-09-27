@@ -16,6 +16,7 @@
 #include "Slate/Viewport.h"
 #include "Manager/Input/InputManager.h"
 #include "Math/Frustum.h"
+#include "Utility/Overlay.h"
 
 #include "Global/PlatformTime.h"
 
@@ -73,6 +74,12 @@ void URenderer::Init(HWND WindowHandle)
 {
 	DeviceResources = new UDeviceResources(WindowHandle);
 	Pipeline = new UPipeline(GetDeviceContext());
+	Overlay = new OverlayStat();
+	// todo
+	if (Overlay)
+	{
+		Overlay->Initialize(GetSwapChain());
+	}
 
 	InitializeRenderStates();
 	InitializeShaders();
@@ -85,6 +92,7 @@ void URenderer::Release()
 {
 	ULineBatchRenderer::GetInstance().Release();
 	CleanupAll();
+	SafeDelete(Overlay);
 	SafeDelete(Pipeline);
 	SafeDelete(DeviceResources);
 }
@@ -1366,7 +1374,6 @@ void URenderer::ReleaseShaderSet(ID3D11VertexShader*& VS, ID3D11PixelShader*& PS
 }
 
 #if IS_OBJ_VIEWER
-// jft
 void URenderer::RenderObjectViewer(UEditor* Editor)
 {
 	// 1. Get resources
