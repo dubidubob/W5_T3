@@ -122,6 +122,7 @@ public:
 	}
 	void ReSetSortingBatchMap();
 	void CleanUpSortingBatch();
+	void SetRenderStream();
 
 	// ================== View Mode Management ==================
 	void SetViewMode(EViewportRenderMode ViewMode) { CurrentRenderMode = ViewMode; }

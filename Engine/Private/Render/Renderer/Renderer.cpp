@@ -477,7 +477,6 @@ void URenderer::ReSetSortingBatchMap()
     {
         return;
     }
-
     bSortingBatchMapDirty = false;
     const TArray<UPrimitiveComponent*>& PrimitiveComponents =
         ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
@@ -490,18 +489,8 @@ void URenderer::ReSetSortingBatchMap()
         if (UStaticMeshComponent* S = Cast<UStaticMeshComponent>(Primitive))
         {
             if (S->IsVisible()) AllComps.push_back(S);
-        }
-    }
-
-    SceneBVH.Build(AllComps);
-
-    for (auto& Primitive : PrimitiveComponents)
-    {
-        UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Primitive);
-        if (StaticMeshComponent != nullptr)
-        {
-			FStaticMesh* StaticMeshAsset = StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset();
-			FMatrix WorldMatrix = StaticMeshComponent->GetWorldTransformMatrix();
+			FStaticMesh* StaticMeshAsset = S->GetStaticMesh()->GetStaticMeshAsset();
+			const FMatrix& WorldMatrix = S->GetWorldTransformMatrix();
 
 			for (FStaticMaterial& Material : StaticMeshAsset->Materials)
 			{
@@ -511,6 +500,29 @@ void URenderer::ReSetSortingBatchMap()
 					//WorldMatrix Input
 					RenderStreamMap[pMaterial][StaticMeshAsset].Push(WorldMatrix);
 				}
+			}
+        }
+    }
+    SceneBVH.Build(AllComps);
+}
+
+void URenderer::SetRenderStream()
+{
+	TIME_PROFILE(SetRenderStream)
+	CleanUpSortingBatch();
+
+	for (auto& S : Candidates)
+	{
+		FStaticMesh* StaticMeshAsset = S->GetStaticMesh()->GetStaticMeshAsset();
+		const FMatrix& WorldMatrix = S->GetWorldTransformMatrix();
+
+		for (FStaticMaterial& Material : StaticMeshAsset->Materials)
+		{
+			FStaticMaterial* pMaterial = &Material;
+			if (StaticMeshAsset->GetSectionMap(pMaterial).size() > 0)
+			{
+				//WorldMatrix Input
+				RenderStreamMap[pMaterial][StaticMeshAsset].Push(WorldMatrix);
 			}
 		}
 	}
@@ -533,6 +545,7 @@ void URenderer::RenderLevel()
 	InitializeRenderStateChangeCount();
 #endif
 	//렌더스테이트 배치
+	bSortingBatchMapDirty = true;
 	ReSetSortingBatchMap();
 	RenderSortingBatchMap();
 
@@ -555,28 +568,34 @@ void URenderer::RenderSortingBatchMap()
     SetupStaticMeshCommon();
     TStaticArray<FVector4, 6> Planes;
     ExtractFrustumPlanes(CachedViewProj, Planes);
-    
-    SceneBVH.QueryFrustum(Planes, Candidates);		
+
+	SceneBVH.QueryFrustum(Planes, Candidates);
     FrameStamp++;
     uint32 MaxId = 0;
 
+	//그릴 후보 전체 돌면서 가장 높은 internalIndex 찾기
     for (auto* C : Candidates)
     {
         if (!C) continue;
         uint32 Id = static_cast<uint32>(C->GetInternalIndex());
         if (Id > MaxId) MaxId = Id;
     }
+	//internalIndex를 키로 사용 할 수 있도록 VisibleStamp 리사이즈
     if (VisibleStamp.Num() <= MaxId)
     {
-        VisibleStamp.Reserve(MaxId + 1);
-        while (VisibleStamp.Num() <= MaxId) VisibleStamp.push_back(0u);
+		VisibleStamp.resize(MaxId + 1);
     }
+	//그려지는 컴포넌트들 VisibleStamp[InternalIndex] = CurFrameStamp 로 만들기
     for (auto* C : Candidates)
     {
         if (!C) continue;
         uint32 Id = static_cast<uint32>(C->GetInternalIndex());
         VisibleStamp[Id] = FrameStamp;
     }
+	SetRenderStream();
+	//추가 리스트, 제거 리스트, 변경 리스트 가져와야함
+	//이때 0을 제외한 이전 프레임 값이라면 이전과 현재 둘다그려지니 유지
+	//
     TArray<FStaticMaterial*> MaterialKeys = RenderStreamMap.GetKeys();
 
 	const uint32 WorldMatSize = sizeof(FMatrix);
@@ -600,6 +619,9 @@ void URenderer::RenderSortingBatchMap()
 				for (const FStaticMeshSection* Section : Sections)
 				{
 					Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+#ifdef _DEVELOP
+					MeshSectionDrawCount++;
+#endif
 				}
 			}
 			TIME_PROFILE_END(DRAW)
