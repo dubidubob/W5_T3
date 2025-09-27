@@ -31,8 +31,16 @@ public:
 
 	const FVector& GetWorldLocation() const;
 
-	const FMatrix GetWorldTransformMatrix() const;
+	bool IsTransformDirty() const { return bIsTransformDirty; }
+
+	// Explicitly updates the world transform if dirty, based on the parent's cached transform.
+	void UpdateWorldTransform();
+
+	// This is now a simple getter for the cached matrix. Assumes UpdateWorldTransform() has been called.
+	const FMatrix& GetWorldTransformMatrix() const;
 	const FMatrix GetWorldTransformMatrixInverse() const;
+
+	const void UpdateWorldTransformMatrix() const;
 
 private:
 	mutable bool bIsTransformDirty = true;

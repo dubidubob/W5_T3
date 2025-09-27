@@ -121,20 +121,24 @@ const FVector& USceneComponent::GetWorldLocation() const
 
 const FMatrix USceneComponent::GetWorldTransformMatrix() const
 {
-    if (bIsTransformDirty)
-    {
-        // Quaternion-based TRS (row-major): I * S * R * T
-        WorldTransformMatrix = FMatrix::GetModelMatrix(RelativeLocation, RelativeRotationQuat, RelativeScale3D);
-
-        for (USceneComponent* Ancester = ParentAttachment; Ancester; Ancester = Ancester->ParentAttachment)
-        {
-            WorldTransformMatrix *= FMatrix::GetModelMatrix(Ancester->RelativeLocation, Ancester->RelativeRotationQuat, Ancester->RelativeScale3D);
-        }
-
-        bIsTransformDirty = false;
-    }
-
 	return WorldTransformMatrix;
+}
+
+
+const void USceneComponent::UpdateWorldTransformMatrix() const
+{
+	if (bIsTransformDirty)
+	{
+		// Quaternion-based TRS (row-major): I * S * R * T
+		WorldTransformMatrix = FMatrix::GetModelMatrix(RelativeLocation, RelativeRotationQuat, RelativeScale3D);
+
+		for (USceneComponent* Ancester = ParentAttachment; Ancester; Ancester = Ancester->ParentAttachment)
+		{
+			WorldTransformMatrix *= FMatrix::GetModelMatrix(Ancester->RelativeLocation, Ancester->RelativeRotationQuat, Ancester->RelativeScale3D);
+		}
+
+		bIsTransformDirty = false;
+	}
 }
 
 const FMatrix USceneComponent::GetWorldTransformMatrixInverse() const
