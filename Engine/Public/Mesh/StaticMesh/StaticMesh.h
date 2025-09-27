@@ -66,6 +66,10 @@ struct FStaticMesh
 	uint32 ByteWidth = 0;
 	// -- Do not need to Serialize --
 
+private:
+	TMap<FStaticMaterial*, TArray<FStaticMeshSection*>> SectionMap;
+
+public:
 	FStaticMesh() = default;
 	~FStaticMesh()
 	{
@@ -96,6 +100,19 @@ struct FStaticMesh
 	}
 
 	void Serialize(class FArchive& Ar);
+
+	const TArray<FStaticMeshSection*>& GetSectionMap(FStaticMaterial* Material) const
+	{
+		return *SectionMap.Find(Material);
+	}
+	void SetSectionMap()
+	{
+		for (FStaticMeshSection& Section : Sections)
+		{
+			FStaticMaterial* pMat = &Materials[Section.MaterialIndex];
+			SectionMap[pMat].Push(&Section);
+		}
+	}
 };
 
 class UStaticMesh : public UObject

@@ -99,6 +99,17 @@ public:
 			GetDeviceContext()->Unmap(Buffer, 0);
 		}
 	}
+	template<typename T>
+	void UpdateBuffer(ID3D11Buffer* Buffer, const T& Data, const uint32 Size) const
+	{
+		D3D11_MAPPED_SUBRESOURCE MappedResource;
+		if (SUCCEEDED(GetDeviceContext()->Map(Buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource)))
+		{
+			memcpy(MappedResource.pData, &Data, Size);
+			GetDeviceContext()->Unmap(Buffer, 0);
+		}
+	}
+	void UpdateBufferStream(ID3D11Buffer* Buffer, const void* Pointer, const uint32 Size);
 
 	void UpdateViewProjConstants(const FViewProjConstants& ViewProj);
 	void UpdateInstance(const TArray<FTextInstance>* Instances);
@@ -111,6 +122,7 @@ public:
 	}
 	void ReSetSortingBatchMap();
 	void CleanUpSortingBatch();
+	void SetRenderStream();
 
 	// ================== View Mode Management ==================
 	void SetViewMode(EViewportRenderMode ViewMode) { CurrentRenderMode = ViewMode; }
@@ -169,7 +181,9 @@ public:
 private:
 	UEditor* Editor = nullptr;
 	bool bSortingBatchMapDirty = true;
-	TMap<FStaticMaterial*, TMap<FStaticMesh*, TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>>> SortingBatchMap;
+
+	//WorldMatrixStream float12로 만들어야해서 uint32로 제작 현재는 16
+	TMap<FStaticMaterial*, TMap<FStaticMesh*, TArray<FMatrix>>> RenderStreamMap;
 
 	// ================== Frame Skipping Optimization ==================
 	uint32 FrameCounter = 0;
