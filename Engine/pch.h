@@ -92,7 +92,7 @@ using filesystem::create_directories;
 
 // 0=스칼라, 1=SSE2(128b), 2=AVX2(256b) /*AVX2 Not Implemented, yet*/
 #ifndef SIMD_LEVEL
-#define SIMD_LEVEL 1
+#define SIMD_LEVEL 0
 #endif
 
 #if SIMD_LEVEL >= 1

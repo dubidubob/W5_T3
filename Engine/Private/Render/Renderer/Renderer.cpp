@@ -701,7 +701,7 @@ void URenderer::RenderSortingBatchMap()
 
 			}
             }
-#elif
+#elif SIMD_LEVEL == 0
 			if (true)
 			{
 				for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)

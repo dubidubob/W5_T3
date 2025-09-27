@@ -49,7 +49,7 @@ FMatrix FMatrix::Transpose(const FMatrix& InOtherMatrix)
 	Result.row[3] = row3;
 
 	return Result;
-#elif
+#elif SIMD_LEVEL ==0
 	return {
 		InOtherMatrix.Data[0][0], InOtherMatrix.Data[1][0], InOtherMatrix.Data[2][0], InOtherMatrix.Data[3][0],
 		InOtherMatrix.Data[0][1], InOtherMatrix.Data[1][1], InOtherMatrix.Data[2][1], InOtherMatrix.Data[3][1],
@@ -88,7 +88,7 @@ FMatrix FMatrix::operator*(const FMatrix& InOtherMatrix) const
 	Result.row[1] = MulVecMat(this->row[1], InOtherMatrix);
 	Result.row[2] = MulVecMat(this->row[2], InOtherMatrix);
 	Result.row[3] = MulVecMat(this->row[3], InOtherMatrix);
-#elif
+#elif SIMD_LEVEL==0
 	for (int32 i = 0; i < 4; ++i)
 	{
 		for (int32 j = 0; j < 4; ++j)
