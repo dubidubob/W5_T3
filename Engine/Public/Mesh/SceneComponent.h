@@ -28,13 +28,16 @@ public:
 	const FVector& GetRelativeRotation() const;
 	const FQuat&   GetRelativeRotationQuat() const { return RelativeRotationQuat; }
 	const FVector& GetRelativeScale3D() const;
-
 	const FVector& GetWorldLocation() const;
 
+	bool IsTransformDirty() const { return bIsTransformDirty; }
+
 	const FMatrix& GetWorldTransformMatrix() const;
-	const FMatrix& GetWorldTransformMatrixInverse() const;
+	[[DEPRECATED]] const FMatrix GetWorldTransformMatrixInverse() const;
 
 private:
+	void UpdateWorldFromLocal() noexcept;
+
 	mutable bool bIsTransformDirty = true;
 	mutable bool bIsTransformDirtyInverse = true;
 	mutable FMatrix WorldTransformMatrix;

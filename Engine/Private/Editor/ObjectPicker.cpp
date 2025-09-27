@@ -351,6 +351,13 @@ bool UObjectPicker::IsRayTriangleCollided(const FRay& Ray, const FVector& Vertex
 	return false;
 }
 
+struct alignas(16) FVertexSIMD {
+	float Vertex1[4], Vertex2[4], Vertex3[4];
+};
+
+struct alignas(16) FVectorSIMD {
+	float Vector3[4];
+};
 
 bool UObjectPicker::IsRayCollideWithPlane(const FRay& WorldRay, FVector PlanePoint, FVector Normal, FVector& PointOnPlane)
 {

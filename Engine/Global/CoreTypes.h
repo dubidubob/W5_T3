@@ -3,13 +3,14 @@
 #include "Global/Matrix.h"
 #include <cstdint>
 
-struct FViewProjConstants
+struct alignas(16) FViewProjConstants
 {
 	FViewProjConstants()
+		:
+		View(FMatrix::Identity), 
+		Projection(FMatrix::Identity),
+		ViewModeIndex(0)
 	{
-		View = FMatrix::Identity;
-		Projection = FMatrix::Identity;
-		ViewModeIndex = 0;
 	}
 
 	FMatrix View;

@@ -2,14 +2,27 @@
 struct FVector;
 struct FVector4;
 
-struct FMatrix
+struct alignas(16) FMatrix
 {
 	/**
 	* @brief 4x4 float 타입의 행렬
 	*/
-	float Data[4][4];
+	union
+	{
+		float Data[4][4]; // elements
+		__m128 row[4]; // rows;
+	};
 
+	static void* operator new(size_t size)
+	{
+		// C++17 이후의 std::aligned_alloc 또는 _mm_malloc 사용
+		return _aligned_malloc(size, 16); // 또는 std::aligned_alloc(16, size);
+	}
 
+	static void operator delete(void* ptr, size_t size)
+	{
+		_aligned_free(ptr); // 또는 std::free(ptr);
+	}
 	/**
 	* @brief float 타입의 배열을 사용한 FMatrix의 기본 생성자
 	*/
@@ -36,7 +49,7 @@ struct FMatrix
 	*/
 	FMatrix operator*(const FMatrix& InOtherMatrix) const;
 	void operator*=(const FMatrix& InOtherMatrix);
-
+	static __m128 MulVecMat(const __m128& v, const FMatrix& M);
 	/**
 	* @brief Position의 정보를 행렬로 변환하여 제공하는 함수
 	*/

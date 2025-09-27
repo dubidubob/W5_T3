@@ -65,15 +65,15 @@ UEditor::UEditor()
 
 UEditor::~UEditor()
 {
-	delete Camera;
-	delete ObjectPicker;
-	delete ViewportManager;
+	SafeDelete(Camera);
+	SafeDelete(ObjectPicker);
+	SafeDelete(ViewportManager);
 #if IS_OBJ_VIEWER
-	delete ObjPreview;
+	SafeDelete(ObjPreview);
 #endif
-	delete Gizmo;
-	delete Grid;
-	delete Axis;
+	SafeDelete(Gizmo);
+	SafeDelete(Grid);
+	SafeDelete(Axis);
 }
 
 void UEditor::Update()
@@ -84,8 +84,11 @@ void UEditor::Update()
 	ProcessMouseInput(ULevelManager::GetInstance().GetCurrentLevel());
 	ProcessKeyboardInput();
 
-	auto& Renderer = URenderer::GetInstance();
-	Renderer.UpdateViewProjConstants(Camera->GetFViewProjConstants());
+	if (Camera)
+	{
+		FViewProjConstants VPConstant = Camera->GetFViewProjConstants();
+		URenderer::GetInstance().UpdateViewProjConstants(VPConstant);
+	}
 }
 
 const FVector& UEditor::GetCameraLocation()
