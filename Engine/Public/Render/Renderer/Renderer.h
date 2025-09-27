@@ -122,7 +122,7 @@ public:
 	}
 	void ReSetSortingBatchMap();
 	void CleanUpSortingBatch();
-	void SetRenderStream();
+	void SetRenderStream(TArray<UStaticMeshComponent*>& Add, TArray<UStaticMeshComponent*>& REmove, TArray<UStaticMeshComponent*>& Changed);
 
 	// ================== View Mode Management ==================
 	void SetViewMode(EViewportRenderMode ViewMode) { CurrentRenderMode = ViewMode; }

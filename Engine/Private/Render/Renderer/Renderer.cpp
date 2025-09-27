@@ -370,42 +370,36 @@ void URenderer::UpdateInstanceDrawConstants(bool UseInstancing, uint32 BaseOffse
 void URenderer::Update(UEditor* Editor)
 {
 	TIME_PROFILE(Update)
-
-	RenderBegin();
-
-	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
-
+	RenderBegin(); // 0.003
+	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo()); // 0
 	if (Editor->GetViewportManager()->GetIsWindowDivided())
 	{
 		RenderMultiViewport(Editor);
 	}
 	else
 	{
-		DeviceResources->UpdateViewport();
-		RenderScene(Editor);
+			DeviceResources->UpdateViewport(); // 0.0001
+			RenderScene(Editor);
 	}
 
 #if IS_OBJ_VIEWER
 	if (Editor->GetObjPreview()->SelectActivated())
 		RenderObjectViewer(Editor);
 #endif
-
-    if (bForceReRenderPicking || ShouldPerformColorPicking())
-    {
+	if (bForceReRenderPicking || ShouldPerformColorPicking())
+	{
 		RenderColorPicking();
 		if (bForceReRenderPicking)
 		{
 			bForceReRenderPicking = false;
 		}
-    }
-
+	}
 	// Switch back to main render target for UI rendering
-	ID3D11RenderTargetView* MainRTV = DeviceResources->GetRenderTargetView();
-	ID3D11DepthStencilView* MainDSV = DeviceResources->GetDepthStencilView();
-	GetDeviceContext()->OMSetRenderTargets(1, &MainRTV, MainDSV);
-	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
-
-	UUIManager::GetInstance().Render();
+	//ID3D11RenderTargetView* MainRTV = DeviceResources->GetRenderTargetView();
+	//ID3D11DepthStencilView* MainDSV = DeviceResources->GetDepthStencilView();
+	//GetDeviceContext()->OMSetRenderTargets(1, &MainRTV, MainDSV);
+	//GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
+	UUIManager::GetInstance().Render(); //0.1ms
 	RenderEnd();
 }
 
@@ -462,6 +456,7 @@ void URenderer::RenderBegin()
 
 void URenderer::RenderEnd() const
 {
+	TIME_PROFILE(SwapChain)
 	GetSwapChain()->Present(0, 0);
 }
 
@@ -506,7 +501,7 @@ void URenderer::ReSetSortingBatchMap()
     SceneBVH.Build(AllComps);
 }
 
-void URenderer::SetRenderStream()
+void URenderer::SetRenderStream(TArray<UStaticMeshComponent*>& Add, TArray<UStaticMeshComponent*>& REmove, TArray<UStaticMeshComponent*>& Changed )
 {
 	TIME_PROFILE(SetRenderStream)
 	CleanUpSortingBatch();
@@ -567,8 +562,11 @@ void URenderer::RenderSortingBatchMap()
     SetupStaticMeshCommon();
     TStaticArray<FVector4, 6> Planes;
     ExtractFrustumPlanes(CachedViewProj, Planes);
+	TIME_PROFILE(Query);
 
 	SceneBVH.QueryFrustum(Planes, Candidates);
+	TIME_PROFILE_END(Query);
+
     FrameStamp++;
     uint32 MaxId = 0;
 
@@ -591,7 +589,7 @@ void URenderer::RenderSortingBatchMap()
         uint32 Id = static_cast<uint32>(C->GetInternalIndex());
         VisibleStamp[Id] = FrameStamp;
     }
-	SetRenderStream();
+	//SetRenderStream();
 	//추가 리스트, 제거 리스트, 변경 리스트 가져와야함
 	//이때 0을 제외한 이전 프레임 값이라면 이전과 현재 둘다그려지니 유지
 	//
