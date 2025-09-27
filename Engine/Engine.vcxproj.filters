@@ -98,6 +98,7 @@
     <ClCompile Include="Private\\Render\UI\Window\\UIWindow.cpp" />
     <ClCompile Include="Private\\Utility\\LevelSerializer.cpp" />
     <ClCompile Include="Global\Rect.cpp" />
+    <ClCompile Include="Private\Math\OcclusionCulling.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Global\Name.h" />
@@ -206,6 +207,7 @@
     <ClInclude Include="Public\\Utility\\Metadata.h" />
     <ClInclude Include="Global\Rect.h" />
     <ClInclude Include="ViewportTypes.h" />
+    <ClInclude Include="Public\Math\OcclusionCulling.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />

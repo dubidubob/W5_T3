@@ -8,6 +8,7 @@
 #include "Mesh/StaticMesh/StaticMesh.h"
 #include "Global/CoreTypes.h"
 #include "Math/BVH.h"
+#include "Math/OcclusionCulling.h"
 
 class UPipeline;
 class UDeviceResources;
@@ -20,7 +21,7 @@ class SWindow;
 struct FPipelineInfo;
 struct FStaticMesh;
 class UStaticMeshComponent;
-
+class UCamera;
 /**
  * @brief Rendering Pipeline 전반을 처리하는 클래스
  *
@@ -260,6 +261,7 @@ private:
 	ID3D11InputLayout* LineInstancedInputLayout = nullptr;
 
     FBVH SceneBVH;
+	OcclusionCulling OcclusionCulling;
 	TArray<UStaticMeshComponent*> Candidates;
 	// ================== Picking Shader Set ==================
 	ID3D11PixelShader* PickingPixelShader = nullptr;

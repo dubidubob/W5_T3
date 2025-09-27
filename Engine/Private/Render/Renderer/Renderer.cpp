@@ -567,6 +567,14 @@ void URenderer::RenderSortingBatchMap()
 	SceneBVH.QueryFrustum(Planes, Candidates);
 	TIME_PROFILE_END(Query);
 
+	auto& ViewProjConstant= Editor->GetCamera()->GetFViewProjConstants();
+	FMatrix VP = ViewProjConstant.View * ViewProjConstant.Projection;
+	OcclusionCulling.UpdateOcclusionCulling(Candidates,
+		Editor->GetCamera()->GetLocation(), VP);
+
+	TArray<UStaticMeshComponent*> Candi;
+	OcclusionCulling.GetOutputArrays(Candidates, Candi);
+
     FrameStamp++;
     uint32 MaxId = 0;
 
