@@ -41,10 +41,10 @@ public:
 	void ResetPickingStatistics() { TotalPickTime = 0.0; TotalPickCount = 0; LastPickTime = 0.0; }
 
 	/** Picking Configuration Variables */
-	bool bTrianglePicking = true;
-	bool bColorPicking = false;
-	bool bUUIDColorPicking = true;
-	bool bIndexColorPicking = false;
+	bool bTrianglePicking = false;
+	bool bColorPicking = true;
+	bool bUUIDColorPicking = false;
+	bool bIndexColorPicking = true;
 
 private:
 	void ProcessKeyboardInput();

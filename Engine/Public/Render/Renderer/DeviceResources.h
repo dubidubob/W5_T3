@@ -42,6 +42,13 @@ public:
 	// Color Picking Utility
 	uint32 ReadPixelFromColorPickingTexture(int32 X, int32 Y);
 
+	// Color Picking Resolution Scaling
+	void SetColorPickingScale(float InScale);
+	float GetColorPickingScale() const { return ColorPickingScale; }
+	uint32 GetColorPickingWidth() const { return static_cast<uint32>(Width * ColorPickingScale); }
+	uint32 GetColorPickingHeight() const { return static_cast<uint32>(Height * ColorPickingScale); }
+	D3D11_VIEWPORT GetColorPickingViewport() const;
+
 	void UpdateViewport();
 
 private:
@@ -73,4 +80,10 @@ private:
 	ID3D11RenderTargetView* ColorPickingRTV = nullptr;
 	ID3D11Texture2D*        ColorPickingDepthTexture = nullptr;
 	ID3D11DepthStencilView* ColorPickingDSV = nullptr;
+
+	// Reusable Staging Texture for Pixel Readback (Optimization)
+	//ID3D11Texture2D*        ColorPickingStagingTexture = nullptr;
+
+	// Color Picking Resolution Scale (0.25 = quarter resolution, 1.0 = full resolution)
+	float ColorPickingScale = 0.25f;
 };

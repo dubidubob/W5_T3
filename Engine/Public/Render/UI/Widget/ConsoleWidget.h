@@ -68,6 +68,7 @@ public:
 private:
 	// Helper Functions
 	static ImVec4 GetColorByLogType(ELogType InType);
+	void TrimLogsIfNecessary();
 
 private:
 	// Command Input
@@ -79,6 +80,9 @@ private:
 	TArray<FLogEntry> LogItems;
 	bool bIsAutoScroll;
 	bool bIsScrollToBottom;
+
+	// Maximum log count limit
+	static constexpr int MaxLogCount = 100;
 
 	// Stream Redirection
 	ConsoleStreamBuffer* ConsoleOutputBuffer;
