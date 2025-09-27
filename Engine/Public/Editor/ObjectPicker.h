@@ -30,7 +30,6 @@ private:
 	bool IsRayTriangleCollided(const FRay& Ray, const FVector& Vertex1, const FVector& Vertex2, const FVector& Vertex3,
 		const FMatrix& ModelMatrix, float* Distance);
 
-
 	UCamera* Camera;
 	UDeviceResources* DeviceResources;
 };

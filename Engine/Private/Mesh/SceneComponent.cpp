@@ -117,7 +117,6 @@ const FVector& USceneComponent::GetRelativeScale3D() const
 
 const FVector& USceneComponent::GetWorldLocation() const
 {
-	TIME_PROFILE_START(GetWorldLocation1)
 	return FVector(WorldTransformMatrix.Data[3][0], WorldTransformMatrix.Data[3][1], WorldTransformMatrix.Data[3][2]);
 }
 
