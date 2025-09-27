@@ -31,8 +31,8 @@ public:
 
 	const FVector& GetWorldLocation() const;
 
-	const FMatrix& GetWorldTransformMatrix() const;
-	const FMatrix& GetWorldTransformMatrixInverse() const;
+	const FMatrix GetWorldTransformMatrix() const;
+	const FMatrix GetWorldTransformMatrixInverse() const;
 
 private:
 	mutable bool bIsTransformDirty = true;

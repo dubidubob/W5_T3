@@ -41,7 +41,7 @@ public:
 	/**
 	 * @brief Getter
 	 */
-	const FViewProjConstants& GetFViewProjConstants() const { return ViewProjConstants; }
+	FViewProjConstants GetFViewProjConstants() const { return ViewProjConstants; }
 	FViewProjConstants GetFViewProjConstantsInverse() const;
 
 	FRay ConvertToWorldRay(float NdcX, float NdcY) const;

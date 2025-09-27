@@ -3,7 +3,7 @@
 #include "Global/Matrix.h"
 #include <cstdint>
 
-struct FViewProjConstants
+struct alignas(16) FViewProjConstants
 {
 	FViewProjConstants()
 		:
