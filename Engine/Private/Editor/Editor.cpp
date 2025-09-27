@@ -160,7 +160,7 @@ void UEditor::RenderEditorBatched(int Idx)
 	else
 	{
 		float CachedScale = ViewportManager->GetViewportInfo(Idx)->GizmoScale;
-		if(CachedScale > 0 && CachedScale<2000)
+		if (CachedScale > 0 && CachedScale < 2000)
 			Gizmo->RenderGizmo(ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor(), Camera->GetLocation(), false, CachedScale, CachedScale);
 	}
 }
@@ -299,6 +299,7 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 			{
 				ActorPicked = nullptr;
 			}
+
 			// 퍼포먼스 측정 종료 및 시간 누적
 			LastPickTime = PickingCounter.Finish();
 			TotalPickTime += LastPickTime;

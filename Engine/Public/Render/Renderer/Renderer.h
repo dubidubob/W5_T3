@@ -45,6 +45,9 @@ public:
 	void RenderLevel();
 	void RenderColorPicking();
 	bool ShouldPerformColorPicking();
+	bool IsCameraMoving();
+	uint32 GetPickedObjectFromCache(int32 MouseX, int32 MouseY);
+	void DebugPrintSamplePickingData(); // Debug function to print some sample data
 	void RenderText(const FVector& CameraLocation);
 	void RenderSlate(UEditor* Editor);
 	void RenderEditorPrimitive(FEditorPrimitive& Primitive, FRenderState& RenderState);
@@ -166,6 +169,16 @@ private:
 	UEditor* Editor = nullptr;
 	bool bSortingBatchMapDirty = true;
 	TMap<FStaticMaterial*, TMap<FStaticMesh*, TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>>> SortingBatchMap;
+
+	// ================== Frame Skipping Optimization ==================
+	uint32 FrameCounter = 0;
+	static constexpr uint32 PICKING_FRAME_INTERVAL = 4; // 2프레임마다 렌더링
+
+	// ================== Color Picking Cache Optimization ==================
+	TArray<uint32> CachedColorPickingData; // CPU accessible color picking array
+	//FViewProjConstants CachedPickingViewProj{}; // Last camera state when picking was baked
+	bool bPickingDataValid = false; // Whether cached data is valid
+	bool bCameraMoving = false; // Whether camera is currently moving
 
 #ifdef _DEVELOP
 	uint32 MaterialChangeCount = 0;
