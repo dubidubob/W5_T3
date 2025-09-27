@@ -72,12 +72,12 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 	float4 Position = float4(Input.Position, 1.0f);
 	float4 ShadeColor = Input.Color;
 
-	if (UseInstancing != 0 && InstanceId < InstanceCount)
-	{
-		InstanceData Instance = InstanceMatrices[BaseInstanceOffset + InstanceId];
-		Position = mul(Position, Instance.World);
-		ShadeColor = lerp(ShadeColor, Instance.Color, Instance.Color.a);
-	}
+	//if (UseInstancing != 0 && InstanceId < InstanceCount)
+	//{
+	//	InstanceData Instance = InstanceMatrices[BaseInstanceOffset + InstanceId];
+	//	Position = mul(Position, Instance.World);
+	//	ShadeColor = lerp(ShadeColor, Instance.Color, Instance.Color.a);
+	//}
 
 	Position = mul(Position, world);
 	Position = mul(Position, ViewMatrix);
@@ -91,20 +91,21 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 
 float4 MainPS(PS_INPUT Input) : SV_TARGET
 {
-    if (UseTexture != 0)
-    {
-		// UV 스크롤 적용
-		float2 scrolledUV = Input.Tex + UVScrollSpeed * Time;
-		scrolledUV = frac(scrolledUV);
+	return DiffuseTexture.Sample(DiffuseSampler, Input.Tex);
+  //  if (UseTexture != 0)
+  //  {
+		//// UV 스크롤 적용
+		//float2 scrolledUV = Input.Tex + UVScrollSpeed * Time;
+		//scrolledUV = frac(scrolledUV);
 
-        // 텍스처 샘플링 결과만 반환
-        return DiffuseTexture.Sample(DiffuseSampler, scrolledUV);
-    }
+  //      // 텍스처 샘플링 결과만 반환
+  //      return DiffuseTexture.Sample(DiffuseSampler, scrolledUV);
+  //  }
     
-    // 텍스처를 사용하지 않을 경우 DiffuseColor의 RGB를 사용하되, 알파는 1.0으로 고정
-    // (오브젝트 뷰어에서 UI 블렌딩 시 투명해지는 문제 방지)
-    // 텍스처 미사용 시 Kd가 거의 검정이면 정점색 사용
-    float3 kd = DiffuseColor.rgb;
-    bool useVertexColor = all(kd < float3(0.001, 0.001, 0.001));
-    return float4(useVertexColor ? Input.Color.rgb : kd, 1.0f);
+  //  // 텍스처를 사용하지 않을 경우 DiffuseColor의 RGB를 사용하되, 알파는 1.0으로 고정
+  //  // (오브젝트 뷰어에서 UI 블렌딩 시 투명해지는 문제 방지)
+  //  // 텍스처 미사용 시 Kd가 거의 검정이면 정점색 사용
+  //  float3 kd = DiffuseColor.rgb;
+  //  bool useVertexColor = all(kd < float3(0.001, 0.001, 0.001));
+  //  return float4(useVertexColor ? Input.Color.rgb : kd, 1.0f);
 }
