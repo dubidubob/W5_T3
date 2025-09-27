@@ -6,10 +6,11 @@
 struct FViewProjConstants
 {
 	FViewProjConstants()
+		:
+		View(FMatrix::Identity), 
+		Projection(FMatrix::Identity),
+		ViewModeIndex(0)
 	{
-		View = FMatrix::Identity;
-		Projection = FMatrix::Identity;
-		ViewModeIndex = 0;
 	}
 
 	FMatrix View;

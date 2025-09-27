@@ -31,22 +31,64 @@ FMatrix::FMatrix(
  */
 FMatrix FMatrix::Transpose(const FMatrix& InOtherMatrix)
 {
+#if SIMD_LEVEL >= 1
+	FMatrix Result;
+
+	// InOtherMatrix의 4개 행을 4개의 SIMD 레지스터에 로드합니다.
+	__m128 row0 = InOtherMatrix.row[0];
+	__m128 row1 = InOtherMatrix.row[1];
+	__m128 row2 = InOtherMatrix.row[2];
+	__m128 row3 = InOtherMatrix.row[3];
+
+	_MM_TRANSPOSE4_PS(row0, row1, row2, row3);
+
+	// 전치된 결과를 Result 행렬의 행에 저장합니다.
+	Result.row[0] = row0;
+	Result.row[1] = row1;
+	Result.row[2] = row2;
+	Result.row[3] = row3;
+
+	return Result;
+#elif
 	return {
 		InOtherMatrix.Data[0][0], InOtherMatrix.Data[1][0], InOtherMatrix.Data[2][0], InOtherMatrix.Data[3][0],
 		InOtherMatrix.Data[0][1], InOtherMatrix.Data[1][1], InOtherMatrix.Data[2][1], InOtherMatrix.Data[3][1],
 		InOtherMatrix.Data[0][2], InOtherMatrix.Data[1][2], InOtherMatrix.Data[2][2], InOtherMatrix.Data[3][2],
 		InOtherMatrix.Data[0][3], InOtherMatrix.Data[1][3], InOtherMatrix.Data[2][3], InOtherMatrix.Data[3][3]
 	};
+#endif
 }
+#if SIMD_LEVEL >= 1
+__m128 FMatrix::MulVecMat(const __m128& v, const FMatrix& M)
+{
+	// v의 각 요소를 4개씩 복사 (브로드캐스트)
+	__m128 vX = _mm_shuffle_ps(v, v, _MM_SHUFFLE(0, 0, 0, 0));
+	__m128 vY = _mm_shuffle_ps(v, v, _MM_SHUFFLE(1, 1, 1, 1));
+	__m128 vZ = _mm_shuffle_ps(v, v, _MM_SHUFFLE(2, 2, 2, 2));
+	__m128 vW = _mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 3, 3, 3));
 
+	// M.row[i] * v.i 를 계산하여 모두 더함 (Dot Product의 병렬 확장)
+	__m128 r = _mm_mul_ps(vX, M.row[0]);
+	r = _mm_add_ps(r, _mm_mul_ps(vY, M.row[1]));
+	r = _mm_add_ps(r, _mm_mul_ps(vZ, M.row[2]));
+	r = _mm_add_ps(r, _mm_mul_ps(vW, M.row[3]));
+	return r;
+}
+#endif
 
 /**
-* @brief 두 행렬곱을 진행한 행렬을 반환하는 연산자 함수
+* @brief 두 행렬곱을 진행한 행렬을 반환하는 연산자 함수 (SIMD 최적화)
 */
 FMatrix FMatrix::operator*(const FMatrix& InOtherMatrix) const
 {
 	FMatrix Result;
 
+#if SIMD_LEVEL>=1
+	Result.row[0] = MulVecMat(this->row[0], InOtherMatrix);
+	Result.row[1] = MulVecMat(this->row[1], InOtherMatrix);
+	Result.row[2] = MulVecMat(this->row[2], InOtherMatrix);
+	Result.row[3] = MulVecMat(this->row[3], InOtherMatrix);
+#elif
 	for (int32 i = 0; i < 4; ++i)
 	{
 		for (int32 j = 0; j < 4; ++j)
@@ -57,6 +99,7 @@ FMatrix FMatrix::operator*(const FMatrix& InOtherMatrix) const
 			}
 		}
 	}
+#endif
 
 	return Result;
 }
@@ -249,10 +292,6 @@ FMatrix FMatrix::GetModelMatrixInverse(const FVector& Location, const FQuat& Rot
 FMatrix FMatrix::BasisLHYToUE()
 {
 	// row-major, row-vector mul(p, M) 기준
-	// [[0,0,1,0],
-	//  [1,0,0,0],
-	//  [0,1,0,0],
-	//  [0,0,0,1]]
 	return {
 		0, 0, 1, 0,
 		1, 0, 0, 0,

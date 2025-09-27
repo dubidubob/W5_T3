@@ -2,12 +2,16 @@
 struct FVector;
 struct FVector4;
 
-struct FMatrix
+struct alignas(16) FMatrix
 {
 	/**
 	* @brief 4x4 float 타입의 행렬
 	*/
-	float Data[4][4];
+	union
+	{
+		float Data[4][4]; // elements
+		__m128 row[4]; // rows;
+	};
 
 	static void* operator new(size_t size)
 	{
@@ -45,7 +49,7 @@ struct FMatrix
 	*/
 	FMatrix operator*(const FMatrix& InOtherMatrix) const;
 	void operator*=(const FMatrix& InOtherMatrix);
-
+	static __m128 MulVecMat(const __m128& v, const FMatrix& M);
 	/**
 	* @brief Position의 정보를 행렬로 변환하여 제공하는 함수
 	*/
