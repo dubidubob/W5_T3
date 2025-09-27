@@ -400,7 +400,6 @@
     <ClInclude Include="Public\\Utility\\Metadata.h" />
     <ClInclude Include="Global\Rect.h" />
     <ClInclude Include="SIMD.h" />
-    <ClInclude Include="TestSIMD.h" />
     <ClInclude Include="ViewportTypes.h" />
   </ItemGroup>
   <ItemGroup>
@@ -496,7 +495,6 @@
     <ClCompile Include="Private\\Render\UI\Window\\UIWindow.cpp" />
     <ClCompile Include="Private\\Utility\\LevelSerializer.cpp" />
     <ClCompile Include="Global\Rect.cpp" />
-    <ClCompile Include="TestSIMD.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
