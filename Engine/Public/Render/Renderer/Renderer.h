@@ -98,6 +98,8 @@ public:
 		}
 	}
 
+	void UpdateBufferStream(ID3D11Buffer* Buffer, const void* Pointer, const uint32 Size);
+
 	void UpdateViewProjConstants(const FViewProjConstants& ViewProj);
 	void UpdateInstance(const TArray<FTextInstance>* Instances);
 	void UpdateInstanceDrawConstants(bool UseInstancing, uint32 BaseOffset, uint32 InstanceCount) const;
@@ -165,7 +167,9 @@ public:
 private:
 	UEditor* Editor = nullptr;
 	bool bSortingBatchMapDirty = true;
-	TMap<FStaticMaterial*, TMap<FStaticMesh*, TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>>> SortingBatchMap;
+
+	//WMCount, WM0, SecCount, Sec0, Sec1, Sec2, Wm1, SecCount, Sec0, Sec1, Wm2, SecCount, Sec0, Sec1 ~~~
+	TMap<FStaticMaterial*, TMap<FStaticMesh*, TArray<uint32>>> RenderStreamMap;
 
 #ifdef _DEVELOP
 	uint32 MaterialChangeCount = 0;

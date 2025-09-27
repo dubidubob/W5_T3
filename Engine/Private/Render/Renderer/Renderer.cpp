@@ -313,7 +313,17 @@ void URenderer::CreateSamplerState()
 
 	GetDevice()->CreateSamplerState(&Desc, &DiffuseSampler);
 }
-
+void URenderer::UpdateBufferStream(ID3D11Buffer* Buffer, const void* Pointer, const uint32 Size)
+{
+	TIME_PROFILE(BufferStream)
+		const FMatrix* Mat = reinterpret_cast<const FMatrix*>(Pointer);
+	D3D11_MAPPED_SUBRESOURCE MappedResource;
+	if (SUCCEEDED(GetDeviceContext()->Map(Buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource)))
+	{
+		memcpy(MappedResource.pData, Pointer, Size);
+		GetDeviceContext()->Unmap(Buffer, 0);
+	}
+}
 void URenderer::UpdateViewProjConstants(const FViewProjConstants& ViewProj)
 {
     Pipeline->SetConstantBuffer(1, false, ConstantBufferPerFrame);
@@ -451,7 +461,8 @@ void URenderer::RenderEnd() const
 // ================== Sorting Batch ==================
 void URenderer::CleanUpSortingBatch()
 {
-	SortingBatchMap.clear();
+	RenderStreamMap.clear();
+	//SortingBatchMap.clear();
 }
 void URenderer::ReSetSortingBatchMap()
 {
@@ -482,43 +493,63 @@ void URenderer::ReSetSortingBatchMap()
         UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Primitive);
         if (StaticMeshComponent != nullptr)
         {
-            FStaticMesh* StaticMeshAsset = StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset();
-            int MaterialSize = StaticMeshAsset->Materials.size();
-            for (int i = 0; i < MaterialSize; i++)
-            {
-                FStaticMaterial* pMaterial = &StaticMeshAsset->Materials[i];
-				//마테리얼 없으면 추가	
-				if (SortingBatchMap.Contains(pMaterial) == false)
-				{
-					SortingBatchMap[pMaterial] =
-					{
-						{
-							{StaticMeshAsset, {	{StaticMeshComponent, {}}}}
-						}
-					};
-				}
-				else
-				{
-					//스태틱메쉬 없으면 추가
-					if (SortingBatchMap[pMaterial].Contains(StaticMeshAsset) == false)
-					{
-						SortingBatchMap[pMaterial][StaticMeshAsset] = { {StaticMeshComponent, {}} };
-					}
-					else
-					{
-						//스태틱 메쉬 컴포넌트 추가
-						SortingBatchMap[pMaterial][StaticMeshAsset][StaticMeshComponent] = {};
-					}
-				}
-			}
+			FStaticMesh* StaticMeshAsset = StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset();
+			FMatrix WorldMatrix = StaticMeshComponent->GetWorldTransformMatrix();
 
+			//현재 컴포넌트의 WM, SectionCount, Sec0, Sec1 ...~ 로 이루어진 Stream 맵을 구성해둠
+			TMap<FStaticMaterial*, TArray<FStaticMeshSection*>> SectionMap;
 			TArray<FStaticMeshSection>& Sections = StaticMeshAsset->Sections;
 			int SectionSize = StaticMeshAsset->Sections.size();
 			for (int i = 0; i < SectionSize; i++)
 			{
 				FStaticMeshSection* pSection = &Sections[i];
 				FStaticMaterial* SectionMaterial = &StaticMeshAsset->Materials[pSection->MaterialIndex];
-				SortingBatchMap[SectionMaterial][StaticMeshAsset][StaticMeshComponent].Push(pSection);
+				if (SectionMap.Contains(SectionMaterial) == false)
+				{
+					SectionMap[SectionMaterial] = { pSection };
+				}
+				else
+				{
+					SectionMap[SectionMaterial].Push(pSection);
+				}
+			}
+
+
+			//세팅된 섹션맵을 RenderStreamMap에 세팅
+			TArray<FStaticMaterial*> MaterialKeys = SectionMap.GetKeys(); //마테리얼
+			for (FStaticMaterial* MaterialKey : MaterialKeys)
+			{
+				if (RenderStreamMap.Contains(MaterialKey) == false)
+				{
+					RenderStreamMap[MaterialKey] = { {StaticMeshAsset, {0}} };
+				}
+				else
+				{
+					if (RenderStreamMap[MaterialKey].Contains(StaticMeshAsset) == false)
+					{
+						RenderStreamMap[MaterialKey][StaticMeshAsset] = { 0 };
+					}
+				}
+
+				RenderStreamMap[MaterialKey][StaticMeshAsset][0]++;
+				//WorldMatrix Input
+				for (int i = 0; i < 4; i++)
+				{
+					for (int j = 0; j < 4; j++)
+					{
+						RenderStreamMap[MaterialKey][StaticMeshAsset].Push(*reinterpret_cast<uint32*>(&WorldMatrix.Data[i][j]));
+					}
+				}
+				//SectionCount Input
+				RenderStreamMap[MaterialKey][StaticMeshAsset].Push(Sections.size());
+
+				//Section Input
+				const TArray<FStaticMeshSection*>& Sections = SectionMap[MaterialKey];
+				for (FStaticMeshSection* Section : Sections)
+				{
+					RenderStreamMap[MaterialKey][StaticMeshAsset].Push(Section->NumIndices);
+					RenderStreamMap[MaterialKey][StaticMeshAsset].Push(Section->FirstIndex);
+				}
 			}
 		}
 	}
@@ -585,156 +616,171 @@ void URenderer::RenderSortingBatchMap()
         uint32 Id = static_cast<uint32>(C->GetInternalIndex());
         VisibleStamp[Id] = FrameStamp;
     }
-    TArray<FStaticMaterial*> MaterialKeys = SortingBatchMap.GetKeys();
+    TArray<FStaticMaterial*> MaterialKeys = RenderStreamMap.GetKeys();
+
+	const uint32 WorldMatSize = sizeof(FMatrix);
+	const uint32 WorldMatValueCount = 16;
+	uint32 ActorIdx = 0;
 
     for (FStaticMaterial* MaterialKey : MaterialKeys)
     {
         SetupMaterial(MaterialKey);
-        TMap<FStaticMesh*, TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>>& SortingMaterialMap = SortingBatchMap[MaterialKey];
+        TMap<FStaticMesh*, TArray<uint32>>& SortingMaterialMap = RenderStreamMap[MaterialKey];
         TArray<FStaticMesh*> StaticMeshKeys = SortingMaterialMap.GetKeys();
         for (FStaticMesh* StaticMeshKey : StaticMeshKeys)
         {
             SetupStaticMeshAsset(StaticMeshKey);
-            TMap<UStaticMeshComponent*, TArray<FStaticMeshSection*>>& SortingMeshComponentMap = SortingMaterialMap[StaticMeshKey];
-            TArray<UStaticMeshComponent*> MeshComponentKeys = SortingMeshComponentMap.GetKeys(); //병목지점 fix 여부(x)
-            TArray<UStaticMeshComponent*> Filtered;
-            Filtered.Reserve(MeshComponentKeys.Num());
-            for (auto* CompKey : MeshComponentKeys)
-            {
-                if (!CompKey) continue;
-                uint32 Id = static_cast<uint32>(CompKey->GetInternalIndex());
-                if (Id < VisibleStamp.Num() && VisibleStamp[Id] == FrameStamp)
-                {
-                    Filtered.push_back(CompKey);
-                }
-            }
-
-            MeshComponentKeys = std::move(Filtered);
-#if SIMD_LEVEL >= 1
-            if (true)
-            {
-				//TIME_PROFILE_START(TEST) //6ms
-				//FStaticMeshSection* TempSection = SortingMeshComponentMap[MeshComponentKeys[0]][0];
-				//for (int i = 0; i < 25000; i++)
-				//{
-				//	SetupStaticMeshComponent(MeshComponentKeys[0]); //병목지점 fix(x) 11ms
-				//	Pipeline->DrawIndexed(TempSection->NumIndices, TempSection->FirstIndex, 0);
-				//}
-				//TIME_PROFILE_END(TEST)
-
-					TIME_PROFILE_START(TEST) //13ms
-                for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
-                {
-                    SetupStaticMeshComponent(MeshComponentKey); //병목지점 fix(x) 11ms
-					TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey]; //병목지점 fix(x) 4ms 
-
-                    for (FStaticMeshSection* Section : SectionArray)
-                    {
-                        Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
-                    }
-                }
-					TIME_PROFILE_END(TEST)
-            }
-            else
-            {
-			int32 NumComponents = MeshComponentKeys.Num();
-
-			// TArray를 직접 루프 돌지 않고 인덱스로 순회
-			for (int32 i = 0; i < NumComponents; i += 4)
+			TArray<uint32>& RenderStream = SortingMaterialMap[StaticMeshKey];
+			uint32 ActorCount = RenderStream[0];
+			uint32* CurPointer = &RenderStream[1];
+			for (int i = 0; i < ActorCount; i++)
 			{
+				TIME_PROFILE(TEST1)
+				FMatrix* Mat = reinterpret_cast<FMatrix*>(&RenderStream[1]);
 
-				// 1. FAABB 4개 추출
-				FAABB chunk_aabb[4];
-				int32 chunk_size = std::min(4, NumComponents - i);
-
-				// 2. AOS (chunk_aabb) -> SOA (simd_chunk) 변환
-				FAABB_SIMD_Chunk simd_chunk;
-
-				for (int32 j = 0; j < chunk_size; ++j) {
-
-					chunk_aabb[j] = MeshComponentKeys[i + j]->GetWorldBounds(); //병목지점 fix 여부(x)
-
-					simd_chunk.MinX[j] = chunk_aabb[j].Min.X;
-					simd_chunk.MinY[j] = chunk_aabb[j].Min.Y;
-					simd_chunk.MinZ[j] = chunk_aabb[j].Min.Z;
-
-					simd_chunk.MaxX[j] = chunk_aabb[j].Max.X;
-					simd_chunk.MaxY[j] = chunk_aabb[j].Max.Y;
-					simd_chunk.MaxZ[j] = chunk_aabb[j].Max.Z;
-				}
-
-				// SIMD 안전을 위해 모든 필드를 무효 AABB 값(FLT_MAX)으로 초기화
-				for (int32 j = chunk_size; j < 4; j++)
+				UpdateBufferStream(ConstantBufferModels, CurPointer, WorldMatSize);
+				CurPointer += WorldMatValueCount;
+				uint32 SectionCount = *CurPointer;
+				CurPointer++;
+				for (int j = 0; j < SectionCount; j++)
 				{
-					simd_chunk.MinX[j] = FLT_MAX;
-					simd_chunk.MinY[j] = FLT_MAX;
-					simd_chunk.MinZ[j] = FLT_MAX;
-
-					simd_chunk.MaxX[j] = -FLT_MAX;
-					simd_chunk.MaxY[j] = -FLT_MAX;
-					simd_chunk.MaxZ[j] = -FLT_MAX;
+					uint32 IndexNum = *CurPointer++;
+					uint32 IndexLocation = *CurPointer++;
+					Pipeline->DrawIndexed(IndexNum, IndexLocation, 0);
 				}
-
-				// 3. SIMD 컬링 함수 호출
-				__m128 render_mask = TestAABBFrustum_Chunk_SIMD(simd_chunk, Planes);
-				int32 mask_int = _mm_movemask_ps(render_mask); // 4비트 정수 마스크로 변환
-
-
-
-				// 4. 마스크를 사용하여 개별 액터 처리
-				for (int32 j = 0; j < chunk_size; ++j) {
-					if ((mask_int >> j) & 1) // j번째 비트가 1이면 렌더링 대상
-					{
-						UStaticMeshComponent* MeshComponentKey = MeshComponentKeys[i + j];
-						SetupStaticMeshComponent(MeshComponentKey); //병목지점 fix 여부(x)
-						TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];  //병목지점 fix 여부(x)
-						for (FStaticMeshSection* Section : SectionArray)
-						{
-							Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
-#ifdef _DEVELOP
-							MeshSectionDrawCount++;
-#endif
-						}
-
-					}
-				}
-
+				ActorIdx++;
 			}
-            }
-#elif
-			if (true)
-			{
-				for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
-				{
-					SetupStaticMeshComponent(MeshComponentKey);
-					TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
-					for (FStaticMeshSection* Section : SectionArray)
-					{
-						Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
-					}
-				}
-			}
-			else
-			{
-			for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
-			{
-				FAABB Bounds = MeshComponentKey->GetWorldBounds();
-				if (!TestAABBFrustum(Bounds, Planes))
-				{
-					continue;
-				}
-				SetupStaticMeshComponent(MeshComponentKey);
-				TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
-				for (FStaticMeshSection* Section : SectionArray)
-				{
-					Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
-#ifdef _DEVELOP
-					MeshSectionDrawCount++;
-#endif
-				}
-			}
-			}
-#endif
+			
+//            TArray<UStaticMeshComponent*> MeshComponentKeys = RenderStream.GetKeys(); //병목지점 fix 여부(x)
+//            TArray<UStaticMeshComponent*> Filtered;
+//            Filtered.Reserve(MeshComponentKeys.Num());
+//            for (auto* CompKey : MeshComponentKeys)
+//            {
+//                if (!CompKey) continue;
+//                uint32 Id = static_cast<uint32>(CompKey->GetInternalIndex());
+//                if (Id < VisibleStamp.Num() && VisibleStamp[Id] == FrameStamp)
+//                {
+//                    Filtered.push_back(CompKey);
+//                }
+//            }
+//
+//            MeshComponentKeys = std::move(Filtered);
+//#if SIMD_LEVEL >= 1
+//            if (true)
+//            {
+//					TIME_PROFILE_START(TEST) //13ms
+//                for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
+//                {
+//                    SetupStaticMeshComponent(MeshComponentKey); //병목지점 fix(x) 11ms
+//					TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey]; //병목지점 fix(x) 4ms 
+//
+//                    for (FStaticMeshSection* Section : SectionArray)
+//                    {
+//                        Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+//                    }
+//                }
+//					TIME_PROFILE_END(TEST)
+//            }
+//            else
+//            {
+//			int32 NumComponents = MeshComponentKeys.Num();
+//
+//			// TArray를 직접 루프 돌지 않고 인덱스로 순회
+//			for (int32 i = 0; i < NumComponents; i += 4)
+//			{
+//
+//				// 1. FAABB 4개 추출
+//				FAABB chunk_aabb[4];
+//				int32 chunk_size = std::min(4, NumComponents - i);
+//
+//				// 2. AOS (chunk_aabb) -> SOA (simd_chunk) 변환
+//				FAABB_SIMD_Chunk simd_chunk;
+//
+//				for (int32 j = 0; j < chunk_size; ++j) {
+//
+//					chunk_aabb[j] = MeshComponentKeys[i + j]->GetWorldBounds(); //병목지점 fix 여부(x)
+//
+//					simd_chunk.MinX[j] = chunk_aabb[j].Min.X;
+//					simd_chunk.MinY[j] = chunk_aabb[j].Min.Y;
+//					simd_chunk.MinZ[j] = chunk_aabb[j].Min.Z;
+//
+//					simd_chunk.MaxX[j] = chunk_aabb[j].Max.X;
+//					simd_chunk.MaxY[j] = chunk_aabb[j].Max.Y;
+//					simd_chunk.MaxZ[j] = chunk_aabb[j].Max.Z;
+//				}
+//
+//				// SIMD 안전을 위해 모든 필드를 무효 AABB 값(FLT_MAX)으로 초기화
+//				for (int32 j = chunk_size; j < 4; j++)
+//				{
+//					simd_chunk.MinX[j] = FLT_MAX;
+//					simd_chunk.MinY[j] = FLT_MAX;
+//					simd_chunk.MinZ[j] = FLT_MAX;
+//
+//					simd_chunk.MaxX[j] = -FLT_MAX;
+//					simd_chunk.MaxY[j] = -FLT_MAX;
+//					simd_chunk.MaxZ[j] = -FLT_MAX;
+//				}
+//
+//				// 3. SIMD 컬링 함수 호출
+//				__m128 render_mask = TestAABBFrustum_Chunk_SIMD(simd_chunk, Planes);
+//				int32 mask_int = _mm_movemask_ps(render_mask); // 4비트 정수 마스크로 변환
+//
+//
+//
+//				// 4. 마스크를 사용하여 개별 액터 처리
+//				for (int32 j = 0; j < chunk_size; ++j) {
+//					if ((mask_int >> j) & 1) // j번째 비트가 1이면 렌더링 대상
+//					{
+//						UStaticMeshComponent* MeshComponentKey = MeshComponentKeys[i + j];
+//						SetupStaticMeshComponent(MeshComponentKey); //병목지점 fix 여부(x)
+//						TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];  //병목지점 fix 여부(x)
+//						for (FStaticMeshSection* Section : SectionArray)
+//						{
+//							Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+//#ifdef _DEVELOP
+//							MeshSectionDrawCount++;
+//#endif
+//						}
+//
+//					}
+//				}
+//
+//			}
+//            }
+//#elif
+//			if (true)
+//			{
+//				for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
+//				{
+//					SetupStaticMeshComponent(MeshComponentKey);
+//					TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
+//					for (FStaticMeshSection* Section : SectionArray)
+//					{
+//						Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+//					}
+//				}
+//			}
+//			else
+//			{
+//			for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
+//			{
+//				FAABB Bounds = MeshComponentKey->GetWorldBounds();
+//				if (!TestAABBFrustum(Bounds, Planes))
+//				{
+//					continue;
+//				}
+//				SetupStaticMeshComponent(MeshComponentKey);
+//				TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
+//				for (FStaticMeshSection* Section : SectionArray)
+//				{
+//					Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+//#ifdef _DEVELOP
+//					MeshSectionDrawCount++;
+//#endif
+//				}
+//			}
+//			}
+//#endif
         }
     }
 }
@@ -775,16 +821,7 @@ void URenderer::SetupStaticMeshAsset(FStaticMesh* StaticMeshAsset)
 }
 void URenderer::SetupStaticMeshComponent(UStaticMeshComponent* StaticMeshComponent)
 {
-	TIME_PROFILE_START(Check1)
-		//UpdateBuffer(ConstantBufferModels, StaticMeshComponent->GetWorldTransformMatrix());
-
-		const FMatrix& WorldMat = StaticMeshComponent->GetWorldTransformMatrix();
-	TIME_PROFILE_END(Check1)
-		TIME_PROFILE_START(Check2)
-
-	UpdateBuffer(ConstantBufferModels, WorldMat);
-	TIME_PROFILE_END(Check2)
-
+	UpdateBuffer(ConstantBufferModels, StaticMeshComponent->GetWorldTransformMatrix());
 #ifdef _DEVELOP
 	StaticMeshComponentChagneCount++;
 #endif
