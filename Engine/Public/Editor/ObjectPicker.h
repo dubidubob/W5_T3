@@ -29,7 +29,6 @@ private:
 	FRay GetModelRay(const FRay& Ray, UPrimitiveComponent* Primitive);
 	bool IsRayTriangleCollided(const FRay& Ray, const FVector& Vertex1, const FVector& Vertex2, const FVector& Vertex3,
 		const FMatrix& ModelMatrix, float* Distance);
-	bool IsRayTriangleCollided_SIMD(const FRay& Ray, FVertexSIMD Vertexes, const FMatrix& ModelMatrix, float* Distance);
 
 
 	UCamera* Camera;
