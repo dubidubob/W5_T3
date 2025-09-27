@@ -28,21 +28,16 @@ public:
 	const FVector& GetRelativeRotation() const;
 	const FQuat&   GetRelativeRotationQuat() const { return RelativeRotationQuat; }
 	const FVector& GetRelativeScale3D() const;
-
 	const FVector& GetWorldLocation() const;
 
 	bool IsTransformDirty() const { return bIsTransformDirty; }
 
-	// Explicitly updates the world transform if dirty, based on the parent's cached transform.
-	void UpdateWorldTransform();
-
-	// This is now a simple getter for the cached matrix. Assumes UpdateWorldTransform() has been called.
 	const FMatrix& GetWorldTransformMatrix() const;
-	const FMatrix GetWorldTransformMatrixInverse() const;
-
-	const void UpdateWorldTransformMatrix() const;
+	[[DEPRECATED]] const FMatrix GetWorldTransformMatrixInverse() const;
 
 private:
+	void UpdateWorldFromLocal() noexcept;
+
 	mutable bool bIsTransformDirty = true;
 	mutable bool bIsTransformDirtyInverse = true;
 	mutable FMatrix WorldTransformMatrix;

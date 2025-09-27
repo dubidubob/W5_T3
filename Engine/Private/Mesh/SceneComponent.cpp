@@ -3,7 +3,7 @@
 #include "Mesh/ResourceManager.h"
 
 #include <algorithm>
-
+#include "Global/PlatformTime.h"
 IMPLEMENT_CLASS(USceneComponent, UActorComponent)
 
 USceneComponent::USceneComponent()
@@ -41,8 +41,8 @@ void USceneComponent::SetParentAttachment(USceneComponent* NewParent)
 
 	NewParent->Children.push_back(this);
 
-	MarkAsDirty();
-
+	UpdateWorldFromLocal();
+	// MarkAsDirty();
 }
 
 void USceneComponent::RemoveChild(USceneComponent* ChildDeleted)
@@ -54,7 +54,6 @@ void USceneComponent::MarkAsDirty()
 {
 	bIsTransformDirty = true;
 	bIsTransformDirtyInverse = true;
-
 	for (USceneComponent* Child : Children)
 	{
 		Child->MarkAsDirty();
@@ -70,7 +69,8 @@ UPrimitiveComponent::UPrimitiveComponent()
 void USceneComponent::SetRelativeLocation(const FVector& Location)
 {
 	RelativeLocation = Location;
-	MarkAsDirty();
+	UpdateWorldFromLocal();
+	// MarkAsDirty();
 }
 
 void USceneComponent::SetRelativeRotation(const FVector& Rotation)
@@ -78,7 +78,8 @@ void USceneComponent::SetRelativeRotation(const FVector& Rotation)
     RelativeRotation = Rotation;
     // Keep quaternion in sync with UI degrees
     RelativeRotationQuat = FQuat::FromEulerXYZ(RelativeRotation);
-    MarkAsDirty();
+	UpdateWorldFromLocal();
+    // MarkAsDirty();
 }
 void USceneComponent::SetRelativeScale3D(const FVector& Scale)
 {
@@ -87,7 +88,8 @@ void USceneComponent::SetRelativeScale3D(const FVector& Scale)
 	ActualScale.Y = std::max(ActualScale.Y, MinScale);
 	ActualScale.Z = std::max(ActualScale.Z, MinScale);
 	RelativeScale3D = ActualScale;
-	MarkAsDirty();
+	UpdateWorldFromLocal();
+	// MarkAsDirty();
 }
 
 void USceneComponent::SetUniformScale(bool bIsUniform)
@@ -115,35 +117,17 @@ const FVector& USceneComponent::GetRelativeScale3D() const
 
 const FVector& USceneComponent::GetWorldLocation() const
 {
-	const FMatrix& WorldMatrix = GetWorldTransformMatrix();
-	return FVector(WorldMatrix.Data[3][0], WorldMatrix.Data[3][1], WorldMatrix.Data[3][2]);
+	TIME_PROFILE_START(GetWorldLocation1)
+	return FVector(WorldTransformMatrix.Data[3][0], WorldTransformMatrix.Data[3][1], WorldTransformMatrix.Data[3][2]);
 }
 
-const FMatrix USceneComponent::GetWorldTransformMatrix() const
+const FMatrix& USceneComponent::GetWorldTransformMatrix() const
 {
 	return WorldTransformMatrix;
 }
 
-
-const void USceneComponent::UpdateWorldTransformMatrix() const
+[[DEPRECATED]] const FMatrix USceneComponent::GetWorldTransformMatrixInverse() const
 {
-	if (bIsTransformDirty)
-	{
-		// Quaternion-based TRS (row-major): I * S * R * T
-		WorldTransformMatrix = FMatrix::GetModelMatrix(RelativeLocation, RelativeRotationQuat, RelativeScale3D);
-
-		for (USceneComponent* Ancester = ParentAttachment; Ancester; Ancester = Ancester->ParentAttachment)
-		{
-			WorldTransformMatrix *= FMatrix::GetModelMatrix(Ancester->RelativeLocation, Ancester->RelativeRotationQuat, Ancester->RelativeScale3D);
-		}
-
-		bIsTransformDirty = false;
-	}
-}
-
-const FMatrix USceneComponent::GetWorldTransformMatrixInverse() const
-{
-
     if (bIsTransformDirtyInverse)
     {
         WorldTransformMatrixInverse = FMatrix::Identity;
@@ -157,6 +141,14 @@ const FMatrix USceneComponent::GetWorldTransformMatrixInverse() const
     }
 
 	return WorldTransformMatrixInverse;
+}
+
+void USceneComponent::UpdateWorldFromLocal() noexcept
+{
+	// Quaternion-based TRS (row-major): I * S * R * T
+	// Later, Multiply Ancestor Matrix's WorldTransformMatrix => Then, No more Update(this method) in Setter!
+	// Later, Matrix Update should be holded by Event
+	WorldTransformMatrix = FMatrix::GetModelMatrix(RelativeLocation, RelativeRotationQuat, RelativeScale3D);
 }
 
 const void* UPrimitiveComponent::GetRawVertexData() const
@@ -201,17 +193,6 @@ FAABB UPrimitiveComponent::GetWorldBounds() const
 {
 	return FAABB();
 }
-
-//FAABB UPrimitiveComponent::GetWorldBounds() const
-//{
-//	return GetLocalBounds();
-//}
-//
-//void UPrimitiveComponent::Render(const URenderer& Renderer) const
-//{
-//	Renderer.RenderPrimitive(Vertexbuffer, NumVertices);
-//}
-
 
 /*
 * 리소스는 Manager가 관리하고 component는 참조만 함.
