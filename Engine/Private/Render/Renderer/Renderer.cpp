@@ -397,13 +397,6 @@ void URenderer::Update(UEditor* Editor)
 
 	UUIManager::GetInstance().Render();
 	RenderEnd();
-
-	// 피킹 프레임 스킵 카운터 증가
-	FrameCounter++;
-	if (FrameCounter >= _UI32_MAX)
-	{
-		FrameCounter = 0;
-	}
 }
 
 void URenderer::RenderMultiViewport(UEditor* Editor)
@@ -808,14 +801,15 @@ bool URenderer::ShouldPerformColorPicking()
 {
 	// Check if mouse is pressed
 	UInputManager& InputManager = UInputManager::GetInstance();
-	bool bMousePressed = InputManager.IsKeyDown(EKeyInput::MouseLeft) || InputManager.IsKeyDown(EKeyInput::MouseRight);
-	if (!bMousePressed)
-	{
-		return false;
-	}
 
-	// UI위에 마우스 있으면 안그림
-	if (ImGui::GetIO().WantCaptureMouse)
+	// Windows API로 직접 오른쪽 마우스 버튼 상태 확인
+	static bool bPrevRightMouseState = false;
+	bool bCurrentRightMouseState = (GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0;
+	bool bRightMouseReleased = bPrevRightMouseState && !bCurrentRightMouseState;
+	bPrevRightMouseState = bCurrentRightMouseState;
+
+	bool bMousePressed = InputManager.IsKeyPressed(EKeyInput::MouseLeft) || bRightMouseReleased;
+	if (!bMousePressed)
 	{
 		return false;
 	}
