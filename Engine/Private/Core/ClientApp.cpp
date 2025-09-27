@@ -142,7 +142,7 @@ void FClientApp::MainLoop()
 	// 고정밀 타이머 설정 (1ms 해상도)
 	timeBeginPeriod(1);
 	
-	const double TargetFPS = 60.0;
+	const double TargetFPS = 300.0;
 	const double TargetFrameTime = 1000.0 / TargetFPS; // 16.666... ms
 	
 	LARGE_INTEGER Frequency, LastTime, CurrentTime;

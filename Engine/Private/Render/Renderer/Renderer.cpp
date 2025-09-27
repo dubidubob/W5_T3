@@ -567,6 +567,7 @@ void URenderer::RenderSortingBatchMap()
     SceneBVH.QueryFrustum(Planes, Candidates);		
     FrameStamp++;
     uint32 MaxId = 0;
+
     for (auto* C : Candidates)
     {
         if (!C) continue;
@@ -607,19 +608,32 @@ void URenderer::RenderSortingBatchMap()
                     Filtered.push_back(CompKey);
                 }
             }
+
             MeshComponentKeys = std::move(Filtered);
 #if SIMD_LEVEL >= 1
             if (true)
             {
+				//TIME_PROFILE_START(TEST) //6ms
+				//FStaticMeshSection* TempSection = SortingMeshComponentMap[MeshComponentKeys[0]][0];
+				//for (int i = 0; i < 25000; i++)
+				//{
+				//	SetupStaticMeshComponent(MeshComponentKeys[0]); //병목지점 fix(x) 11ms
+				//	Pipeline->DrawIndexed(TempSection->NumIndices, TempSection->FirstIndex, 0);
+				//}
+				//TIME_PROFILE_END(TEST)
+
+					TIME_PROFILE_START(TEST) //13ms
                 for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
                 {
-                    SetupStaticMeshComponent(MeshComponentKey);
-                    TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
+                    SetupStaticMeshComponent(MeshComponentKey); //병목지점 fix(x) 11ms
+					TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey]; //병목지점 fix(x) 4ms 
+
                     for (FStaticMeshSection* Section : SectionArray)
                     {
                         Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
                     }
                 }
+					TIME_PROFILE_END(TEST)
             }
             else
             {
@@ -761,8 +775,16 @@ void URenderer::SetupStaticMeshAsset(FStaticMesh* StaticMeshAsset)
 }
 void URenderer::SetupStaticMeshComponent(UStaticMeshComponent* StaticMeshComponent)
 {
-TIME_PROFILE(SetupStaticMeshComponent)
-	UpdateBuffer(ConstantBufferModels, StaticMeshComponent->GetWorldTransformMatrix());
+	TIME_PROFILE_START(Check1)
+		//UpdateBuffer(ConstantBufferModels, StaticMeshComponent->GetWorldTransformMatrix());
+
+		const FMatrix& WorldMat = StaticMeshComponent->GetWorldTransformMatrix();
+	TIME_PROFILE_END(Check1)
+		TIME_PROFILE_START(Check2)
+
+	UpdateBuffer(ConstantBufferModels, WorldMat);
+	TIME_PROFILE_END(Check2)
+
 #ifdef _DEVELOP
 	StaticMeshComponentChagneCount++;
 #endif
