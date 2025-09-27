@@ -29,8 +29,8 @@ class FBVH
 public:
     void Build(const TArray<UStaticMeshComponent*>& Comps);
     void QueryAABB(const FAABB& Q, TArray<UStaticMeshComponent*>& Out) const;
-    void QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<UStaticMeshComponent*>& Out) const;
-    void Clear();
+	void QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& OutVisibles) const;
+	void Clear();
 
 private:
     int32 BuildRange(int32 First, int32 Last, int32 Depth);

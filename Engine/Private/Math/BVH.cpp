@@ -183,9 +183,9 @@ bool FBVH::AABBInsideFrustum(const FAABB& B, const TStaticArray<FVector4,6>& Pla
     return true;
 }
 
-void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<UStaticMeshComponent*>& Out) const
+void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& OutVisibles) const
 {
-    Out.clear();
+	OutVisibles.clear();
     if (Root < 0) return;
     TArray<int32> Stack;
     Stack.push_back(Root);
@@ -197,15 +197,17 @@ void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<UStaticM
         if (AABBOutsideFrustum(N.Bounds, Planes)) continue;
         if (AABBInsideFrustum(N.Bounds, Planes))
         {
-            AddSubtreeAll(Idx, Out);
+            AddSubtreeAll(Idx, OutStaticMeshComp);
             continue;
         }
+
+		//걸칠경우
         if (N.bLeaf)
         {
             for (int32 i = 0; i < N.Count; ++i)
             {
                 const FBVHItem& It = Items[N.First + i];
-                if (!AABBOutsideFrustum(It.Bounds, Planes)) Out.push_back(It.Comp);
+                if (!AABBOutsideFrustum(It.Bounds, Planes)) OutStaticMeshComp.push_back(It.Comp);
             }
         }
         else
