@@ -7,6 +7,7 @@
 #include "Mesh/Actor.h"
 #include "Manager/Input/InputManager.h"
 #include "Manager/Level/LevelManager.h"
+#include "Manager/Viewport/ViewportManager.h"
 #include "Level/Level.h"
 #include "Core/AppWindow.h"
 #include "ImGui/imgui.h"
@@ -75,15 +76,14 @@ UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 Mou
 		return nullptr;
 	}
 
-	// Read the pixel value from the color picking texture
-	uint32 PixelValue = DeviceResources->ReadPixelFromColorPickingTexture(MouseX, MouseY);
+	URenderer& Renderer = URenderer::GetInstance();
+	uint32 PixelValue = Renderer.GetPickedObjectFromCache(MouseX, MouseY);
 
 	if (PixelValue == 0)
 	{
-		return nullptr; // No object at this position
+		return nullptr;
 	}
 
-	// Find the primitive component with matching UUID
 	ULevelManager& LevelManager = ULevelManager::GetInstance();
 	const ULevel* CurrentLevel = LevelManager.GetCurrentLevel();
 	if (!CurrentLevel)
@@ -95,6 +95,7 @@ UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 Mou
 	bool bIsUUIDPicking = Editor->bUUIDColorPicking;
 	bool bIsIndexPicking = Editor->bIndexColorPicking;
 
+	// UUID 값 순차 탐색 O(n)
 	if (bIsUUIDPicking == true && bIsIndexPicking == false)
 	{
 		const TArray<UPrimitiveComponent*> Candidate = CurrentLevel->GetLevelPrimitiveComponents();
@@ -107,6 +108,7 @@ UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 Mou
 		}
 	}
 
+	// Internal Index 값은 배열 인덱스 접근 O(1)
 	if (bIsUUIDPicking == false && bIsIndexPicking == true)
 	{
 		const AActor* Actor = Cast<AActor>(GUObjectArray[PixelValue]);

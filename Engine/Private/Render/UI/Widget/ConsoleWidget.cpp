@@ -195,6 +195,19 @@ ImVec4 UConsoleWidget::GetColorByLogType(ELogType InType)
 }
 
 /**
+ * @brief 로그 개수가 최대치를 초과하면 오래된 로그를 제거
+ */
+void UConsoleWidget::TrimLogsIfNecessary()
+{
+	if (LogItems.size() > MaxLogCount)
+	{
+		// 오래된 로그들을 제거 (앞쪽부터 제거)
+		const int LogsToRemove = LogItems.size() - MaxLogCount;
+		LogItems.erase(LogItems.begin(), LogItems.begin() + LogsToRemove);
+	}
+}
+
+/**
  * @brief 기본 로그 추가 함수
  */
 void UConsoleWidget::AddLog(const char* fmt, ...)
@@ -215,6 +228,9 @@ void UConsoleWidget::AddLog(const char* fmt, ...)
 	LogEntry.Type = ELogType::Info;
 	LogEntry.Message = FString(buf);
 	LogItems.push_back(LogEntry);
+
+	// 최대 로그 개수 초과시 오래된 로그 제거
+	TrimLogsIfNecessary();
 
 	// Auto Scroll
 	bIsScrollToBottom = true;
@@ -241,6 +257,9 @@ void UConsoleWidget::AddLog(ELogType InType, const char* fmt, ...)
 	LogEntry.Type = InType;
 	LogEntry.Message = FString(buf);
 	LogItems.push_back(LogEntry);
+
+	// 최대 로그 개수 초과시 오래된 로그 제거
+	TrimLogsIfNecessary();
 
 	// Auto Scroll
 	bIsScrollToBottom = true;
@@ -444,6 +463,7 @@ void UConsoleWidget::ProcessCommand(const char* InCommand)
 								ErrorEntry.Message = "UE_LOG: 포맷 지정자(" + std::to_string(FormatSpecifiers) +
 									")와 인자 개수(" + std::to_string(Args.size()) + ")가 일치하지 않습니다.";
 								LogItems.push_back(ErrorEntry);
+								TrimLogsIfNecessary();
 								bIsScrollToBottom = true;
 								return;
 							}
@@ -539,6 +559,7 @@ void UConsoleWidget::ProcessCommand(const char* InCommand)
 									"개 인자 또는 현재 포맷 조합은 지원되지 않습니다. "
 									"단순 형식만 사용해주세요 (1-2개 인자).";
 								LogItems.push_back(ErrorEntry);
+								TrimLogsIfNecessary();
 								bIsScrollToBottom = true;
 								return;
 							}
@@ -550,6 +571,7 @@ void UConsoleWidget::ProcessCommand(const char* InCommand)
 								ErrorEntry.Type = ELogType::Error;
 								ErrorEntry.Message = "UE_LOG: snprintf 포맷팅 오류가 발생했습니다.";
 								LogItems.push_back(ErrorEntry);
+								TrimLogsIfNecessary();
 								bIsScrollToBottom = true;
 								return;
 							}
@@ -560,6 +582,7 @@ void UConsoleWidget::ProcessCommand(const char* InCommand)
 								ErrorEntry.Message = "UE_LOG: 출력이 버퍼 크기(" + std::to_string(Buffer.size()) +
 									")를 초과했습니다. 필요한 크기: " + std::to_string(Result + 1);
 								LogItems.push_back(ErrorEntry);
+								TrimLogsIfNecessary();
 								bIsScrollToBottom = true;
 								return;
 							}
@@ -570,6 +593,7 @@ void UConsoleWidget::ProcessCommand(const char* InCommand)
 							LogEntry.Type = ELogType::UELog;
 							LogEntry.Message = FString(Buffer.data());
 							LogItems.push_back(LogEntry);
+							TrimLogsIfNecessary();
 							bIsScrollToBottom = true;
 						}
 						catch (const std::exception& e)
@@ -596,6 +620,7 @@ void UConsoleWidget::ProcessCommand(const char* InCommand)
 						UELogEntry.Type = ELogType::UELog;
 						UELogEntry.Message = FormatString;
 						LogItems.push_back(UELogEntry);
+						TrimLogsIfNecessary();
 						bIsScrollToBottom = true;
 					}
 				}
@@ -954,6 +979,9 @@ void UConsoleWidget::AddSystemLog(const char* InText, bool bInIsError)
 	LogEntry.Type = LogType;
 	LogEntry.Message = LogText;
 	LogItems.push_back(LogEntry);
+
+	// 최대 로그 개수 초과시 오래된 로그 제거
+	TrimLogsIfNecessary();
 
 	// Auto Scroll
 	bIsScrollToBottom = true;

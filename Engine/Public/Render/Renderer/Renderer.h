@@ -45,6 +45,8 @@ public:
 	void RenderLevel();
 	void RenderColorPicking();
 	bool ShouldPerformColorPicking();
+	uint32 GetPickedObjectFromCache(int32 MouseX, int32 MouseY);
+	void DebugPrintSamplePickingData(); // Debug function to print some sample data
 	void RenderText(const FVector& CameraLocation);
 	void RenderSlate(UEditor* Editor);
 	void RenderEditorPrimitive(FEditorPrimitive& Primitive, FRenderState& RenderState);
@@ -157,6 +159,8 @@ public:
 	UEditor* GetEditor() { return Editor; }
 	void SetEditor(UEditor* InEditor) { Editor = InEditor; }
 
+	void MarkForceReRenderPicking() { bForceReRenderPicking = true; }
+
 #ifdef _DEVELOP
 	const uint32 GetMaterialChangeCount() const { return MaterialChangeCount; }
 	const uint32 GetStaticMeshChangeCount() const { return StaticMeshChangeCount; }
@@ -170,6 +174,15 @@ private:
 
 	//WMCount, WM0, SecCount, Sec0, Sec1, Sec2, Wm1, SecCount, Sec0, Sec1, Wm2, SecCount, Sec0, Sec1 ~~~
 	TMap<FStaticMaterial*, TMap<FStaticMesh*, TArray<uint32>>> RenderStreamMap;
+
+	// ================== Frame Skipping Optimization ==================
+	uint32 FrameCounter = 0;
+	static constexpr uint32 PICKING_FRAME_INTERVAL = 4; // 4프레임마다 렌더링
+
+	// ================== Color Picking Cache Optimization ==================
+	TArray<uint32> CachedColorPickingData; // CPU accessible color picking array
+	bool bPickingDataValid = false; // Whether cached data is valid
+	bool bForceReRenderPicking = false; // Force re-rendering of picking texture
 
 #ifdef _DEVELOP
 	uint32 MaterialChangeCount = 0;
@@ -237,6 +250,7 @@ private:
 	ID3D11InputLayout* LineInstancedInputLayout = nullptr;
 
     FBVH SceneBVH;
+	TArray<UStaticMeshComponent*> Candidates;
 	// ================== Picking Shader Set ==================
 	ID3D11PixelShader* PickingPixelShader = nullptr;
 
