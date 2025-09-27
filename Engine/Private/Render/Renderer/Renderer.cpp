@@ -397,13 +397,6 @@ void URenderer::Update(UEditor* Editor)
 
 	UUIManager::GetInstance().Render();
 	RenderEnd();
-
-	// 피킹 프레임 스킵 카운터 증가
-	FrameCounter++;
-	if (FrameCounter >= _UI32_MAX)
-	{
-		FrameCounter = 0;
-	}
 }
 
 void URenderer::RenderMultiViewport(UEditor* Editor)
@@ -624,131 +617,21 @@ void URenderer::RenderSortingBatchMap()
             }
 
             MeshComponentKeys = std::move(Filtered);
-#if SIMD_LEVEL >= 1
-            if (true)
-            {
-				//TIME_PROFILE_START(TEST) //6ms
-				//FStaticMeshSection* TempSection = SortingMeshComponentMap[MeshComponentKeys[0]][0];
-				//for (int i = 0; i < 25000; i++)
-				//{
-				//	SetupStaticMeshComponent(MeshComponentKeys[0]); //병목지점 fix(x) 11ms
-				//	Pipeline->DrawIndexed(TempSection->NumIndices, TempSection->FirstIndex, 0);
-				//}
-				//TIME_PROFILE_END(TEST)
-
-					TIME_PROFILE_START(TEST) //13ms
-                for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
-                {
-                    SetupStaticMeshComponent(MeshComponentKey); //병목지점 fix(x) 11ms
-					TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey]; //병목지점 fix(x) 4ms 
-
-                    for (FStaticMeshSection* Section : SectionArray)
-                    {
-                        Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
-                    }
-                }
-					TIME_PROFILE_END(TEST)
-            }
-            else
-            {
-			int32 NumComponents = MeshComponentKeys.Num();
-
-			// TArray를 직접 루프 돌지 않고 인덱스로 순회
-			for (int32 i = 0; i < NumComponents; i += 4)
+			if (true)
 			{
-
-				// 1. FAABB 4개 추출
-				FAABB chunk_aabb[4];
-				int32 chunk_size = std::min(4, NumComponents - i);
-
-				// 2. AOS (chunk_aabb) -> SOA (simd_chunk) 변환
-				FAABB_SIMD_Chunk simd_chunk;
-
-				for (int32 j = 0; j < chunk_size; ++j) {
-
-					chunk_aabb[j] = MeshComponentKeys[i + j]->GetWorldBounds(); //병목지점 fix 여부(x)
-
-					simd_chunk.MinX[j] = chunk_aabb[j].Min.X;
-					simd_chunk.MinY[j] = chunk_aabb[j].Min.Y;
-					simd_chunk.MinZ[j] = chunk_aabb[j].Min.Z;
-
-					simd_chunk.MaxX[j] = chunk_aabb[j].Max.X;
-					simd_chunk.MaxY[j] = chunk_aabb[j].Max.Y;
-					simd_chunk.MaxZ[j] = chunk_aabb[j].Max.Z;
-				}
-
-				// SIMD 안전을 위해 모든 필드를 무효 AABB 값(FLT_MAX)으로 초기화
-				for (int32 j = chunk_size; j < 4; j++)
-				{
-					simd_chunk.MinX[j] = FLT_MAX;
-					simd_chunk.MinY[j] = FLT_MAX;
-					simd_chunk.MinZ[j] = FLT_MAX;
-
-					simd_chunk.MaxX[j] = -FLT_MAX;
-					simd_chunk.MaxY[j] = -FLT_MAX;
-					simd_chunk.MaxZ[j] = -FLT_MAX;
-				}
-
-				// 3. SIMD 컬링 함수 호출
-				__m128 render_mask = TestAABBFrustum_Chunk_SIMD(simd_chunk, Planes);
-				int32 mask_int = _mm_movemask_ps(render_mask); // 4비트 정수 마스크로 변환
-
-
-
-				// 4. 마스크를 사용하여 개별 액터 처리
-				for (int32 j = 0; j < chunk_size; ++j) {
-					if ((mask_int >> j) & 1) // j번째 비트가 1이면 렌더링 대상
+				TIME_PROFILE_START(TEST) //13ms
+					for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
 					{
-						UStaticMeshComponent* MeshComponentKey = MeshComponentKeys[i + j];
-						SetupStaticMeshComponent(MeshComponentKey); //병목지점 fix 여부(x)
-						TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];  //병목지점 fix 여부(x)
+						SetupStaticMeshComponent(MeshComponentKey); //병목지점 fix(x) 11ms
+						TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey]; //병목지점 fix(x) 4ms 
+
 						for (FStaticMeshSection* Section : SectionArray)
 						{
 							Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
-#ifdef _DEVELOP
-							MeshSectionDrawCount++;
-#endif
 						}
-
 					}
-				}
-
+				TIME_PROFILE_END(TEST)
 			}
-            }
-#elif SIMD_LEVEL == 0
-			if (true)
-			{
-				for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
-				{
-					SetupStaticMeshComponent(MeshComponentKey);
-					TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
-					for (FStaticMeshSection* Section : SectionArray)
-					{
-						Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
-					}
-				}
-			}
-			else
-			{
-			for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
-			{
-				FAABB Bounds = MeshComponentKey->GetWorldBounds();
-				if (!TestAABBFrustum(Bounds, Planes))
-				{
-					continue;
-				}
-				SetupStaticMeshComponent(MeshComponentKey);
-				TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
-				for (FStaticMeshSection* Section : SectionArray)
-				{
-					Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
-#ifdef _DEVELOP
-					MeshSectionDrawCount++;
-#endif
-				}
-			}
-			}
-#endif
         }
     }
 }
@@ -808,14 +691,15 @@ bool URenderer::ShouldPerformColorPicking()
 {
 	// Check if mouse is pressed
 	UInputManager& InputManager = UInputManager::GetInstance();
-	bool bMousePressed = InputManager.IsKeyDown(EKeyInput::MouseLeft) || InputManager.IsKeyDown(EKeyInput::MouseRight);
-	if (!bMousePressed)
-	{
-		return false;
-	}
 
-	// UI위에 마우스 있으면 안그림
-	if (ImGui::GetIO().WantCaptureMouse)
+	// Windows API로 직접 오른쪽 마우스 버튼 상태 확인
+	static bool bPrevRightMouseState = false;
+	bool bCurrentRightMouseState = (GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0;
+	bool bRightMouseReleased = bPrevRightMouseState && !bCurrentRightMouseState;
+	bPrevRightMouseState = bCurrentRightMouseState;
+
+	bool bMousePressed = InputManager.IsKeyPressed(EKeyInput::MouseLeft) || bRightMouseReleased;
+	if (!bMousePressed)
 	{
 		return false;
 	}

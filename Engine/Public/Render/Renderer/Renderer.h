@@ -173,7 +173,7 @@ private:
 
 	// ================== Frame Skipping Optimization ==================
 	uint32 FrameCounter = 0;
-	static constexpr uint32 PICKING_FRAME_INTERVAL = 4; // 4프레임마다 렌더링
+	static constexpr uint32 PICKING_FRAME_INTERVAL = 2; // 2프레임마다 렌더링
 
 	// ================== Color Picking Cache Optimization ==================
 	TArray<uint32> CachedColorPickingData; // CPU accessible color picking array
