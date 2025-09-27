@@ -443,7 +443,7 @@ void URenderer::RenderMultiViewport(UEditor* Editor)
 
 void URenderer::RenderScene(UEditor* Editor, int Idx)
 {
-	RenderLevel();
+	RenderLevel(); //11
 	Editor->RenderEditorBatched(Idx);
 	RenderText(Editor->GetCameraLocation());
 }

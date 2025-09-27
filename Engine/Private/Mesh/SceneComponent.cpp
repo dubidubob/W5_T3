@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Mesh/SceneComponent.h"
 #include "Mesh/ResourceManager.h"
-
+#include "Global/PlatformTime.h"
 #include <algorithm>
 
 IMPLEMENT_CLASS(USceneComponent, UActorComponent)
@@ -121,6 +121,7 @@ const FVector& USceneComponent::GetWorldLocation() const
 
 const FMatrix& USceneComponent::GetWorldTransformMatrix() const
 {
+	TIME_PROFILE(TransformMatrix)
     if (bIsTransformDirty)
     {
         // Quaternion-based TRS (row-major): I * S * R * T

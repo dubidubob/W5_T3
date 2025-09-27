@@ -116,18 +116,18 @@ void UEditor::RenderEditorBatched(int Idx)
 		/** AABB 라인들 추가 (Min/Max 입력 기반, 인스턴싱) */
 		URenderer& Renderer = URenderer::GetInstance();
 		ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
-		if (Level)
+		if (Level && Renderer.IsShowFlagEnabled(EEngineShowFlags::SF_Bounds))
 		{
 			const TArray<UPrimitiveComponent*>& Primitives = Level->GetLevelPrimitiveComponents();
 			for (UPrimitiveComponent* Prim : Primitives)
 			{
+				TIME_PROFILE(BOUNDBOX)
 				if (!Prim) { continue; }
 				UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Prim);
 				if (StaticMeshComponent)
 				{
 					FAABB Bounds = StaticMeshComponent->GetWorldBounds();
 					if (!Bounds.IsValid()) { continue; }
-					if (Renderer.IsShowFlagEnabled(EEngineShowFlags::SF_Bounds))
 					{
 						LineBatch.AddAABB(Bounds.Min, Bounds.Max, FVector4(0, 1, 0, 1));
 					}
