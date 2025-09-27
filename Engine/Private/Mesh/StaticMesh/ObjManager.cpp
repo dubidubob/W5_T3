@@ -57,7 +57,7 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 	}
 
 	FStaticMesh* NewStaticMesh = FObjImporter::ParseAndConvert(PathFileName);
-
+	NewStaticMesh->SetSectionMap();
 	// vertex  & Index 
 	CreateVertexBuffer(NewStaticMesh);
 	CreateIndexBuffer(NewStaticMesh);

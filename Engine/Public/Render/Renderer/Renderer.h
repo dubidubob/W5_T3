@@ -99,7 +99,16 @@ public:
 			GetDeviceContext()->Unmap(Buffer, 0);
 		}
 	}
-
+	template<typename T>
+	void UpdateBuffer(ID3D11Buffer* Buffer, const T& Data, const uint32 Size) const
+	{
+		D3D11_MAPPED_SUBRESOURCE MappedResource;
+		if (SUCCEEDED(GetDeviceContext()->Map(Buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource)))
+		{
+			memcpy(MappedResource.pData, &Data, Size);
+			GetDeviceContext()->Unmap(Buffer, 0);
+		}
+	}
 	void UpdateBufferStream(ID3D11Buffer* Buffer, const void* Pointer, const uint32 Size);
 
 	void UpdateViewProjConstants(const FViewProjConstants& ViewProj);
@@ -172,12 +181,12 @@ private:
 	UEditor* Editor = nullptr;
 	bool bSortingBatchMapDirty = true;
 
-	//WMCount, WM0, SecCount, Sec0, Sec1, Sec2, Wm1, SecCount, Sec0, Sec1, Wm2, SecCount, Sec0, Sec1 ~~~
-	TMap<FStaticMaterial*, TMap<FStaticMesh*, TArray<uint32>>> RenderStreamMap;
+	//WorldMatrixStream float12로 만들어야해서 uint32로 제작 현재는 16
+	TMap<FStaticMaterial*, TMap<FStaticMesh*, TArray<FMatrix>>> RenderStreamMap;
 
 	// ================== Frame Skipping Optimization ==================
 	uint32 FrameCounter = 0;
-	static constexpr uint32 PICKING_FRAME_INTERVAL = 4; // 4프레임마다 렌더링
+	static constexpr uint32 PICKING_FRAME_INTERVAL = 2; // 2프레임마다 렌더링
 
 	// ================== Color Picking Cache Optimization ==================
 	TArray<uint32> CachedColorPickingData; // CPU accessible color picking array

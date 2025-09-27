@@ -407,13 +407,6 @@ void URenderer::Update(UEditor* Editor)
 
 	UUIManager::GetInstance().Render();
 	RenderEnd();
-
-	// 피킹 프레임 스킵 카운터 증가
-	FrameCounter++;
-	if (FrameCounter >= _UI32_MAX)
-	{
-		FrameCounter = 0;
-	}
 }
 
 void URenderer::RenderMultiViewport(UEditor* Editor)
@@ -510,59 +503,13 @@ void URenderer::ReSetSortingBatchMap()
 			FStaticMesh* StaticMeshAsset = StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset();
 			FMatrix WorldMatrix = StaticMeshComponent->GetWorldTransformMatrix();
 
-			//현재 컴포넌트의 WM, SectionCount, Sec0, Sec1 ...~ 로 이루어진 Stream 맵을 구성해둠
-			TMap<FStaticMaterial*, TArray<FStaticMeshSection*>> SectionMap;
-			TArray<FStaticMeshSection>& Sections = StaticMeshAsset->Sections;
-			int SectionSize = StaticMeshAsset->Sections.size();
-			for (int i = 0; i < SectionSize; i++)
+			for (FStaticMaterial& Material : StaticMeshAsset->Materials)
 			{
-				FStaticMeshSection* pSection = &Sections[i];
-				FStaticMaterial* SectionMaterial = &StaticMeshAsset->Materials[pSection->MaterialIndex];
-				if (SectionMap.Contains(SectionMaterial) == false)
+				FStaticMaterial* pMaterial = &Material;
+				if (StaticMeshAsset->GetSectionMap(pMaterial).size() > 0)
 				{
-					SectionMap[SectionMaterial] = { pSection };
-				}
-				else
-				{
-					SectionMap[SectionMaterial].Push(pSection);
-				}
-			}
-
-
-			//세팅된 섹션맵을 RenderStreamMap에 세팅
-			TArray<FStaticMaterial*> MaterialKeys = SectionMap.GetKeys(); //마테리얼
-			for (FStaticMaterial* MaterialKey : MaterialKeys)
-			{
-				if (RenderStreamMap.Contains(MaterialKey) == false)
-				{
-					RenderStreamMap[MaterialKey] = { {StaticMeshAsset, {0}} };
-				}
-				else
-				{
-					if (RenderStreamMap[MaterialKey].Contains(StaticMeshAsset) == false)
-					{
-						RenderStreamMap[MaterialKey][StaticMeshAsset] = { 0 };
-					}
-				}
-
-				RenderStreamMap[MaterialKey][StaticMeshAsset][0]++;
-				//WorldMatrix Input
-				for (int i = 0; i < 4; i++)
-				{
-					for (int j = 0; j < 4; j++)
-					{
-						RenderStreamMap[MaterialKey][StaticMeshAsset].Push(*reinterpret_cast<uint32*>(&WorldMatrix.Data[i][j]));
-					}
-				}
-				//SectionCount Input
-				RenderStreamMap[MaterialKey][StaticMeshAsset].Push(Sections.size());
-
-				//Section Input
-				const TArray<FStaticMeshSection*>& Sections = SectionMap[MaterialKey];
-				for (FStaticMeshSection* Section : Sections)
-				{
-					RenderStreamMap[MaterialKey][StaticMeshAsset].Push(Section->NumIndices);
-					RenderStreamMap[MaterialKey][StaticMeshAsset].Push(Section->FirstIndex);
+					//WorldMatrix Input
+					RenderStreamMap[pMaterial][StaticMeshAsset].Push(WorldMatrix);
 				}
 			}
 		}
@@ -639,101 +586,56 @@ void URenderer::RenderSortingBatchMap()
     for (FStaticMaterial* MaterialKey : MaterialKeys)
     {
         SetupMaterial(MaterialKey);
-        TMap<FStaticMesh*, TArray<uint32>>& SortingMaterialMap = RenderStreamMap[MaterialKey];
+        TMap<FStaticMesh*, TArray<FMatrix>>& SortingMaterialMap = RenderStreamMap[MaterialKey];
         TArray<FStaticMesh*> StaticMeshKeys = SortingMaterialMap.GetKeys();
         for (FStaticMesh* StaticMeshKey : StaticMeshKeys)
         {
             SetupStaticMeshAsset(StaticMeshKey);
-			TArray<uint32>& RenderStream = SortingMaterialMap[StaticMeshKey];
-			uint32 ActorCount = RenderStream[0];
-			uint32* CurPointer = &RenderStream[1];
-			for (int i = 0; i < ActorCount; i++)
+			TIME_PROFILE(DRAW)
+			uint32 ActorCount = RenderStreamMap[MaterialKey][StaticMeshKey].size();
+			const TArray<FStaticMeshSection*>& Sections = StaticMeshKey->GetSectionMap(MaterialKey);
+			for (const FMatrix& WorldMatrix : RenderStreamMap[MaterialKey][StaticMeshKey])
 			{
-				TIME_PROFILE(TEST1)
-				FMatrix* Mat = reinterpret_cast<FMatrix*>(&RenderStream[1]);
-
-				UpdateBufferStream(ConstantBufferModels, CurPointer, WorldMatSize);
-				CurPointer += WorldMatValueCount;
-				uint32 SectionCount = *CurPointer;
-				CurPointer++;
-				for (int j = 0; j < SectionCount; j++)
-				{
-					uint32 IndexNum = *CurPointer++;
-					uint32 IndexLocation = *CurPointer++;
-					Pipeline->DrawIndexed(IndexNum, IndexLocation, 0);
-				}
-				ActorIdx++;
-			}
-			
-            TArray<UStaticMeshComponent*> MeshComponentKeys = RenderStream.GetKeys(); //병목지점 fix 여부(x)
-            TArray<UStaticMeshComponent*> Filtered;
-            Filtered.Reserve(MeshComponentKeys.Num());
-            for (auto* CompKey : MeshComponentKeys)
-            {
-                if (!CompKey) continue;
-                uint32 Id = static_cast<uint32>(CompKey->GetInternalIndex());
-                if (Id < VisibleStamp.Num() && VisibleStamp[Id] == FrameStamp)
-                {
-                    Filtered.push_back(CompKey);
-                }
-            }
-
-            MeshComponentKeys = std::move(Filtered);
-#if SIMD_LEVEL >= 1
-            if (true)
-            {
-					TIME_PROFILE_START(TEST) //13ms
-                for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
-                {
-                    SetupStaticMeshComponent(MeshComponentKey); //병목지점 fix(x) 11ms
-					TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey]; //병목지점 fix(x) 4ms 
-
-                    for (FStaticMeshSection* Section : SectionArray)
-                    {
-                        Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
-                    }
-                }
-					TIME_PROFILE_END(TEST)
-            }
-           
-#elif
-			if (true)
-			{
-				for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
-				{
-					SetupStaticMeshComponent(MeshComponentKey);
-					TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
-					for (FStaticMeshSection* Section : SectionArray)
-					{
-						Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
-					}
-				}
-			}
-			else
-			{
-			for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
-			{
-				FAABB Bounds = MeshComponentKey->GetWorldBounds();
-				if (!TestAABBFrustum(Bounds, Planes))
-				{
-					continue;
-				}
-				SetupStaticMeshComponent(MeshComponentKey);
-				TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey];
-				for (FStaticMeshSection* Section : SectionArray)
+				UpdateBuffer(ConstantBufferModels, WorldMatrix, WorldMatSize);
+				for (const FStaticMeshSection* Section : Sections)
 				{
 					Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
-#ifdef _DEVELOP
-					MeshSectionDrawCount++;
-#endif
 				}
 			}
-			}
-#endif
+			TIME_PROFILE_END(DRAW)
+
+   //         TArray<UStaticMeshComponent*> MeshComponentKeys = RenderStream.GetKeys(); //병목지점 fix 여부(x)
+   //         TArray<UStaticMeshComponent*> Filtered;
+   //         Filtered.Reserve(MeshComponentKeys.Num());
+   //         for (auto* CompKey : MeshComponentKeys)
+   //         {
+   //             if (!CompKey) continue;
+   //             uint32 Id = static_cast<uint32>(CompKey->GetInternalIndex());
+   //             if (Id < VisibleStamp.Num() && VisibleStamp[Id] == FrameStamp)
+   //             {
+   //                 Filtered.push_back(CompKey);
+   //             }
+   //         }
+
+   //         MeshComponentKeys = std::move(Filtered);
+			//if (true)
+			//{
+			//	TIME_PROFILE_START(TEST) //13ms
+			//		for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
+			//		{
+			//			SetupStaticMeshComponent(MeshComponentKey); //병목지점 fix(x) 11ms
+			//			TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey]; //병목지점 fix(x) 4ms 
+
+			//			for (FStaticMeshSection* Section : SectionArray)
+			//			{
+			//				Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+			//			}
+			//		}
+			//	TIME_PROFILE_END(TEST)
+			//}
         }
     }
 }
-
 void URenderer::SetupStaticMeshCommon()
 {
 	FRenderState RenderState;
@@ -781,14 +683,15 @@ bool URenderer::ShouldPerformColorPicking()
 {
 	// Check if mouse is pressed
 	UInputManager& InputManager = UInputManager::GetInstance();
-	bool bMousePressed = InputManager.IsKeyDown(EKeyInput::MouseLeft) || InputManager.IsKeyDown(EKeyInput::MouseRight);
-	if (!bMousePressed)
-	{
-		return false;
-	}
 
-	// UI위에 마우스 있으면 안그림
-	if (ImGui::GetIO().WantCaptureMouse)
+	// Windows API로 직접 오른쪽 마우스 버튼 상태 확인
+	static bool bPrevRightMouseState = false;
+	bool bCurrentRightMouseState = (GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0;
+	bool bRightMouseReleased = bPrevRightMouseState && !bCurrentRightMouseState;
+	bPrevRightMouseState = bCurrentRightMouseState;
+
+	bool bMousePressed = InputManager.IsKeyPressed(EKeyInput::MouseLeft) || bRightMouseReleased;
+	if (!bMousePressed)
 	{
 		return false;
 	}
