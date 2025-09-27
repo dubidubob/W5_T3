@@ -278,8 +278,10 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 
 			UPrimitiveComponent* PrimitiveCollided = nullptr;
 
+			const bool bWireframeMode = URenderer::GetInstance().GetViewMode() == EViewportRenderMode::Wireframe;
+
 			// 피킹 방식에 따라 피킹 수행
-			if (bTrianglePicking && !bColorPicking)
+			if (bWireframeMode || (bTrianglePicking && !bColorPicking))
 			{
 				// 캐시된 프리미티브 리스트 사용 또는 레벨에서 직접 가져오기
 				const TArray<UPrimitiveComponent*>& Candidates = InLevel->GetLevelPrimitiveComponents();
