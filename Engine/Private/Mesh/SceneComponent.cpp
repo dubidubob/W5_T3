@@ -119,7 +119,7 @@ const FVector& USceneComponent::GetWorldLocation() const
 	return FVector(WorldMatrix.Data[3][0], WorldMatrix.Data[3][1], WorldMatrix.Data[3][2]);
 }
 
-const FMatrix& USceneComponent::GetWorldTransformMatrix() const
+FMatrix& USceneComponent::GetWorldTransformMatrix() const
 {
     if (bIsTransformDirty)
     {

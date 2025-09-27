@@ -182,7 +182,7 @@ private:
 	bool bSortingBatchMapDirty = true;
 
 	//WorldMatrixStream float12로 만들어야해서 uint32로 제작 현재는 16
-	TMap<FStaticMaterial*, TMap<FStaticMesh*, TArray<FMatrix>>> RenderStreamMap;
+	TMap<FStaticMaterial*, TMap<FStaticMesh*, TArray<FMatrix*>>> RenderStreamMap;
 
 	// ================== Frame Skipping Optimization ==================
 	uint32 FrameCounter = 0;

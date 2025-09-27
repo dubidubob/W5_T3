@@ -31,7 +31,7 @@ public:
 
 	const FVector& GetWorldLocation() const;
 
-	const FMatrix& GetWorldTransformMatrix() const;
+	FMatrix& GetWorldTransformMatrix() const;
 	const FMatrix& GetWorldTransformMatrixInverse() const;
 
 private:

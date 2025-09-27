@@ -501,7 +501,7 @@ void URenderer::ReSetSortingBatchMap()
         if (StaticMeshComponent != nullptr)
         {
 			FStaticMesh* StaticMeshAsset = StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset();
-			FMatrix WorldMatrix = StaticMeshComponent->GetWorldTransformMatrix();
+			FMatrix& WorldMatrix = StaticMeshComponent->GetWorldTransformMatrix();
 
 			for (FStaticMaterial& Material : StaticMeshAsset->Materials)
 			{
@@ -509,7 +509,7 @@ void URenderer::ReSetSortingBatchMap()
 				if (StaticMeshAsset->GetSectionMap(pMaterial).size() > 0)
 				{
 					//WorldMatrix Input
-					RenderStreamMap[pMaterial][StaticMeshAsset].Push(WorldMatrix);
+					RenderStreamMap[pMaterial][StaticMeshAsset].Push(&WorldMatrix);
 				}
 			}
 		}
@@ -586,7 +586,7 @@ void URenderer::RenderSortingBatchMap()
     for (FStaticMaterial* MaterialKey : MaterialKeys)
     {
         SetupMaterial(MaterialKey);
-        TMap<FStaticMesh*, TArray<FMatrix>>& SortingMaterialMap = RenderStreamMap[MaterialKey];
+        TMap<FStaticMesh*, TArray<FMatrix*>>& SortingMaterialMap = RenderStreamMap[MaterialKey];
         TArray<FStaticMesh*> StaticMeshKeys = SortingMaterialMap.GetKeys();
         for (FStaticMesh* StaticMeshKey : StaticMeshKeys)
         {
@@ -594,9 +594,9 @@ void URenderer::RenderSortingBatchMap()
 			TIME_PROFILE(DRAW)
 			uint32 ActorCount = RenderStreamMap[MaterialKey][StaticMeshKey].size();
 			const TArray<FStaticMeshSection*>& Sections = StaticMeshKey->GetSectionMap(MaterialKey);
-			for (const FMatrix& WorldMatrix : RenderStreamMap[MaterialKey][StaticMeshKey])
+			for (const FMatrix* WorldMatrix : RenderStreamMap[MaterialKey][StaticMeshKey])
 			{
-				UpdateBuffer(ConstantBufferModels, WorldMatrix, WorldMatSize);
+				UpdateBuffer(ConstantBufferModels, *WorldMatrix, WorldMatSize);
 				for (const FStaticMeshSection* Section : Sections)
 				{
 					Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
