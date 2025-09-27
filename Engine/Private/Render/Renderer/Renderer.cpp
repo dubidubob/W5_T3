@@ -550,7 +550,6 @@ void URenderer::RenderLevel()
 	//렌더스테이트 배치
 	ReSetSortingBatchMap();
 	RenderSortingBatchMap();
-
 	//Legacy
 	/*const TArray<UPrimitiveComponent*>& PrimitiveComponents =
 		ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
@@ -947,7 +946,9 @@ void URenderer::SetupStaticMeshRendering(UStaticMeshComponent* Component, FStati
 	Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
 
 	// Update constants
+	TIME_PROFILE_START(SetupStaticMeshRendering1)
 	UpdateBuffer(ConstantBufferModels, Component->GetWorldTransformMatrix());
+	TIME_PROFILE_END(SetupStaticMeshRendering1)
 	UpdateBuffer(ConstantBufferColor, FVector4(0.f, 0.f, 0.f, 0.f));
 
 	//Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);

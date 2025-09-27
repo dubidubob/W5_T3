@@ -11,22 +11,21 @@ class TestSIMD
 {
 	std::array<FMatrix, 4> UpdateWorldTransformMatrix(USceneComponent* comps[4])
 	{
-		Batch4 b{};
-		for (int i = 0;i < 4;i++)
-		{
-			// ⚠️ 너 코드에선 위치/스케일을 뒤집어 넣고 있었음 (버그)
-			const auto& S = comps[i]->GetRelativeScale3D();
-			const auto& T = comps[i]->GetRelativeLocation();
-			const auto& Q = comps[i]->GetRelativeRotationQuat();
+	//	Batch4 b{};
+	//	for (int i = 0;i < 4;i++)
+	//	{
+	//		const auto& S = comps[i]->GetRelativeScale3D();
+	//		const auto& T = comps[i]->GetRelativeLocation();
+	//		const auto& Q = comps[i]->GetRelativeRotationQuat();
 
-			b.sx[i] = S.X; b.sy[i] = S.Y; b.sz[i] = S.Z;   // Scale
-			b.tx[i] = T.X; b.ty[i] = T.Y; b.tz[i] = T.Z;   // Translation
-			b.qx[i] = Q.X; b.qy[i] = Q.Y; b.qz[i] = Q.Z; b.qw[i] = Q.W; // Rotation
-		}
+	//		b.sx[i] = S.X; b.sy[i] = S.Y; b.sz[i] = S.Z;   // Scale
+	//		b.tx[i] = T.X; b.ty[i] = T.Y; b.tz[i] = T.Z;   // Translation
+	//		b.qx[i] = Q.X; b.qy[i] = Q.Y; b.qz[i] = Q.Z; b.qw[i] = Q.W; // Rotation
+	//	}
 
-		std::array<FMatrix, 4> out{};
-		BuildWorld4_SSE(b, out.data());
-		return out;  // 값 반환(카피 일어날 수 있지만 RVO/NRVO로 제거됨)
+	//	std::array<FMatrix, 4> out{};
+	//	BuildWorld4_SSE(b, out.data());
+	//	return out;  // 값 반환(카피 일어날 수 있지만 RVO/NRVO로 제거됨)
 	}
 
 	static void BuildWorld4_SSE(const Batch4& b, FMatrix outM[4])
