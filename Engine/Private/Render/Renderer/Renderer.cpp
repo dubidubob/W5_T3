@@ -80,7 +80,6 @@ void URenderer::Init(HWND WindowHandle)
 
 	// Initialize color picking cache
 	bPickingDataValid = false;
-	bCameraMoving = false;
 	CachedColorPickingData.clear();
 
 	ULineBatchRenderer::GetInstance().Init();
@@ -381,18 +380,9 @@ void URenderer::Update(UEditor* Editor)
 		RenderObjectViewer(Editor);
 #endif
 
-    // Camera movement detection and color picking optimization
-    bCameraMoving = IsCameraMoving();
-
-    // Only render color picking when camera is moving (right click) or cache is invalid
     if (ShouldPerformColorPicking())
     {
-        if (bCameraMoving || !bPickingDataValid)
-        {
-            UE_LOG("Update: Rendering NEW color picking data - CameraMoving: %d, CacheValid: %d", bCameraMoving, bPickingDataValid);
-            RenderColorPicking();
-        }
-        // Using cached data silently for performance
+		RenderColorPicking();
     }
 
 	// Switch back to main render target for UI rendering
@@ -404,8 +394,12 @@ void URenderer::Update(UEditor* Editor)
 	UUIManager::GetInstance().Render();
 	RenderEnd();
 
-	// Increment frame counter for picking optimization
+	// 피킹 프레임 스킵 카운터 증가
 	FrameCounter++;
+	if (FrameCounter >= _UI32_MAX)
+	{
+		FrameCounter = 0;
+	}
 }
 
 void URenderer::RenderMultiViewport(UEditor* Editor)
@@ -803,21 +797,6 @@ bool URenderer::ShouldPerformColorPicking()
 	return true;
 }
 
-bool URenderer::IsCameraMoving()
-{
-	UInputManager& InputManager = UInputManager::GetInstance();
-
-	bool bRightMousePressed = InputManager.IsKeyDown(EKeyInput::MouseRight);
-
-	bool bViewChanged =
-		InputManager.IsKeyDown(EKeyInput::W) ||
-		InputManager.IsKeyDown(EKeyInput::A) ||
-		InputManager.IsKeyDown(EKeyInput::S) ||
-		InputManager.IsKeyDown(EKeyInput::D);
-
-	return bRightMousePressed || bViewChanged;
-}
-
 uint32 URenderer::GetPickedObjectFromCache(int32 MouseX, int32 MouseY)
 {
 	if (!bPickingDataValid)
@@ -832,12 +811,12 @@ uint32 URenderer::GetPickedObjectFromCache(int32 MouseX, int32 MouseY)
 		return 0;
 	}
 
-	// Get color picking viewport dimensions
+	// 피킹 뷰포트 크기 가져옴
 	D3D11_VIEWPORT ColorPickingViewport = DeviceResources->GetColorPickingViewport();
 	uint32 Width = static_cast<uint32>(ColorPickingViewport.Width);
 	uint32 Height = static_cast<uint32>(ColorPickingViewport.Height);
 
-	// Convert mouse coordinates to picking texture coordinates
+	// 마우스 좌표 -> 픽킹 텍스처 좌표
 	D3D11_VIEWPORT MainViewport = DeviceResources->GetViewportInfo();
 	float ScaleX = ColorPickingViewport.Width / MainViewport.Width;
 	float ScaleY = ColorPickingViewport.Height / MainViewport.Height;
@@ -845,10 +824,7 @@ uint32 URenderer::GetPickedObjectFromCache(int32 MouseX, int32 MouseY)
 	int32 PickingX = static_cast<int32>(MouseX * ScaleX);
 	int32 PickingY = static_cast<int32>(MouseY * ScaleY);
 
-	// UE_LOG("GetPickedObjectFromCache: Mouse(%d, %d) -> Picking(%d, %d), Size(%d, %d), Scale(%.2f, %.2f)",
-	//	MouseX, MouseY, PickingX, PickingY, Width, Height, ScaleX, ScaleY);
-
-	// Bounds check
+	// 화면 경계 검사
 	if (PickingX < 0 || PickingX >= static_cast<int32>(Width) ||
 		PickingY < 0 || PickingY >= static_cast<int32>(Height))
 	{
@@ -856,7 +832,7 @@ uint32 URenderer::GetPickedObjectFromCache(int32 MouseX, int32 MouseY)
 		return 0;
 	}
 
-	// Calculate array index - no Y flip needed since both screen and texture use same convention
+	// RenderColorPicking()에서 썼던 좌표 그대로 사용
 	uint32 Index = PickingY * Width + PickingX;
 	if (Index >= CachedColorPickingData.size())
 	{
@@ -864,18 +840,8 @@ uint32 URenderer::GetPickedObjectFromCache(int32 MouseX, int32 MouseY)
 		return 0;
 	}
 
+	// CachedColorPickingData에서 좌표에 해당하는 픽셀 값 읽음
 	uint32 PixelValue = CachedColorPickingData[Index];
-
-	// Only log when we find a non-zero value (actual object)
-	if (PixelValue != 0)
-	{
-		UE_LOG("GetPickedObjectFromCache: SUCCESS! Mouse(%d, %d) -> PixelValue 0x%08X", MouseX, MouseY, PixelValue);
-	}
-	else
-	{
-		UE_LOG("GetPickedObjectFromCache: No object at Mouse(%d, %d)", MouseX, MouseY);
-	}
-
 	return PixelValue;
 }
 
@@ -952,16 +918,11 @@ void URenderer::RenderColorPicking()
 		RenderStaticMeshComponentForPicking(Candidate);
 	}
 
-	// ??
-	//DisableInstancing();
-
-	// Copy GPU color picking data to CPU-accessible array for caching
+	// CPU가 소유한 캐시 배열로 GPU 색상 선택 데이터 복사
 	ID3D11Texture2D* ColorPickingTexture = DeviceResources->GetColorPickingTexture();
 	if (ColorPickingTexture)
 	{
-		UE_LOG("RenderColorPicking: Starting to cache picking data");
-
-		// Create staging texture for CPU access
+		// 텍스처 만들기
 		D3D11_TEXTURE2D_DESC StagingDesc;
 		ColorPickingTexture->GetDesc(&StagingDesc);
 		StagingDesc.Usage = D3D11_USAGE_STAGING;
@@ -971,10 +932,10 @@ void URenderer::RenderColorPicking()
 		ID3D11Texture2D* StagingTexture = nullptr;
 		if (SUCCEEDED(GetDevice()->CreateTexture2D(&StagingDesc, nullptr, &StagingTexture)))
 		{
-			// Copy from GPU to staging texture
+			// ColorPickingTexture를 StagingTexture로 복사
 			GetDeviceContext()->CopyResource(StagingTexture, ColorPickingTexture);
 
-			// Map staging texture to CPU memory
+			// MappedResource에 StagingTexture 정보 매핑
 			D3D11_MAPPED_SUBRESOURCE MappedResource;
 			if (SUCCEEDED(GetDeviceContext()->Map(StagingTexture, 0, D3D11_MAP_READ, 0, &MappedResource)))
 			{
@@ -982,15 +943,26 @@ void URenderer::RenderColorPicking()
 				uint32 Height = static_cast<uint32>(ColorPickingViewport.Height);
 				uint32 TotalPixels = Width * Height;
 
-				UE_LOG("RenderColorPicking: Caching data - Size: %dx%d, TotalPixels: %d", Width, Height, TotalPixels);
-
-				// Resize cache array and copy data
+				// 픽셀 수 만큼	캐시 배열 크기 조정
 				CachedColorPickingData.resize(TotalPixels);
 
 				uint32* SourceData = static_cast<uint32*>(MappedResource.pData);
 				uint32 RowPitch = MappedResource.RowPitch / sizeof(uint32);
 
-				uint32 NonZeroCount = 0;
+				// GPU 텍스처 데이터를 CPU 배열로 복사
+				//
+				// GPU 텍스처 (RowPitch 패딩 포함):    CPU 배열 (패딩 없음):
+				// ┌─────────────┐      ┌────────┐
+				// │ Row 0: [픽셀][픽셀][패딩]│  ->  │ [픽셀][픽셀]   │
+				// │ Row 1: [픽셀][픽셀][패딩]│  ->  │ [픽셀][픽셀]   │
+				// │ Row 2: [픽셀][픽셀][패딩]│  ->  │ [픽셀][픽셀]   │
+				// └─────────────┘      └────────┘
+				//   RowPitch = Width + 패딩              Width만 사용
+				//
+				// 좌표 변환:
+				// GPU: SourceIndex = Y * RowPitch + X
+				// CPU: DestIndex   = Y * Width + X
+				//
 				for (uint32 Y = 0; Y < Height; ++Y)
 				{
 					for (uint32 X = 0; X < Width; ++X)
@@ -998,24 +970,15 @@ void URenderer::RenderColorPicking()
 						uint32 SourceIndex = Y * RowPitch + X;
 						uint32 DestIndex = Y * Width + X;
 						CachedColorPickingData[DestIndex] = SourceData[SourceIndex];
-
-						if (SourceData[SourceIndex] != 0)
-						{
-							NonZeroCount++;
-						}
 					}
 				}
 
-				UE_LOG("RenderColorPicking: Cached %d pixels, %d non-zero values", TotalPixels, NonZeroCount);
-
 				GetDeviceContext()->Unmap(StagingTexture, 0);
 
-				// Update cache state
 				bPickingDataValid = true;
-				//CachedPickingViewProj = CachedViewProj;
 
-				// Debug: Print some sample data to help with testing
-				DebugPrintSamplePickingData();
+				// 디버그 하려면 주석 풀기
+				//DebugPrintSamplePickingData();
 			}
 			else
 			{
