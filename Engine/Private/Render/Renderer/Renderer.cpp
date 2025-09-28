@@ -398,6 +398,10 @@ void URenderer::Update(UEditor* Editor)
 	++FrameCounter;
 	if (FrameCounter >= SET_DIRTY_FRAME_INTERVAL)
 	{
+		if (UInputManager::GetInstance().IsKeyDown(EKeyInput::MouseRight))
+		{
+			RenderColorPicking();
+		}
 		SetSortingBatchMapDirty();
 		FrameCounter = 0;
 	}
@@ -768,7 +772,12 @@ bool URenderer::ShouldPerformColorPicking()
 	bool bRightMouseReleased = bPrevRightMouseState && !bCurrentRightMouseState;
 	bPrevRightMouseState = bCurrentRightMouseState;
 
-	bool bMousePressed = InputManager.IsKeyPressed(EKeyInput::MouseLeft) || bRightMouseReleased;
+	static bool bPrevLeftMouseState = false;
+	bool bCurrentLeftMouseState = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
+	bool bLeftMouseReleased = bPrevLeftMouseState && !bCurrentLeftMouseState;
+	bPrevLeftMouseState = bCurrentLeftMouseState;
+
+	bool bMousePressed = InputManager.IsKeyPressed(EKeyInput::MouseLeft) || bRightMouseReleased || bLeftMouseReleased;
 	if (!bMousePressed)
 	{
 		return false;
@@ -866,6 +875,12 @@ void URenderer::DebugPrintSamplePickingData()
 	}
 }
 
+// 얘를 부르는 시점
+// 1. 왼 마우스 클릭
+// 2. 왼 마우스 놓기 솔직하게 FPS 2위랑 1위랑 차이가 안 나는 거임 1점 차이라서 아니 그러면 뭐하고 다니는 거임??? 팀플 안 하면? ㅜㅜㅜㅜ 유리몸ㅇ...인가
+// 3. 오른 마우스 놓기
+// 4. Load Level
+// 5. Spawn Actor
 void URenderer::RenderColorPicking()
 {
 	if (!ULevelManager::GetInstance().GetCurrentLevel())
