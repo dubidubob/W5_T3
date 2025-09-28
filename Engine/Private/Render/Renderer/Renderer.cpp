@@ -520,7 +520,7 @@ void URenderer::SetRenderStream()
 				Removes.Push(StaticMeshComps[i]);
 			}
 		}
-		if (StaticMeshComps[i]->GetIsDirty())
+		if (StaticMeshComps[i]->GetTransformDirty())
 		{
 			Changes.Add(StaticMeshComps[i]);
 		}
