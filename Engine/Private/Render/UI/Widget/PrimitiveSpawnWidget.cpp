@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Render/UI/Widget/PrimitiveSpawnWidget.h"
+#include "Render/Renderer/Renderer.h"
 
 #include "Level/Level.h"
 #include "Manager/Level/LevelManager.h"
@@ -113,6 +114,8 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 			NewActor->SetActorScale3D(FVector(RandomScale, RandomScale, RandomScale));
 
 			UE_LOG("ControlPanel: (%.2f, %.2f, %.2f) 지점에 Actor를 생성했습니다", RandomX, RandomY, RandomZ);
+			URenderer& Renderer = URenderer::GetInstance();
+			Renderer.MarkForceReRenderPicking();
 		}
 		else
 		{
