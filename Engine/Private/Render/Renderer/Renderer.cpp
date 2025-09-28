@@ -395,10 +395,10 @@ void URenderer::Update(UEditor* Editor)
 		}
 	}
 	// Switch back to main render target for UI rendering
-	//ID3D11RenderTargetView* MainRTV = DeviceResources->GetRenderTargetView();
-	//ID3D11DepthStencilView* MainDSV = DeviceResources->GetDepthStencilView();
-	//GetDeviceContext()->OMSetRenderTargets(1, &MainRTV, MainDSV);
-	//GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
+	ID3D11RenderTargetView* MainRTV = DeviceResources->GetRenderTargetView();
+	ID3D11DepthStencilView* MainDSV = DeviceResources->GetDepthStencilView();
+	GetDeviceContext()->OMSetRenderTargets(1, &MainRTV, MainDSV);
+	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
 	UUIManager::GetInstance().Render(); //0.1ms
 	RenderEnd();
 }
@@ -476,8 +476,6 @@ void URenderer::ReSetSortingBatchMap()
     const TArray<UStaticMeshComponent*>& StaticMeshComps =
         ULevelManager::GetInstance().GetCurrentLevel()->GetStaticMeshComponents();
 
-    CleanUpSortingBatch();
-
     TArray<UStaticMeshComponent*> AllComps;
     for (auto& StaticMeshComp : StaticMeshComps)
     {
@@ -489,13 +487,13 @@ void URenderer::ReSetSortingBatchMap()
 void URenderer::SetRenderStream()
 {
 	TIME_PROFILE(SetRenderStream)
-	CleanUpSortingBatch();
-	auto& CurVisible = ULevelManager::GetInstance().GetCurrentLevel()->GetVisiblePrimitives();
-	auto& LastVisible = ULevelManager::GetInstance().GetCurrentLevel()->GetLastVisiblePrimitives();
+	TArray<bool>& CurVisible = ULevelManager::GetInstance().GetCurrentLevel()->GetVisiblePrimitives();
+	TArray<bool>& LastVisible = ULevelManager::GetInstance().GetCurrentLevel()->GetLastVisiblePrimitives();
 	uint32 ActorCount = CurVisible.size();
 	const TArray<UStaticMeshComponent*>& StaticMeshComps =
 		ULevelManager::GetInstance().GetCurrentLevel()->GetStaticMeshComponents();
 	TArray<UStaticMeshComponent*> Adds;
+	TArray<uint32> AddIndices;
 	TArray<UStaticMeshComponent*> Removes;
 	TArray<UStaticMeshComponent*> Changes;
 	for (int i = 0; i < ActorCount; i++)
@@ -505,12 +503,23 @@ void URenderer::SetRenderStream()
 			if (CurVisible[i] == true) //이전 안보였고 현재 보여지는 추가된것
 			{
 				Adds.Push(StaticMeshComps[i]);
+				AddIndices.Push(i);
 			}
 			else //이전 보였고 현재 안보이는 제거된것
 			{
 				Removes.Push(StaticMeshComps[i]);
 			}
 		}
+		if (StaticMeshComps[i]->GetIsDirty())
+		{
+			Changes.Add(StaticMeshComps[i]);
+		}
+	}
+
+	int VisibleSize = CurVisible.size();
+	for (int i = 0; i < VisibleSize; i++)
+	{
+		LastVisible[i] = CurVisible[i];
 	}
 
 	TMap<FStaticMaterial*, TMap<FStaticMesh*, uint32>> IdxMap;
@@ -522,10 +531,13 @@ void URenderer::SetRenderStream()
 			TArray<uint32>& Stream = RenderStreamMap[Key.Material][Remove->GetStaticMesh()->GetStaticMeshAsset()];
 			Stream[Key.Idx] = 0;
 		}
+		Remove->RenderStreamKeyReset();
 	}
 
-	for (UStaticMeshComponent* Add : Adds)
+	int AddCount = Adds.size();
+	for (int k=0;k<AddCount;k++)
 	{
+		UStaticMeshComponent* Add = Adds[k];
 		const TArray<FRenderStreamKey>& Keys = Add->GetRenderStreamKeys();
 		FStaticMesh* StaticMeshAsset = Add->GetStaticMesh()->GetStaticMeshAsset();
 
@@ -535,6 +547,7 @@ void URenderer::SetRenderStream()
 		for (int i = 0; i < MaterialSize; i++)
 		{
 			FStaticMaterial* Material = &StaticMeshAsset->Materials[i];
+			TArray<uint32>& RenderStream = RenderStreamMap[Material][StaticMeshAsset];
 			if (StaticMeshAsset->GetSectionMap(Material).size() > 0)
 			{
 				if (IdxMap.Contains(Material) == false)
@@ -546,16 +559,16 @@ void URenderer::SetRenderStream()
 					IdxMap[Material][StaticMeshAsset] = 0;
 				}
 				uint32 CurIdx = IdxMap[Material][StaticMeshAsset];
-				uint32 Size = RenderStreamMap[Material][StaticMeshAsset].size();
+				uint32 Size = RenderStream.size();
 				bool bInput = false;
 
 				while (CurIdx < Size)
 				{
-					if (RenderStreamMap[Material][StaticMeshAsset][CurIdx] == 0)
+					if (RenderStream[CurIdx] == 0)
 					{
 						Add->AddRenderStreamKey(FRenderStreamKey(Material, CurIdx));
-						RenderStreamMap[Material][StaticMeshAsset][CurIdx] = 1;
-						memcpy(&RenderStreamMap[Material][StaticMeshAsset][CurIdx + 1], &WorldMat, 64);
+						RenderStream[CurIdx] = AddIndices[k] + 1;
+						memcpy(&RenderStream[CurIdx + 1], &WorldMat, 64);
 						bInput = true;
 						break;
 					}
@@ -564,12 +577,12 @@ void URenderer::SetRenderStream()
 				if (bInput == false)
 				{
 					Add->AddRenderStreamKey(FRenderStreamKey(Material, Size));
-					RenderStreamMap[Material][StaticMeshAsset].Push(1);
+					RenderStream.Push(AddIndices[k] + 1);
 					for (int i = 0; i < 4; i++)
 					{
 						for (int j = 0; j < 4; j++)
 						{
-							RenderStreamMap[Material][StaticMeshAsset].Push(WorldMat.Data[i][j]);
+							RenderStream.Push(*reinterpret_cast<const uint32*>(&WorldMat.Data[i][j]));
 						}
 					}
 				}
@@ -631,6 +644,14 @@ void URenderer::RenderSortingBatchMap()
     ExtractFrustumPlanes(CachedViewProj, Planes);
 	TIME_PROFILE(Query);
 	auto& Visibles = ULevelManager::GetInstance().GetCurrentLevel()->GetVisiblePrimitives();
+	int visiblecount = 0;
+	for (int i = 0; i < Visibles.size(); i++)
+	{
+		if (Visibles[i] == true)
+		{
+			visiblecount++;
+		}
+	}
 	SceneBVH.QueryFrustum(Planes, Visibles);
 	TIME_PROFILE_END(Query);
 	SetRenderStream();
@@ -655,7 +676,7 @@ void URenderer::RenderSortingBatchMap()
 			uint32 CurIdx = 0;
 			while (CurIdx < Size)
 			{
-				if (RenderStream[CurIdx] == 1)
+				if (RenderStream[CurIdx] != 0)
 				{
 					UpdateBufferStream(ConstantBufferModels, &RenderStream[CurIdx + 1], 64);
 					for (const FStaticMeshSection* Section : Sections)
@@ -851,10 +872,17 @@ void URenderer::RenderColorPicking()
 	Pipeline->SetConstantBuffer(2, false, ConstantBufferPicking);
 
 	// 컬링 + 정렬된 후보군들 그리기
-	//for (UPrimitiveComponent* Candidate : Candidates)
-	//{
-	//	RenderStaticMeshComponentForPicking(Candidate);
-	//}
+	const TArray<UStaticMeshComponent*>& StaticMeshComps =
+		ULevelManager::GetInstance().GetCurrentLevel()->GetStaticMeshComponents();
+	const TArray<bool>& Visibles = ULevelManager::GetInstance().GetCurrentLevel()->GetVisiblePrimitives();
+	int ComponentSize = StaticMeshComps.size();
+	for (int i = 0; i < ComponentSize; i++)
+	{
+		if (Visibles[i])
+		{
+			RenderStaticMeshComponentForPicking(StaticMeshComps[i]);
+		}
+	}
 
 	// CPU가 소유한 캐시 배열로 GPU 색상 선택 데이터 복사
 	ID3D11Texture2D* ColorPickingTexture = DeviceResources->GetColorPickingTexture();

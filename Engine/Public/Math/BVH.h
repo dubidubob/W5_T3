@@ -35,7 +35,7 @@ public:
 private:
     int32 BuildRange(int32 First, int32 Last, int32 Depth);
     void AddSubtree(int32 NodeIdx, TArray<UStaticMeshComponent*>& Out) const;
-    void AddSubtreeAll(int32 NodeIdx, TArray<UStaticMeshComponent*>& Out) const;
+    void AddSubtreeAll(int32 NodeIdx, TArray<bool>& OutVisible) const;
     static bool AABBOutsideFrustum(const FAABB& B, const TStaticArray<FVector4,6>& Planes);
     static bool AABBInsideFrustum(const FAABB& B, const TStaticArray<FVector4,6>& Planes);
     static int32 ChooseAxis(const FAABB& Bounds);

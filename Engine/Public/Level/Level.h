@@ -9,6 +9,7 @@ class AGrid;
 class AActor;
 class UPrimitiveComponent;
 class UTextComponent;
+class UStaticMeshComponent;
 
 class ULevel : public UObject
 {

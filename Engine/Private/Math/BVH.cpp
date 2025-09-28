@@ -142,19 +142,19 @@ void FBVH::QueryAABB(const FAABB& Q, TArray<UStaticMeshComponent*>& Out) const
     }
 }
 
-void FBVH::AddSubtreeAll(int32 NodeIdx, TArray<UStaticMeshComponent*>& Out) const
+void FBVH::AddSubtreeAll(int32 NodeIdx, TArray<bool>& OutVisible) const
 {
     const FBVHNode& N = Nodes[NodeIdx];
     if (N.bLeaf)
     {
         for (int32 i = 0; i < N.Count; ++i)
         {
-            Out.push_back(Items[N.First + i].Comp);
+			OutVisible[N.First + i] = true;
         }
         return;
     }
-    if (N.Left >= 0) AddSubtreeAll(N.Left, Out);
-    if (N.Right >= 0) AddSubtreeAll(N.Right, Out);
+    if (N.Left >= 0) AddSubtreeAll(N.Left, OutVisible);
+    if (N.Right >= 0) AddSubtreeAll(N.Right, OutVisible);
 }
 
 bool FBVH::AABBOutsideFrustum(const FAABB& B, const TStaticArray<FVector4,6>& Planes)
@@ -185,7 +185,7 @@ bool FBVH::AABBInsideFrustum(const FAABB& B, const TStaticArray<FVector4,6>& Pla
 
 void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& OutVisibles) const
 {
-	OutVisibles.clear();
+	std::fill(OutVisibles.begin(), OutVisibles.end(), false);
     if (Root < 0) return;
     TArray<int32> Stack;
     Stack.push_back(Root);
@@ -194,10 +194,13 @@ void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& O
         int32 Idx = Stack.back();
         Stack.pop_back();
         const FBVHNode& N = Nodes[Idx];
-        if (AABBOutsideFrustum(N.Bounds, Planes)) continue;
+		if (AABBOutsideFrustum(N.Bounds, Planes))
+		{
+			continue;
+		}
         if (AABBInsideFrustum(N.Bounds, Planes))
         {
-            AddSubtreeAll(Idx, OutStaticMeshComp);
+            AddSubtreeAll(Idx, OutVisibles);
             continue;
         }
 
@@ -207,7 +210,7 @@ void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& O
             for (int32 i = 0; i < N.Count; ++i)
             {
                 const FBVHItem& It = Items[N.First + i];
-                if (!AABBOutsideFrustum(It.Bounds, Planes)) OutStaticMeshComp.push_back(It.Comp);
+				if (!AABBOutsideFrustum(It.Bounds, Planes)) OutVisibles[N.First + i] = true;
             }
         }
         else

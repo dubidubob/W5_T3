@@ -1,6 +1,7 @@
 #pragma once
 #include "MeshComponent.h"
 #include "Math/AABB.h"
+#include "Mesh/StaticMesh/StaticMesh.h"
 class UStaticMesh;
 struct FAABB;
 
