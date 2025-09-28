@@ -13,6 +13,7 @@ void FBVH::Build(const TArray<UStaticMeshComponent*>& Comps)
 {
     Clear();
     Items.reserve(Comps.size());
+	int idx = 0;
     for (UStaticMeshComponent* C : Comps)
     {
         if (!C) continue;
@@ -22,10 +23,13 @@ void FBVH::Build(const TArray<UStaticMeshComponent*>& Comps)
         It.Comp = C;
         It.Bounds = B;
         It.Centroid = B.GetCenter();
+		It.OriginIdx = idx++;
         Items.push_back(It);
     }
     if (Items.empty()) { Root = -1; return; }
     Nodes.reserve(Items.size() * 2);
+	int itemSize = Items.size();
+
     Root = BuildRange(0, static_cast<int32>(Items.size()), 0);
 }
 
@@ -149,7 +153,7 @@ void FBVH::AddSubtreeAll(int32 NodeIdx, TArray<bool>& OutVisible) const
     {
         for (int32 i = 0; i < N.Count; ++i)
         {
-			OutVisible[N.First + i] = true;
+			OutVisible[Items[N.First + i].OriginIdx] = true;
         }
         return;
     }
@@ -185,6 +189,8 @@ bool FBVH::AABBInsideFrustum(const FAABB& B, const TStaticArray<FVector4,6>& Pla
 
 void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& OutVisibles) const
 {
+	int itemSize = Items.size();
+
 	std::fill(OutVisibles.begin(), OutVisibles.end(), false);
     if (Root < 0) return;
     TArray<int32> Stack;
@@ -210,7 +216,10 @@ void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& O
             for (int32 i = 0; i < N.Count; ++i)
             {
                 const FBVHItem& It = Items[N.First + i];
-				if (!AABBOutsideFrustum(It.Bounds, Planes)) OutVisibles[N.First + i] = true;
+				if (!AABBOutsideFrustum(It.Bounds, Planes))
+				{
+					OutVisibles[It.OriginIdx] = true;
+				}
             }
         }
         else

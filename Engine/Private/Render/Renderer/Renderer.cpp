@@ -534,6 +534,7 @@ void URenderer::SetRenderStream()
 		Remove->RenderStreamKeyReset();
 	}
 
+	TIME_PROFILE(Add)
 	int AddCount = Adds.size();
 	for (int k=0;k<AddCount;k++)
 	{
@@ -570,6 +571,7 @@ void URenderer::SetRenderStream()
 						RenderStream[CurIdx] = AddIndices[k] + 1;
 						memcpy(&RenderStream[CurIdx + 1], &WorldMat, 64);
 						bInput = true;
+						IdxMap[Material][StaticMeshAsset] = CurIdx + 17;
 						break;
 					}
 					CurIdx += 17;
@@ -585,11 +587,12 @@ void URenderer::SetRenderStream()
 							RenderStream.Push(*reinterpret_cast<const uint32*>(&WorldMat.Data[i][j]));
 						}
 					}
+					IdxMap[Material][StaticMeshAsset] = RenderStream.size();
 				}
 			}
 		}
 	}
-
+	TIME_PROFILE_END(Add)
 	for (UStaticMeshComponent* Change : Changes)
 	{
 		const TArray<FRenderStreamKey>& Keys = Change->GetRenderStreamKeys();

@@ -12,6 +12,7 @@ struct FBVHItem
     UStaticMeshComponent* Comp = nullptr;
     FAABB Bounds;
     FVector Centroid;
+	int OriginIdx;
 };
 
 struct FBVHNode
