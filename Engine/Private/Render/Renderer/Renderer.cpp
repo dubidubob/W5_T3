@@ -483,6 +483,16 @@ void URenderer::ReSetSortingBatchMap()
     }
     SceneBVH.Build(AllComps);
 }
+void URenderer::RemoveActorRenderStream(UStaticMeshComponent* StaticMeshComp)
+{
+	const TArray<FRenderStreamKey>& Keys = StaticMeshComp->GetRenderStreamKeys();
+	for (const FRenderStreamKey& Key : Keys)
+	{
+		TArray<uint32>& Stream = RenderStreamMap[Key.Material][StaticMeshComp->GetStaticMesh()->GetStaticMeshAsset()];
+		Stream[Key.Idx] = 0;
+	}
+	StaticMeshComp->RenderStreamKeyReset();
+}
 
 void URenderer::SetRenderStream()
 {

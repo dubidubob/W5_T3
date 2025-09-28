@@ -123,6 +123,7 @@ public:
 	void ReSetSortingBatchMap();
 	void CleanUpSortingBatch();
 	void SetRenderStream();
+	void RemoveActorRenderStream(UStaticMeshComponent* StaticMeshComp);
 
 	// ================== View Mode Management ==================
 	void SetViewMode(EViewportRenderMode ViewMode) { CurrentRenderMode = ViewMode; }

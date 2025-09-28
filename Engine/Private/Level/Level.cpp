@@ -203,11 +203,17 @@ bool ULevel::DestroyActor(AActor* InActor)
 	URenderer::GetInstance().SetSortingBatchMapDirty();
 
 	// LevelActors 리스트에서 제거
-	for (auto Iterator = LevelActors.begin(); Iterator != LevelActors.end(); ++Iterator)
+	int LevelActorCount = LevelActors.size();
+	for (int i = 0; i < LevelActorCount; i++)
 	{
-		if (*Iterator == InActor)
+		if (InActor == LevelActors[i])
 		{
-			LevelActors.erase(Iterator);
+			URenderer::GetInstance().RemoveActorRenderStream(LevelStaticMeshComponents[i]);
+			LevelActors.erase(LevelActors.begin() + i);
+			LevelPrimitiveComponents.erase(LevelPrimitiveComponents.begin() + i);
+			LevelStaticMeshComponents.erase(LevelStaticMeshComponents.begin() + i);
+			VisiblePrimitives.erase(VisiblePrimitives.begin() + i);
+			LastVisiblePrimitives.erase(LastVisiblePrimitives.begin() + i);
 			break;
 		}
 	}
@@ -312,14 +318,22 @@ void ULevel::ProcessPendingDeletions()
 		}
 
 		// LevelActors 리스트에서 제거
-		for (auto Iterator = LevelActors.begin(); Iterator != LevelActors.end(); ++Iterator)
+		int LevelActorCount = LevelActors.size();
+		for (int i=0;i< LevelActorCount;i++)
 		{
-			if (*Iterator == ActorToDelete)
+			if (ActorToDelete == LevelActors[i])
 			{
-				LevelActors.erase(Iterator);
+				URenderer::GetInstance().RemoveActorRenderStream(LevelStaticMeshComponents[i]);
+				LevelActors.erase(LevelActors.begin() + i);
+				LevelPrimitiveComponents.erase(LevelPrimitiveComponents.begin() + i);
+				LevelStaticMeshComponents.erase(LevelStaticMeshComponents.begin() + i);
+				VisiblePrimitives.erase(VisiblePrimitives.begin() + i);
+				LastVisiblePrimitives.erase(LastVisiblePrimitives.begin() + i);
 				break;
 			}
 		}
+		URenderer::GetInstance().SetSortingBatchMapDirty();
+
 
 		//Deprecated : EditorActor는 에디터에서 처리
 		// EditorActors 리스트에서도 제거
