@@ -121,7 +121,6 @@ const FVector& USceneComponent::GetWorldLocation() const
 
 const FMatrix& USceneComponent::GetWorldTransformMatrix() const
 {
-	TIME_PROFILE(TransformMatrix)
     if (bIsTransformDirty)
     {
         // Quaternion-based TRS (row-major): I * S * R * T

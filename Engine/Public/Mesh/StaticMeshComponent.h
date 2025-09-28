@@ -24,7 +24,7 @@ public:
 	FVector2 GetUVScrollSpeed() const { return UVScrollSpeed; }
 	// 현재 프레임에서 셰이더에 넘길 UV 스크롤 시간(누적 + 진행)
 	float GetUVScrollTimeForShader() const;
-	virtual FAABB GetWorldBounds() const;
+	virtual FAABB GetWorldBounds();
 	UStaticMesh* GetStaticMesh() { return StaticMesh; }
 
 	void AddRenderStreamKey(const FRenderStreamKey& RenderStreamKey)
@@ -44,6 +44,7 @@ public:
 private:
 	FAABB GetLocalBounds() const;
 	mutable FAABB CachedLocalBounds;
+	FAABB CachedAlignedWorldBounds;
 	mutable bool bIsLocalBoundsDirty = true;
 
 public:

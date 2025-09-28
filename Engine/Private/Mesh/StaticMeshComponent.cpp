@@ -71,20 +71,23 @@ FAABB UStaticMeshComponent::GetLocalBounds() const
 	return CachedLocalBounds;
 }
 
-FAABB UStaticMeshComponent::GetWorldBounds() const
+FAABB UStaticMeshComponent::GetWorldBounds()
 {
 	if (!StaticMesh || !StaticMesh->GetStaticMeshAsset())
 	{
 		return FAABB();
 	}
 
-	const FAABB LocalBounds = GetLocalBounds();
-	if (!LocalBounds.IsValid())
+	if (bIsLocalBoundsDirty || GetTransformDirty())
 	{
-		return FAABB();
+		const FAABB LocalBounds = GetLocalBounds();
+		if (!LocalBounds.IsValid())
+		{
+			return FAABB();
+		}
+		CachedAlignedWorldBounds = LocalBounds.TransformBy(GetWorldTransformMatrix());
 	}
-
-	return LocalBounds.TransformBy(GetWorldTransformMatrix());
+	return CachedAlignedWorldBounds;
 }
 
 const void* UStaticMeshComponent::GetRawVertexData() const
