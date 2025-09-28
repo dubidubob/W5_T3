@@ -320,7 +320,7 @@ void URenderer::CreateSamplerState()
 void URenderer::UpdateBufferStream(ID3D11Buffer* Buffer, const void* Pointer, const uint32 Size)
 {
 	TIME_PROFILE(BufferStream)
-		const FMatrix* Mat = reinterpret_cast<const FMatrix*>(Pointer);
+	const FMatrix* Mat = reinterpret_cast<const FMatrix*>(Pointer);
 	D3D11_MAPPED_SUBRESOURCE MappedResource;
 	if (SUCCEEDED(GetDeviceContext()->Map(Buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource)))
 	{
@@ -394,11 +394,19 @@ void URenderer::Update(UEditor* Editor)
 			bForceReRenderPicking = false;
 		}
 	}
+
+	++FrameCounter;
+	if (FrameCounter >= SET_DIRTY_FRAME_INTERVAL)
+	{
+		SetSortingBatchMapDirty();
+		FrameCounter = 0;
+	}
+
 	// Switch back to main render target for UI rendering
-	//ID3D11RenderTargetView* MainRTV = DeviceResources->GetRenderTargetView();
-	//ID3D11DepthStencilView* MainDSV = DeviceResources->GetDepthStencilView();
-	//GetDeviceContext()->OMSetRenderTargets(1, &MainRTV, MainDSV);
-	//GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
+	ID3D11RenderTargetView* MainRTV = DeviceResources->GetRenderTargetView();
+	ID3D11DepthStencilView* MainDSV = DeviceResources->GetDepthStencilView();
+	GetDeviceContext()->OMSetRenderTargets(1, &MainRTV, MainDSV);
+	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
 	UUIManager::GetInstance().Render(); //0.1ms
 	RenderEnd();
 }
@@ -473,52 +481,145 @@ void URenderer::ReSetSortingBatchMap()
         return;
     }
     bSortingBatchMapDirty = false;
-    const TArray<UPrimitiveComponent*>& PrimitiveComponents =
-        ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
-
-    CleanUpSortingBatch();
+    const TArray<UStaticMeshComponent*>& StaticMeshComps =
+        ULevelManager::GetInstance().GetCurrentLevel()->GetStaticMeshComponents();
 
     TArray<UStaticMeshComponent*> AllComps;
-    for (auto& Primitive : PrimitiveComponents)
+    for (auto& StaticMeshComp : StaticMeshComps)
     {
-        if (UStaticMeshComponent* S = Cast<UStaticMeshComponent>(Primitive))
-        {
-            if (S->IsVisible()) AllComps.push_back(S);
-			FStaticMesh* StaticMeshAsset = S->GetStaticMesh()->GetStaticMeshAsset();
-			const FMatrix& WorldMatrix = S->GetWorldTransformMatrix();
-
-			for (FStaticMaterial& Material : StaticMeshAsset->Materials)
-			{
-				FStaticMaterial* pMaterial = &Material;
-				if (StaticMeshAsset->GetSectionMap(pMaterial).size() > 0)
-				{
-					//WorldMatrix Input
-					RenderStreamMap[pMaterial][StaticMeshAsset].Push(WorldMatrix);
-				}
-			}
-        }
+        if (StaticMeshComp->IsVisible()) AllComps.push_back(StaticMeshComp);
     }
     SceneBVH.Build(AllComps);
 }
+void URenderer::RemoveActorRenderStream(UStaticMeshComponent* StaticMeshComp)
+{
+	const TArray<FRenderStreamKey>& Keys = StaticMeshComp->GetRenderStreamKeys();
+	for (const FRenderStreamKey& Key : Keys)
+	{
+		TArray<uint32>& Stream = RenderStreamMap[Key.Material][StaticMeshComp->GetStaticMesh()->GetStaticMeshAsset()];
+		Stream[Key.Idx] = 0;
+	}
+	StaticMeshComp->RenderStreamKeyReset();
+}
 
-void URenderer::SetRenderStream(TArray<UStaticMeshComponent*>& Add, TArray<UStaticMeshComponent*>& REmove, TArray<UStaticMeshComponent*>& Changed )
+void URenderer::SetRenderStream()
 {
 	TIME_PROFILE(SetRenderStream)
-	CleanUpSortingBatch();
-
-	for (auto& S : Candidates)
+	TArray<bool>& CurVisible = ULevelManager::GetInstance().GetCurrentLevel()->GetVisiblePrimitives();
+	TArray<bool>& LastVisible = ULevelManager::GetInstance().GetCurrentLevel()->GetLastVisiblePrimitives();
+	uint32 ActorCount = CurVisible.size();
+	const TArray<UStaticMeshComponent*>& StaticMeshComps =
+		ULevelManager::GetInstance().GetCurrentLevel()->GetStaticMeshComponents();
+	TArray<UStaticMeshComponent*> Adds;
+	TArray<uint32> AddIndices;
+	TArray<UStaticMeshComponent*> Removes;
+	TArray<UStaticMeshComponent*> Changes;
+	for (int i = 0; i < ActorCount; i++)
 	{
-		FStaticMesh* StaticMeshAsset = S->GetStaticMesh()->GetStaticMeshAsset();
-		const FMatrix& WorldMatrix = S->GetWorldTransformMatrix();
-
-		for (FStaticMaterial& Material : StaticMeshAsset->Materials)
+		if (CurVisible[i] != LastVisible[i])
 		{
-			FStaticMaterial* pMaterial = &Material;
-			if (StaticMeshAsset->GetSectionMap(pMaterial).size() > 0)
+			if (CurVisible[i] == true) //이전 안보였고 현재 보여지는 추가된것
 			{
-				//WorldMatrix Input
-				RenderStreamMap[pMaterial][StaticMeshAsset].Push(WorldMatrix);
+				Adds.Push(StaticMeshComps[i]);
+				AddIndices.Push(i);
 			}
+			else //이전 보였고 현재 안보이는 제거된것
+			{
+				Removes.Push(StaticMeshComps[i]);
+			}
+		}
+		if (StaticMeshComps[i]->GetIsDirty())
+		{
+			Changes.Add(StaticMeshComps[i]);
+		}
+	}
+
+	int VisibleSize = CurVisible.size();
+	for (int i = 0; i < VisibleSize; i++)
+	{
+		LastVisible[i] = CurVisible[i];
+	}
+
+	TMap<FStaticMaterial*, TMap<FStaticMesh*, uint32>> IdxMap;
+	for (UStaticMeshComponent* Remove : Removes)
+	{
+		const TArray<FRenderStreamKey>& Keys = Remove->GetRenderStreamKeys();
+		for (const FRenderStreamKey& Key : Keys)
+		{
+			TArray<uint32>& Stream = RenderStreamMap[Key.Material][Remove->GetStaticMesh()->GetStaticMeshAsset()];
+			Stream[Key.Idx] = 0;
+		}
+		Remove->RenderStreamKeyReset();
+	}
+
+	TIME_PROFILE(Add)
+	int AddCount = Adds.size();
+	for (int k=0;k<AddCount;k++)
+	{
+		UStaticMeshComponent* Add = Adds[k];
+		const TArray<FRenderStreamKey>& Keys = Add->GetRenderStreamKeys();
+		FStaticMesh* StaticMeshAsset = Add->GetStaticMesh()->GetStaticMeshAsset();
+
+		int MaterialSize = StaticMeshAsset->Materials.size();
+		const FMatrix& WorldMat = Add->GetWorldTransformMatrix();
+
+		for (int i = 0; i < MaterialSize; i++)
+		{
+			FStaticMaterial* Material = &StaticMeshAsset->Materials[i];
+			TArray<uint32>& RenderStream = RenderStreamMap[Material][StaticMeshAsset];
+			if (StaticMeshAsset->GetSectionMap(Material).size() > 0)
+			{
+				if (IdxMap.Contains(Material) == false)
+				{
+					IdxMap[Material][StaticMeshAsset] = 0;
+				}
+				else if (IdxMap[Material].Contains(StaticMeshAsset) == false)
+				{
+					IdxMap[Material][StaticMeshAsset] = 0;
+				}
+				uint32 CurIdx = IdxMap[Material][StaticMeshAsset];
+				uint32 Size = RenderStream.size();
+				bool bInput = false;
+
+				while (CurIdx < Size)
+				{
+					if (RenderStream[CurIdx] == 0)
+					{
+						Add->AddRenderStreamKey(FRenderStreamKey(Material, CurIdx));
+						RenderStream[CurIdx] = AddIndices[k] + 1;
+						memcpy(&RenderStream[CurIdx + 1], &WorldMat, 64);
+						bInput = true;
+						IdxMap[Material][StaticMeshAsset] = CurIdx + 17;
+						break;
+					}
+					CurIdx += 17;
+				}
+				if (bInput == false)
+				{
+					Add->AddRenderStreamKey(FRenderStreamKey(Material, Size));
+					RenderStream.Push(AddIndices[k] + 1);
+					for (int i = 0; i < 4; i++)
+					{
+						for (int j = 0; j < 4; j++)
+						{
+							RenderStream.Push(*reinterpret_cast<const uint32*>(&WorldMat.Data[i][j]));
+						}
+					}
+					IdxMap[Material][StaticMeshAsset] = RenderStream.size();
+				}
+			}
+		}
+	}
+	TIME_PROFILE_END(Add)
+	for (UStaticMeshComponent* Change : Changes)
+	{
+		const TArray<FRenderStreamKey>& Keys = Change->GetRenderStreamKeys();
+		FStaticMesh* StaticMeshAsset = Change->GetStaticMesh()->GetStaticMeshAsset();
+		const FMatrix& WorldMat = Change->GetWorldTransformMatrix();
+
+		for (const FRenderStreamKey& Key : Keys)
+		{
+			memcpy(&RenderStreamMap[Key.Material][StaticMeshAsset][Key.Idx + 1], &WorldMat, 64);
 		}
 	}
 }
@@ -563,9 +664,18 @@ void URenderer::RenderSortingBatchMap()
     TStaticArray<FVector4, 6> Planes;
     ExtractFrustumPlanes(CachedViewProj, Planes);
 	TIME_PROFILE(Query);
-
-	SceneBVH.QueryFrustum(Planes, Candidates);
+	auto& Visibles = ULevelManager::GetInstance().GetCurrentLevel()->GetVisiblePrimitives();
+	int visiblecount = 0;
+	for (int i = 0; i < Visibles.size(); i++)
+	{
+		if (Visibles[i] == true)
+		{
+			visiblecount++;
+		}
+	}
+	SceneBVH.QueryFrustum(Planes, Visibles);
 	TIME_PROFILE_END(Query);
+	SetRenderStream();
 
 	auto& ViewProjConstant= Editor->GetCamera()->GetFViewProjConstants();
 	FMatrix VP = ViewProjConstant.View * ViewProjConstant.Projection;
@@ -610,56 +720,32 @@ void URenderer::RenderSortingBatchMap()
     for (FStaticMaterial* MaterialKey : MaterialKeys)
     {
         SetupMaterial(MaterialKey);
-        TMap<FStaticMesh*, TArray<FMatrix>>& SortingMaterialMap = RenderStreamMap[MaterialKey];
+        TMap<FStaticMesh*, TArray<uint32>>& SortingMaterialMap = RenderStreamMap[MaterialKey];
         TArray<FStaticMesh*> StaticMeshKeys = SortingMaterialMap.GetKeys();
         for (FStaticMesh* StaticMeshKey : StaticMeshKeys)
         {
             SetupStaticMeshAsset(StaticMeshKey);
-			TIME_PROFILE(DRAW)
-			uint32 ActorCount = RenderStreamMap[MaterialKey][StaticMeshKey].size();
 			const TArray<FStaticMeshSection*>& Sections = StaticMeshKey->GetSectionMap(MaterialKey);
-			for (const FMatrix& WorldMatrix : RenderStreamMap[MaterialKey][StaticMeshKey])
+			TIME_PROFILE(DRAW)
+			TArray<uint32>& RenderStream = SortingMaterialMap[StaticMeshKey];
+			uint32 Size = RenderStream.size();
+			uint32 CurIdx = 0;
+			while (CurIdx < Size)
 			{
-				UpdateBuffer(ConstantBufferModels, WorldMatrix, WorldMatSize);
-				for (const FStaticMeshSection* Section : Sections)
+				if (RenderStream[CurIdx] != 0)
 				{
-					Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+					UpdateBufferStream(ConstantBufferModels, &RenderStream[CurIdx + 1], 64);
+					for (const FStaticMeshSection* Section : Sections)
+					{
+						Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
 #ifdef _DEVELOP
-					MeshSectionDrawCount++;
+						MeshSectionDrawCount++;
 #endif
+					}
 				}
+				CurIdx += 17;
 			}
 			TIME_PROFILE_END(DRAW)
-
-   //         TArray<UStaticMeshComponent*> MeshComponentKeys = RenderStream.GetKeys(); //병목지점 fix 여부(x)
-   //         TArray<UStaticMeshComponent*> Filtered;
-   //         Filtered.Reserve(MeshComponentKeys.Num());
-   //         for (auto* CompKey : MeshComponentKeys)
-   //         {
-   //             if (!CompKey) continue;
-   //             uint32 Id = static_cast<uint32>(CompKey->GetInternalIndex());
-   //             if (Id < VisibleStamp.Num() && VisibleStamp[Id] == FrameStamp)
-   //             {
-   //                 Filtered.push_back(CompKey);
-   //             }
-   //         }
-
-   //         MeshComponentKeys = std::move(Filtered);
-			//if (true)
-			//{
-			//	TIME_PROFILE_START(TEST) //13ms
-			//		for (UStaticMeshComponent* MeshComponentKey : MeshComponentKeys)
-			//		{
-			//			SetupStaticMeshComponent(MeshComponentKey); //병목지점 fix(x) 11ms
-			//			TArray<FStaticMeshSection*>& SectionArray = SortingMeshComponentMap[MeshComponentKey]; //병목지점 fix(x) 4ms 
-
-			//			for (FStaticMeshSection* Section : SectionArray)
-			//			{
-			//				Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
-			//			}
-			//		}
-			//	TIME_PROFILE_END(TEST)
-			//}
         }
     }
 }
@@ -842,9 +928,16 @@ void URenderer::RenderColorPicking()
 	Pipeline->SetConstantBuffer(2, false, ConstantBufferPicking);
 
 	// 컬링 + 정렬된 후보군들 그리기
-	for (UPrimitiveComponent* Candidate : Candidates)
+	const TArray<UStaticMeshComponent*>& StaticMeshComps =
+		ULevelManager::GetInstance().GetCurrentLevel()->GetStaticMeshComponents();
+	const TArray<bool>& Visibles = ULevelManager::GetInstance().GetCurrentLevel()->GetVisiblePrimitives();
+	int ComponentSize = StaticMeshComps.size();
+	for (int i = 0; i < ComponentSize; i++)
 	{
-		RenderStaticMeshComponentForPicking(Candidate);
+		if (Visibles[i])
+		{
+			RenderStaticMeshComponentForPicking(StaticMeshComps[i]);
+		}
 	}
 
 	// CPU가 소유한 캐시 배열로 GPU 색상 선택 데이터 복사

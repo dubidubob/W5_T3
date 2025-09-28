@@ -85,7 +85,7 @@ UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 Mou
 	}
 
 	ULevelManager& LevelManager = ULevelManager::GetInstance();
-	const ULevel* CurrentLevel = LevelManager.GetCurrentLevel();
+	ULevel* CurrentLevel = LevelManager.GetCurrentLevel();
 	if (!CurrentLevel)
 	{
 		return nullptr;
@@ -98,7 +98,7 @@ UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 Mou
 	// UUID 값 순차 탐색 O(n)
 	if (bIsUUIDPicking == true && bIsIndexPicking == false)
 	{
-		const TArray<UPrimitiveComponent*> Candidate = CurrentLevel->GetLevelPrimitiveComponents();
+		TArray<UPrimitiveComponent*>& Candidate = CurrentLevel->GetLevelPrimitiveComponents();
 		for (UPrimitiveComponent* Primitive : Candidate)
 		{
 			if (Primitive->GetOwner() && Primitive->GetOwner()->GetUUID() == PixelValue)

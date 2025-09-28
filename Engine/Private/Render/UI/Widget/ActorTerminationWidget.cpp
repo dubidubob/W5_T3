@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Render/UI/Widget/ActorTerminationWidget.h"
+#include "Render/Renderer/Renderer.h"
 #include "Level/Level.h"
 #include "Manager/Input/InputManager.h"
 #include "Manager/Level/LevelManager.h"
@@ -55,7 +56,9 @@ void UActorTerminationWidget::RenderWidget()
 
 		if (ImGui::Button("Delete Selected") || InputManager.IsKeyDown(EKeyInput::Delete))
 		{
+			URenderer& Renderer = URenderer::GetInstance();
 			DeleteSelectedActor();
+			Renderer.MarkForceReRenderPicking();
 		}
 	}
 	else

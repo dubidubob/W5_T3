@@ -2,6 +2,7 @@
 #include "Level/Level.h"
 
 #include "Mesh/Actor.h"
+#include "Mesh/StaticMeshComponent.h"
 #include "Mesh/TextComponent.h"
 #include "Render/Renderer/Renderer.h"
 
@@ -39,8 +40,11 @@ void ULevel::Update()
 	uint64 AllocatedByte = GetAllocatedBytes();
 	uint32 AllocatedCount = GetAllocatedCount();
 
-	LevelPrimitiveComponents.clear();
-	TextComponents.clear();
+	//LevelPrimitiveComponents.clear();
+	//LevelStaticMeshComponents.clear();
+	//LastVisiblePrimitives.clear();
+	//VisiblePrimitives.clear();
+	//TextComponents.clear();
 	//Deprecated : EditorPrimitive는 에디터에서 처리
 	//EditorPrimitiveComponents.clear();
 
@@ -49,7 +53,7 @@ void ULevel::Update()
 		if (Actor)
 		{
 			Actor->Tick();
-			AddLevelPrimitiveComponent(Actor);
+			//AddLevelPrimitiveComponent(Actor);
 		}
 	}
 
@@ -82,6 +86,28 @@ void ULevel::AddLevelActor(AActor* Actor)
 {
 	URenderer::GetInstance().SetSortingBatchMapDirty();
 	LevelActors.Add(Actor);
+	for (auto& Component : Actor->GetOwnedComponents())
+	{
+		if (Component->GetComponentType() == EComponentType::Primitive)
+		{
+			UPrimitiveComponent* PrimitiveComponent = static_cast<UPrimitiveComponent*>(Component);
+			UStaticMeshComponent* S = Cast<UStaticMeshComponent>(PrimitiveComponent);
+
+			if (PrimitiveComponent->IsVisible())
+			{
+				LevelPrimitiveComponents.push_back(PrimitiveComponent);
+				LevelStaticMeshComponents.Push(S);
+				VisiblePrimitives.Push(false);
+				LastVisiblePrimitives.push_back(false);
+			}
+		}
+		else if (Component->GetComponentType() == EComponentType::Text)
+		{
+			UTextComponent* TextComponent = static_cast<UTextComponent*>(Component);
+			if (TextComponent->IsVisible())
+				TextComponents.push_back(TextComponent);
+		}
+	}
 }
 
 void ULevel::AddLevelPrimitiveComponent(AActor* Actor)
@@ -93,9 +119,14 @@ void ULevel::AddLevelPrimitiveComponent(AActor* Actor)
 		if (Component->GetComponentType() == EComponentType::Primitive)
 		{
 			UPrimitiveComponent* PrimitiveComponent = static_cast<UPrimitiveComponent*>(Component);
+			UStaticMeshComponent* S = Cast<UStaticMeshComponent>(PrimitiveComponent);
+
 			if (PrimitiveComponent->IsVisible())
 			{
 				LevelPrimitiveComponents.push_back(PrimitiveComponent);
+				LevelStaticMeshComponents.Push(S);
+				VisiblePrimitives.Push(false);
+				LastVisiblePrimitives.push_back(false);
 			}
 		}
 		else if (Component->GetComponentType() == EComponentType::Text)
@@ -172,11 +203,17 @@ bool ULevel::DestroyActor(AActor* InActor)
 	URenderer::GetInstance().SetSortingBatchMapDirty();
 
 	// LevelActors 리스트에서 제거
-	for (auto Iterator = LevelActors.begin(); Iterator != LevelActors.end(); ++Iterator)
+	int LevelActorCount = LevelActors.size();
+	for (int i = 0; i < LevelActorCount; i++)
 	{
-		if (*Iterator == InActor)
+		if (InActor == LevelActors[i])
 		{
-			LevelActors.erase(Iterator);
+			URenderer::GetInstance().RemoveActorRenderStream(LevelStaticMeshComponents[i]);
+			LevelActors.erase(LevelActors.begin() + i);
+			LevelPrimitiveComponents.erase(LevelPrimitiveComponents.begin() + i);
+			LevelStaticMeshComponents.erase(LevelStaticMeshComponents.begin() + i);
+			VisiblePrimitives.erase(VisiblePrimitives.begin() + i);
+			LastVisiblePrimitives.erase(LastVisiblePrimitives.begin() + i);
 			break;
 		}
 	}
@@ -281,14 +318,22 @@ void ULevel::ProcessPendingDeletions()
 		}
 
 		// LevelActors 리스트에서 제거
-		for (auto Iterator = LevelActors.begin(); Iterator != LevelActors.end(); ++Iterator)
+		int LevelActorCount = LevelActors.size();
+		for (int i=0;i< LevelActorCount;i++)
 		{
-			if (*Iterator == ActorToDelete)
+			if (ActorToDelete == LevelActors[i])
 			{
-				LevelActors.erase(Iterator);
+				URenderer::GetInstance().RemoveActorRenderStream(LevelStaticMeshComponents[i]);
+				LevelActors.erase(LevelActors.begin() + i);
+				LevelPrimitiveComponents.erase(LevelPrimitiveComponents.begin() + i);
+				LevelStaticMeshComponents.erase(LevelStaticMeshComponents.begin() + i);
+				VisiblePrimitives.erase(VisiblePrimitives.begin() + i);
+				LastVisiblePrimitives.erase(LastVisiblePrimitives.begin() + i);
 				break;
 			}
 		}
+		URenderer::GetInstance().SetSortingBatchMapDirty();
+
 
 		//Deprecated : EditorActor는 에디터에서 처리
 		// EditorActors 리스트에서도 제거

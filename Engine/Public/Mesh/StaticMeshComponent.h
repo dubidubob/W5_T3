@@ -1,6 +1,7 @@
 #pragma once
 #include "MeshComponent.h"
 #include "Math/AABB.h"
+#include "Mesh/StaticMesh/StaticMesh.h"
 class UStaticMesh;
 struct FAABB;
 
@@ -26,6 +27,20 @@ public:
 	virtual FAABB GetWorldBounds() const;
 	UStaticMesh* GetStaticMesh() { return StaticMesh; }
 
+	void AddRenderStreamKey(const FRenderStreamKey& RenderStreamKey)
+	{
+		RenderStreamKeys.Push(RenderStreamKey);
+	}
+	const TArray<FRenderStreamKey>& GetRenderStreamKeys() const
+	{
+		return RenderStreamKeys;
+	}
+	void RenderStreamKeyReset()
+	{
+		RenderStreamKeys.clear();
+	}
+	
+
 private:
 	FAABB GetLocalBounds() const;
 	mutable FAABB CachedLocalBounds;
@@ -49,5 +64,6 @@ private:
 	float UVScrollAccumTime = 0.0f;
 	// UV 스크롤 속도 (U,V)
 	FVector2 UVScrollSpeed = FVector2(0.0f, -0.9f);
+	TArray<FRenderStreamKey> RenderStreamKeys;
 };
 

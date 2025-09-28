@@ -123,7 +123,8 @@ public:
 	}
 	void ReSetSortingBatchMap();
 	void CleanUpSortingBatch();
-	void SetRenderStream(TArray<UStaticMeshComponent*>& Add, TArray<UStaticMeshComponent*>& REmove, TArray<UStaticMeshComponent*>& Changed);
+	void SetRenderStream();
+	void RemoveActorRenderStream(UStaticMeshComponent* StaticMeshComp);
 
 	// ================== View Mode Management ==================
 	void SetViewMode(EViewportRenderMode ViewMode) { CurrentRenderMode = ViewMode; }
@@ -183,12 +184,12 @@ private:
 	UEditor* Editor = nullptr;
 	bool bSortingBatchMapDirty = true;
 
-	//WorldMatrixStream float12로 만들어야해서 uint32로 제작 현재는 16
-	TMap<FStaticMaterial*, TMap<FStaticMesh*, TArray<FMatrix>>> RenderStreamMap;
+	//bool(4byte), WorldMatrix, bool(4byte), WorldMatrix
+	TMap<FStaticMaterial*, TMap<FStaticMesh*, TArray<uint32>>> RenderStreamMap;
 
 	// ================== Frame Skipping Optimization ==================
 	uint32 FrameCounter = 0;
-	static constexpr uint32 PICKING_FRAME_INTERVAL = 2; // 2프레임마다 렌더링
+	static constexpr uint32 SET_DIRTY_FRAME_INTERVAL = 30;
 
 	// ================== Color Picking Cache Optimization ==================
 	TArray<uint32> CachedColorPickingData; // CPU accessible color picking array

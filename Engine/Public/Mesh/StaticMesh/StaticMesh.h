@@ -134,5 +134,12 @@ private:
 	FStaticMesh* StaticMeshAsset;
 };
 
+struct FRenderStreamKey
+{
+	FStaticMaterial* Material;
+	uint32 Idx;
+	FRenderStreamKey(FStaticMaterial* InMat, uint32 InIdx) : Material(InMat), Idx(InIdx){}
+};
+
 
 

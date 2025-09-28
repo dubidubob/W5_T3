@@ -13,6 +13,7 @@ void FBVH::Build(const TArray<UStaticMeshComponent*>& Comps)
 {
     Clear();
     Items.reserve(Comps.size());
+	int idx = 0;
     for (UStaticMeshComponent* C : Comps)
     {
         if (!C) continue;
@@ -22,10 +23,13 @@ void FBVH::Build(const TArray<UStaticMeshComponent*>& Comps)
         It.Comp = C;
         It.Bounds = B;
         It.Centroid = B.GetCenter();
+		It.OriginIdx = idx++;
         Items.push_back(It);
     }
     if (Items.empty()) { Root = -1; return; }
     Nodes.reserve(Items.size() * 2);
+	int itemSize = Items.size();
+
     Root = BuildRange(0, static_cast<int32>(Items.size()), 0);
 }
 
@@ -142,19 +146,19 @@ void FBVH::QueryAABB(const FAABB& Q, TArray<UStaticMeshComponent*>& Out) const
     }
 }
 
-void FBVH::AddSubtreeAll(int32 NodeIdx, TArray<UStaticMeshComponent*>& Out) const
+void FBVH::AddSubtreeAll(int32 NodeIdx, TArray<bool>& OutVisible) const
 {
     const FBVHNode& N = Nodes[NodeIdx];
     if (N.bLeaf)
     {
         for (int32 i = 0; i < N.Count; ++i)
         {
-            Out.push_back(Items[N.First + i].Comp);
+			OutVisible[Items[N.First + i].OriginIdx] = true;
         }
         return;
     }
-    if (N.Left >= 0) AddSubtreeAll(N.Left, Out);
-    if (N.Right >= 0) AddSubtreeAll(N.Right, Out);
+    if (N.Left >= 0) AddSubtreeAll(N.Left, OutVisible);
+    if (N.Right >= 0) AddSubtreeAll(N.Right, OutVisible);
 }
 
 bool FBVH::AABBOutsideFrustum(const FAABB& B, const TStaticArray<FVector4,6>& Planes)
@@ -183,9 +187,11 @@ bool FBVH::AABBInsideFrustum(const FAABB& B, const TStaticArray<FVector4,6>& Pla
     return true;
 }
 
-void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<UStaticMeshComponent*>& Out) const
+void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& OutVisibles) const
 {
-    Out.clear();
+	int itemSize = Items.size();
+
+	std::fill(OutVisibles.begin(), OutVisibles.end(), false);
     if (Root < 0) return;
     TArray<int32> Stack;
     Stack.push_back(Root);
@@ -194,18 +200,26 @@ void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<UStaticM
         int32 Idx = Stack.back();
         Stack.pop_back();
         const FBVHNode& N = Nodes[Idx];
-        if (AABBOutsideFrustum(N.Bounds, Planes)) continue;
+		if (AABBOutsideFrustum(N.Bounds, Planes))
+		{
+			continue;
+		}
         if (AABBInsideFrustum(N.Bounds, Planes))
         {
-            AddSubtreeAll(Idx, Out);
+            AddSubtreeAll(Idx, OutVisibles);
             continue;
         }
+
+		//걸칠경우
         if (N.bLeaf)
         {
             for (int32 i = 0; i < N.Count; ++i)
             {
                 const FBVHItem& It = Items[N.First + i];
-                if (!AABBOutsideFrustum(It.Bounds, Planes)) Out.push_back(It.Comp);
+				if (!AABBOutsideFrustum(It.Bounds, Planes))
+				{
+					OutVisibles[It.OriginIdx] = true;
+				}
             }
         }
         else
