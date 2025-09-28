@@ -188,7 +188,7 @@ private:
 
 	// ================== Frame Skipping Optimization ==================
 	uint32 FrameCounter = 0;
-	static constexpr uint32 PICKING_FRAME_INTERVAL = 30;
+	static constexpr uint32 SET_DIRTY_FRAME_INTERVAL = 30;
 
 	// ================== Color Picking Cache Optimization ==================
 	TArray<uint32> CachedColorPickingData; // CPU accessible color picking array
