@@ -394,6 +394,14 @@ void URenderer::Update(UEditor* Editor)
 			bForceReRenderPicking = false;
 		}
 	}
+
+	++FrameCounter;
+	if (FrameCounter >= PICKING_FRAME_INTERVAL)
+	{
+		SetSortingBatchMapDirty();
+		FrameCounter = 0;
+	}
+
 	// Switch back to main render target for UI rendering
 	ID3D11RenderTargetView* MainRTV = DeviceResources->GetRenderTargetView();
 	ID3D11DepthStencilView* MainDSV = DeviceResources->GetDepthStencilView();
