@@ -396,7 +396,7 @@ void URenderer::Update(UEditor* Editor)
 	}
 
 	++FrameCounter;
-	if (FrameCounter >= PICKING_FRAME_INTERVAL)
+	if (FrameCounter >= SET_DIRTY_FRAME_INTERVAL)
 	{
 		SetSortingBatchMapDirty();
 		FrameCounter = 0;
