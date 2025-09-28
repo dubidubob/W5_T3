@@ -33,6 +33,10 @@ public:
 
 	const FMatrix& GetWorldTransformMatrix() const;
 	const FMatrix& GetWorldTransformMatrixInverse() const;
+	const bool GetIsDirty() const
+	{
+		return  bIsTransformDirty;
+	}
 
 private:
 	mutable bool bIsTransformDirty = true;

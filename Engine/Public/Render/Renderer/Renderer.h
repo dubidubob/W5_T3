@@ -182,8 +182,8 @@ private:
 	UEditor* Editor = nullptr;
 	bool bSortingBatchMapDirty = true;
 
-	//WorldMatrixStream float12로 만들어야해서 uint32로 제작 현재는 16
-	TMap<FStaticMaterial*, TMap<FStaticMesh*, TArray<FMatrix>>> RenderStreamMap;
+	//bool(4byte), WorldMatrix, bool(4byte), WorldMatrix
+	TMap<FStaticMaterial*, TMap<FStaticMesh*, TArray<uint32>>> RenderStreamMap;
 
 	// ================== Frame Skipping Optimization ==================
 	uint32 FrameCounter = 0;
@@ -260,7 +260,6 @@ private:
 	ID3D11InputLayout* LineInstancedInputLayout = nullptr;
 
     FBVH SceneBVH;
-	TArray<UStaticMeshComponent*> Candidates;
 	// ================== Picking Shader Set ==================
 	ID3D11PixelShader* PickingPixelShader = nullptr;
 
