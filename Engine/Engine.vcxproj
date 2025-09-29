@@ -314,6 +314,7 @@
     <ClInclude Include="Public\Mesh\StaticMesh\ObjManager.h" />
     <ClInclude Include="Public\Mesh\StaticMesh\StaticMesh.h" />
     <ClInclude Include="Public\Mesh\TextComponent.h" />
+    <ClInclude Include="Public\Render\Renderer\StatsOverlayD2D.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorDetailWidget.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorListWidget.h" />
     <ClInclude Include="Public\DirectXTK\DDSTextureLoader.h" />
@@ -496,6 +497,7 @@
     <ClCompile Include="Private\\Render\UI\Window\\UIWindow.cpp" />
     <ClCompile Include="Private\\Utility\\LevelSerializer.cpp" />
     <ClCompile Include="Global\Rect.cpp" />
+    <ClCompile Include="Public\Render\Renderer\StatsOverlayD2D.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
