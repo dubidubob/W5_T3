@@ -65,7 +65,7 @@ bool ULevelManager::CreateNewLevel()
 	CurrentLevel = NewObject<ULevel>();
 	CurrentLevel->SetCamera(Camera);
 	CurrentLevel->Init();
-
+	URenderer::GetInstance().SetSortingBatchMapDirty();
 	////UE_LOG("LevelManager: Successfully Created New Level '%s'", CurrentLevel->GetName().c_str());
 	return true;
 }

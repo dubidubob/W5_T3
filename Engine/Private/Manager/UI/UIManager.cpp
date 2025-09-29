@@ -160,6 +160,7 @@ void UUIManager::Render()
 
 	// ImGui 프레임 종료
 	ImGuiHelper->EndFrame();
+
 }
 
 /**

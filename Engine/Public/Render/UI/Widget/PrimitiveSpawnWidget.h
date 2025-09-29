@@ -6,7 +6,7 @@ class UPrimitiveSpawnWidget : public UWidget
 	DECLARE_CLASS(UPrimitiveSpawnWidget, UWidget)
 public:
 	// OBJ 추가 
-	static inline TArray<const char*> PrimitiveTypes {"apple_mid", "bitten_apple_mid"};
+	static inline TArray<const char*> PrimitiveTypes {"apple_mid", "bitten_apple_mid", "Demon"};
 	void Initialize() override;
 	void Update() override;
 	void RenderWidget() override;

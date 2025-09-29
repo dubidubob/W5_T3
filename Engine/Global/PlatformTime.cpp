@@ -27,7 +27,7 @@ void FScopeCycleCounter::TimeProfileInit()
 }
 //const TMap<FString, FTimeProfile>& FScopeCycleCounter::GetTimeProfiles()
 //{
-//	return TimeProfileMap;
+//    return TimeProfileMap;
 //}
 const TArray<FString> FScopeCycleCounter::GetTimeProfileKeys()
 {
