@@ -12,6 +12,7 @@ class UAxis;
 class UGrid;
 class ULevel;
 class FOctree;
+class FBVH;
 struct FAABB;
 class UPrimitiveComponent;
 
@@ -47,10 +48,23 @@ public:
 	void RebuildOctree();
 	void UpdateOctree();
 
+	/** BVH Management */
+	FBVH* GetBVH() const { return SceneBVH; }
+	void InitializeBVH(const FAABB& WorldBounds);
+	void RebuildBVH();
+	void UpdateBVH();
+
 	/** Octree Visualization */
 	void SetOctreeVisualization(bool bEnabled) { bShowOctreeVisualization = bEnabled; }
 	bool IsOctreeVisualizationEnabled() const { return bShowOctreeVisualization; }
 	void SetUseOctreeForPicking(bool bEnabled) { bUseOctreeForPicking = bEnabled; }
+	bool IsUsingOctreeForPicking() const { return bUseOctreeForPicking; }
+
+	/** BVH Visualization */
+	void SetBVHVisualization(bool bEnabled) { bShowBVHVisualization = bEnabled; }
+	bool IsBVHVisualizationEnabled() const { return bShowBVHVisualization; }
+	void SetUseBVHForPicking(bool bEnabled) { bUseBVHForPicking = bEnabled; }
+	bool IsUsingBVHForPicking() const { return bUseBVHForPicking; }
 
 	/** Frustum Culling */
 	void SetUseFrustumCulling(bool bEnabled) { bUseFrustumCulling = bEnabled; }
@@ -66,6 +80,10 @@ private:
 	void PopulateOctreeFromLevel(ULevel* InLevel);
 	void PopulateOctreeFromCurrentLevel();
 	void RegisterPrimitiveToOctree(UPrimitiveComponent* Primitive);
+
+	void PopulateBVHFromLevel(ULevel* InLevel);
+	void PopulateBVHFromCurrentLevel();
+	void RegisterPrimitiveToBVH(UPrimitiveComponent* Primitive);
 
 	FVector GetGizmoDragLocation(const FRay& WorldRay);
 	FVector GetGizmoDragRotation(const FRay& WorldRay);
@@ -87,6 +105,11 @@ private:
 	FOctree* SceneOctree;
 	bool bUseOctreeForPicking = true;
 	bool bShowOctreeVisualization = true;
+
+	/** BVH for spatial optimization */
+	FBVH* SceneBVH;
+	bool bUseBVHForPicking = false;
+	bool bShowBVHVisualization = false;
 
 	/** Frustum Culling */
 	bool bUseFrustumCulling = true;

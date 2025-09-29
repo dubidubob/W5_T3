@@ -20,6 +20,7 @@
 #include "Global/PlatformTime.h"
 #include "Mesh/TextComponent.h"
 #include "Math/Octree.h"
+#include "Math/BVH.h"
 #include "Math/Frustum.h"
 #include "Core/ObjectIterator.h"
 #if IS_OBJ_VIEWER
@@ -47,6 +48,9 @@ UEditor::UEditor()
 
 	// Initialize Octree with default world bounds
 	SceneOctree = NewObject<FOctree>();
+
+	// Initialize BVH with default world bounds
+	SceneBVH = NewObject<FBVH>();
 
 	// Set Camera to Control Panel
 	auto& UIManager = UUIManager::GetInstance();
@@ -80,6 +84,7 @@ UEditor::~UEditor()
 	delete Grid;
 	delete Axis;
 	delete SceneOctree;
+	delete SceneBVH;
 }
 
 void UEditor::Update()
@@ -92,7 +97,7 @@ void UEditor::Update()
 	ProcessKeyboardInput();
 
 	// Update Octree conditionally and repopulate if needed
-	if (SceneOctree && CurrentLevel)
+	if (SceneOctree && CurrentLevel && bUseOctreeForPicking)
 	{
 		// Level이 바뀌었거나 처음 실행시 Octree를 재구성
 		static ULevel* PreviousLevel = nullptr;
@@ -103,6 +108,20 @@ void UEditor::Update()
 		}
 
 		SceneOctree->ConditionalUpdate();
+	}
+
+	// Update BVH conditionally and repopulate if needed
+	if (SceneBVH && CurrentLevel && bUseBVHForPicking)
+	{
+		// Level이 바뀌었거나 처음 실행시 BVH를 재구성
+		static ULevel* PreviousBVHLevel = nullptr;
+		if (PreviousBVHLevel != CurrentLevel)
+		{
+			PopulateBVHFromLevel(CurrentLevel);
+			PreviousBVHLevel = CurrentLevel;
+		}
+
+		SceneBVH->ConditionalUpdate();
 	}
 
 	auto& Renderer = URenderer::GetInstance();
@@ -158,6 +177,12 @@ void UEditor::RenderEditorBatched(int Idx)
 		if (bShowOctreeVisualization && SceneOctree && SceneOctree->IsValid())
 		{
 			SceneOctree->DebugDraw(&LineBatch, -1); // 모든 깊이 표시
+		}
+
+		/** BVH 시각화 */
+		if (bShowBVHVisualization && SceneBVH && SceneBVH->IsValid())
+		{
+			SceneBVH->DebugDraw(&LineBatch, -1); // 모든 깊이 표시
 		}
 	}
 	/** 1회 드로우콜로 모든 라인 렌더링 */
@@ -303,6 +328,11 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 				// Octree를 사용한 최적화된 피킹
 				PrimitiveCollided = ObjectPicker->PickPrimitiveWithOctree(InWorldRay, SceneOctree, &ActorDistance);
 			}
+			else if (bUseBVHForPicking && SceneBVH && SceneBVH->IsValid())
+			{
+				// BVH를 사용한 최적화된 피킹
+				PrimitiveCollided = ObjectPicker->PickPrimitiveWithBVH(InWorldRay, SceneBVH, &ActorDistance);
+			}
 			else
 			{
 				// 기존 브루트포스 방식
@@ -362,6 +392,13 @@ TArray<UPrimitiveComponent*> UEditor::FindCandidatePrimitives(ULevel* InLevel)
 	if (bUseOctreeForPicking && SceneOctree && SceneOctree->IsValid())
 	{
 		// Octree 사용시 빈 배열 반환 - 실제 쿼리는 PickPrimitive에서 레이로 수행
+		TArray<UPrimitiveComponent*> EmptyCandidate;
+		return EmptyCandidate;
+	}
+	// BVH가 활성화된 경우 BVH에서 모든 객체 반환 (레이 쿼리는 피킹 시에 수행)
+	if (bUseBVHForPicking && SceneBVH && SceneBVH->IsValid())
+	{
+		// BVH 사용시 빈 배열 반환 - 실제 쿼리는 PickPrimitive에서 레이로 수행
 		TArray<UPrimitiveComponent*> EmptyCandidate;
 		return EmptyCandidate;
 	}
@@ -749,7 +786,8 @@ TArray<UPrimitiveComponent*> UEditor::GetVisiblePrimitivesInFrustum() const
 {
 	TArray<UPrimitiveComponent*> VisiblePrimitives;
 
-	if (!bUseFrustumCulling || !SceneOctree || !SceneOctree->IsValid() || !Camera)
+	// Frustum culling이 비활성화되거나 공간 분할 구조가 없는 경우 모든 객체 반환
+	if (!bUseFrustumCulling || !Camera)
 	{
 		ULevel* CurrentLevel = ULevelManager::GetInstance().GetCurrentLevel();
 		if (CurrentLevel)
@@ -776,8 +814,252 @@ TArray<UPrimitiveComponent*> UEditor::GetVisiblePrimitivesInFrustum() const
 
 	FFrustum CameraFrustum = Camera->GetViewFrustum();
 
-	// 옥트리를 쿼리하여 프러스텀 내의 프리미티브 가져오기
-	VisiblePrimitives = SceneOctree->QueryFrustum(CameraFrustum);
+	// 활성화된 공간 분할 구조에 따라 쿼리 방식 선택
+	if (bUseOctreeForPicking && SceneOctree && SceneOctree->IsValid())
+	{
+		// Octree를 쿼리하여 프러스텀 내의 프리미티브 가져오기
+		VisiblePrimitives = SceneOctree->QueryFrustum(CameraFrustum);
+	}
+	else if (bUseBVHForPicking && SceneBVH && SceneBVH->IsValid())
+	{
+		// BVH를 쿼리하여 프러스텀 내의 프리미티브 가져오기
+		VisiblePrimitives = SceneBVH->QueryFrustum(CameraFrustum);
+	}
+	else
+	{
+		// 공간 분할 구조가 없는 경우 브루트 포스 방식
+		ULevel* CurrentLevel = ULevelManager::GetInstance().GetCurrentLevel();
+		if (CurrentLevel)
+		{
+			for (AActor* Actor : CurrentLevel->GetLevelActors())
+			{
+				for (auto& ActorComponent : Actor->GetOwnedComponents())
+				{
+					if (ActorComponent->IsA(UTextComponent::StaticClass()))
+					{
+						continue;
+					}
+
+					UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(ActorComponent);
+					if (Primitive)
+					{
+						// 개별 객체와 프러스텀 교차 검사
+						FAABB ObjectBounds = Primitive->GetWorldBounds();
+						if (CameraFrustum.IntersectsAABB(ObjectBounds))
+						{
+							VisiblePrimitives.push_back(Primitive);
+						}
+					}
+				}
+			}
+		}
+	}
 
 	return VisiblePrimitives;
+}
+
+// =============================================================================
+// BVH Management
+// =============================================================================
+
+void UEditor::InitializeBVH(const FAABB& WorldBounds)
+{
+	if (SceneBVH)
+	{
+		SceneBVH->Initialize(WorldBounds);
+	}
+}
+
+void UEditor::RebuildBVH()
+{
+	if (SceneBVH)
+	{
+		//SceneBVH->ForceRebuild();
+		PopulateBVHFromCurrentLevel();
+	}
+}
+
+void UEditor::UpdateBVH()
+{
+	if (SceneBVH)
+	{
+		SceneBVH->ConditionalUpdate();
+	}
+}
+
+void UEditor::PopulateBVHFromLevel(ULevel* InLevel)
+{
+	if (!SceneBVH || !InLevel)
+	{
+		UE_LOG("PopulateBVHFromLevel failed: SceneBVH=%s, Level=%s",
+			SceneBVH ? "Valid" : "NULL", InLevel ? "Valid" : "NULL");
+		return;
+	}
+
+	// BVH 초기화
+	SceneBVH->Clear();
+
+	// 동적 월드 바운드 계산
+	FAABB WorldBounds;
+	bool bFoundAnyObject = false;
+
+	for (AActor* Actor : InLevel->GetLevelActors())
+	{
+		for (auto& ActorComponent : Actor->GetOwnedComponents())
+		{
+			// UUID Text는 BVH에서 제외
+			if (ActorComponent->IsA(UTextComponent::StaticClass()))
+			{
+				continue;
+			}
+
+			UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(ActorComponent);
+			if (Primitive)
+			{
+				FAABB PrimitiveBounds = Primitive->GetWorldBounds();
+				if (PrimitiveBounds.IsValid())
+				{
+					if (!bFoundAnyObject)
+					{
+						WorldBounds = PrimitiveBounds;
+						bFoundAnyObject = true;
+					}
+					else
+					{
+						WorldBounds.AddAABB(PrimitiveBounds);
+					}
+				}
+			}
+		}
+	}
+
+	// 객체가 없으면 기본 월드 바운드 사용
+	WorldBounds = FAABB(FVector(0, 0, 0), FVector(0, 0, 0));
+
+	// BVH 초기화
+	SceneBVH->Initialize(WorldBounds);
+
+	// Level의 모든 Actor로부터 Primitive들을 수집
+	TArray<UPrimitiveComponent*> BVHObjects;
+	for (AActor* Actor : InLevel->GetLevelActors())
+	{
+		for (auto& ActorComponent : Actor->GetOwnedComponents())
+		{
+			// UUID Text는 BVH에서 제외
+			if (ActorComponent->IsA(UTextComponent::StaticClass()))
+			{
+				continue;
+			}
+
+			UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(ActorComponent);
+			if (Primitive)
+			{
+				BVHObjects.push_back(Primitive);
+			}
+		}
+	}
+
+	// BVH 구성 (수집된 객체들로 직접 구성)
+	SceneBVH->RebuildWithObjects(BVHObjects);
+
+	int32 TotalObjects = SceneBVH->GetTotalObjectCount();
+	UE_LOG("BVH populated with %d total objects", TotalObjects);
+}
+
+void UEditor::PopulateBVHFromCurrentLevel()
+{
+	const ULevel* CurrentLevel = ULevelManager::GetInstance().GetCurrentLevel();
+	if (!SceneBVH || !CurrentLevel)
+	{
+		return;
+	}
+
+	// BVH 초기화
+	SceneBVH->Clear();
+
+	// 동적 월드 바운드 계산
+	FAABB WorldBounds;
+	bool bFoundAnyObject = false;
+
+	for (AActor* Actor : CurrentLevel->GetLevelActors())
+	{
+		for (auto& ActorComponent : Actor->GetOwnedComponents())
+		{
+			// UUID Text는 BVH에서 제외
+			if (ActorComponent->IsA(UTextComponent::StaticClass()))
+			{
+				continue;
+			}
+
+			UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(ActorComponent);
+			if (Primitive)
+			{
+				FAABB PrimitiveBounds = Primitive->GetWorldBounds();
+				if (PrimitiveBounds.IsValid())
+				{
+					if (!bFoundAnyObject)
+					{
+						WorldBounds = PrimitiveBounds;
+						bFoundAnyObject = true;
+					}
+					else
+					{
+						WorldBounds.AddAABB(PrimitiveBounds);
+					}
+				}
+			}
+		}
+	}
+
+	// 객체가 없으면 기본 월드 바운드 사용
+	if (!bFoundAnyObject)
+	{
+		WorldBounds = FAABB(FVector(-10, -10, -10), FVector(10, 10, 10));
+	}
+	else
+	{
+		// 약간 여유 공간 추가
+		FVector Expansion(0, 0, 0);
+		WorldBounds.ExpandBy(Expansion);
+	}
+
+	// BVH 초기화
+	SceneBVH->Initialize(WorldBounds);
+
+	// Level의 모든 Actor로부터 Primitive들을 수집
+	TArray<UPrimitiveComponent*> BVHObjects;
+	for (AActor* Actor : CurrentLevel->GetLevelActors())
+	{
+		for (auto& ActorComponent : Actor->GetOwnedComponents())
+		{
+			// UUID Text는 BVH에서 제외
+			if (ActorComponent->IsA(UTextComponent::StaticClass()))
+			{
+				continue;
+			}
+
+			UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(ActorComponent);
+			if (Primitive)
+			{
+				BVHObjects.push_back(Primitive);
+			}
+		}
+	}
+
+	// BVH 구성 (수집된 객체들로 직접 구성)
+	SceneBVH->RebuildWithObjects(BVHObjects);
+
+	int32 TotalObjects = SceneBVH->GetTotalObjectCount();
+}
+
+void UEditor::RegisterPrimitiveToBVH(UPrimitiveComponent* Primitive)
+{
+	if (!SceneBVH || !Primitive)
+	{
+		UE_LOG("RegisterPrimitive failed: SceneBVH=%s, Primitive=%s",
+			SceneBVH ? "Valid" : "NULL", Primitive ? "Valid" : "NULL");
+		return;
+	}
+
+	SceneBVH->InsertObject(Primitive);
 }

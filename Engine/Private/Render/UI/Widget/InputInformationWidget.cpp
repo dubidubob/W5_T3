@@ -5,7 +5,8 @@
 #include "Editor/Editor.h"
 #include "Core/ObjectIterator.h"
 #include "ImGui/imgui.h"
-#include "Math/Octree.h"	
+#include "Math/Octree.h"
+#include "Math/BVH.h"
 
 constexpr uint8 MaxKeyHistory = 10;
 
@@ -244,7 +245,7 @@ void UInputInformationWidget::RenderSpatialDataStructureControls()
 
 	// 공간 분할 구조 선택
 	ImGui::Text("Picking Method:");
-	const char* spatialMethods[] = { "None (Brute Force)", "Octree", "KD-Tree (Coming Soon)", "BVH (Coming Soon)", "BSP Tree (Coming Soon)" };
+	const char* spatialMethods[] = { "None (Brute Force)", "Octree", "BVH", "KD-Tree (Coming Soon)", "BSP Tree (Coming Soon)" };
 	int currentMethod = static_cast<int>(CurrentSpatialStructure);
 
 	if (ImGui::Combo("##SpatialMethod", &currentMethod, spatialMethods, IM_ARRAYSIZE(spatialMethods)))
@@ -256,12 +257,24 @@ void UInputInformationWidget::RenderSpatialDataStructureControls()
 		{
 		case ESpatialDataStructure::None:
 			Editor->SetUseOctreeForPicking(false);
+			Editor->SetUseBVHForPicking(false);
 			bShowSpatialVisualization = false;
 			Editor->SetOctreeVisualization(false);
+			Editor->SetBVHVisualization(false);
 			break;
 		case ESpatialDataStructure::Octree:
 			Editor->SetUseOctreeForPicking(true);
+			Editor->SetUseBVHForPicking(false);
 			Editor->SetOctreeVisualization(bShowSpatialVisualization);
+			Editor->SetBVHVisualization(false);
+			Editor->RebuildOctree();
+			break;
+		case ESpatialDataStructure::BVH:
+			Editor->SetUseOctreeForPicking(false);
+			Editor->SetUseBVHForPicking(true);
+			Editor->SetOctreeVisualization(false);
+			Editor->SetBVHVisualization(bShowSpatialVisualization);
+			Editor->RebuildBVH();
 			break;
 		default:
 			// 다른 구조들은 아직 구현되지 않음
@@ -272,14 +285,24 @@ void UInputInformationWidget::RenderSpatialDataStructureControls()
 
 	ImGui::Spacing();
 
-	// 시각화 옵션 (Octree가 선택된 경우만)
-	if (CurrentSpatialStructure == ESpatialDataStructure::Octree)
+	// 시각화 옵션 (공간 분할 구조가 선택된 경우)
+	if (CurrentSpatialStructure == ESpatialDataStructure::Octree || CurrentSpatialStructure == ESpatialDataStructure::BVH)
 	{
 		ImGui::Text("Visualization Options:");
 
-		if (ImGui::Checkbox("Show Octree Visualization", &bShowSpatialVisualization))
+		const char* StructureName = (CurrentSpatialStructure == ESpatialDataStructure::Octree) ? "Octree" : "BVH";
+		FString CheckboxLabel = FString("Show ") + StructureName + " Visualization";
+
+		if (ImGui::Checkbox(CheckboxLabel.c_str(), &bShowSpatialVisualization))
 		{
-			Editor->SetOctreeVisualization(bShowSpatialVisualization);
+			if (CurrentSpatialStructure == ESpatialDataStructure::Octree)
+			{
+				Editor->SetOctreeVisualization(bShowSpatialVisualization);
+			}
+			else if (CurrentSpatialStructure == ESpatialDataStructure::BVH)
+			{
+				Editor->SetBVHVisualization(bShowSpatialVisualization);
+			}
 		}
 
 		ImGui::Spacing();
@@ -301,41 +324,83 @@ void UInputInformationWidget::RenderSpatialDataStructureControls()
 
 		ImGui::Spacing();
 
-		// Octree 통계 표시
-		auto* Octree = Editor->GetOctree();
-		if (Octree && Octree->IsValid())
+		// 통계 표시
+		if (CurrentSpatialStructure == ESpatialDataStructure::Octree)
 		{
-			ImGui::Text("--- Octree Statistics ---");
-			auto Stats = Octree->GetStats();
-
-			ImGui::Text("Total Nodes: %d", Stats.TotalNodes);
-			ImGui::Text("Leaf Nodes: %d", Stats.LeafNodes);
-			ImGui::Text("Total Objects: %d", Stats.TotalObjects);
-
-			if (Stats.LeafNodes > 0)
+			auto* Octree = Editor->GetOctree();
+			if (Octree && Octree->IsValid())
 			{
-				ImGui::Text("Avg Objects/Leaf: %.2f", Stats.AverageObjectsPerLeaf);
+				ImGui::Text("--- Octree Statistics ---");
+				auto Stats = Octree->GetStats();
+
+				ImGui::Text("Total Nodes: %d", Stats.TotalNodes);
+				ImGui::Text("Leaf Nodes: %d", Stats.LeafNodes);
+				ImGui::Text("Total Objects: %d", Stats.TotalObjects);
+
+				if (Stats.LeafNodes > 0)
+				{
+					ImGui::Text("Avg Objects/Leaf: %.2f", Stats.AverageObjectsPerLeaf);
+				}
+
+				// 효율성 표시
+				if (Stats.TotalNodes > 0)
+				{
+					float LeafRatio = static_cast<float>(Stats.LeafNodes) / Stats.TotalNodes;
+					ImVec4 EfficiencyColor = (LeafRatio > 0.5f) ? ImVec4(0, 1, 0, 1) : ImVec4(1, 1, 0, 1);
+					ImGui::TextColored(EfficiencyColor, "Leaf Ratio: %.1f%%", LeafRatio * 100.0f);
+				}
+
+				ImGui::Spacing();
+
+				// 수동 재구성 버튼
+				if (ImGui::Button("Rebuild Octree"))
+				{
+					Editor->RebuildOctree();
+				}
 			}
-
-			// 효율성 표시
-			if (Stats.TotalNodes > 0)
+			else
 			{
-				float LeafRatio = static_cast<float>(Stats.LeafNodes) / Stats.TotalNodes;
-				ImVec4 EfficiencyColor = (LeafRatio > 0.5f) ? ImVec4(0, 1, 0, 1) : ImVec4(1, 1, 0, 1);
-				ImGui::TextColored(EfficiencyColor, "Leaf Ratio: %.1f%%", LeafRatio * 100.0f);
-			}
-
-			ImGui::Spacing();
-
-			// 수동 재구성 버튼
-			if (ImGui::Button("Rebuild Octree"))
-			{
-				Editor->RebuildOctree();
+				ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Octree not initialized");
 			}
 		}
-		else
+		else if (CurrentSpatialStructure == ESpatialDataStructure::BVH)
 		{
-			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Octree not initialized");
+			auto* BVH = Editor->GetBVH();
+			if (BVH && BVH->IsValid())
+			{
+				ImGui::Text("--- BVH Statistics ---");
+				auto Stats = BVH->GetStats();
+
+				ImGui::Text("Total Nodes: %d", Stats.TotalNodes);
+				ImGui::Text("Leaf Nodes: %d", Stats.LeafNodes);
+				ImGui::Text("Total Objects: %d", Stats.TotalObjects);
+				ImGui::Text("Max Depth: %d", Stats.MaxDepth);
+
+				if (Stats.LeafNodes > 0)
+				{
+					ImGui::Text("Avg Objects/Leaf: %.2f", Stats.AverageObjectsPerLeaf);
+				}
+
+				// 효율성 표시
+				if (Stats.TotalNodes > 0)
+				{
+					float LeafRatio = static_cast<float>(Stats.LeafNodes) / Stats.TotalNodes;
+					ImVec4 EfficiencyColor = (LeafRatio > 0.5f) ? ImVec4(0, 1, 0, 1) : ImVec4(1, 1, 0, 1);
+					ImGui::TextColored(EfficiencyColor, "Leaf Ratio: %.1f%%", LeafRatio * 100.0f);
+				}
+
+				ImGui::Spacing();
+
+				// 수동 재구성 버튼
+				if (ImGui::Button("Rebuild BVH"))
+				{
+					Editor->RebuildBVH();
+				}
+			}
+			else
+			{
+				ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "BVH not initialized");
+			}
 		}
 	}
 
@@ -367,7 +432,7 @@ void UInputInformationWidget::RenderSpatialDataStructureControls()
 	ImGui::Spacing();
 
 	// Frustum Culling 통계 표시
-	if (CurrentSpatialStructure == ESpatialDataStructure::Octree && Editor->IsUsingFrustumCulling())
+	if ((CurrentSpatialStructure == ESpatialDataStructure::Octree || CurrentSpatialStructure == ESpatialDataStructure::BVH) && Editor->IsUsingFrustumCulling())
 	{
 		ImGui::Text("--- Frustum Culling Stats ---");
 
@@ -377,10 +442,21 @@ void UInputInformationWidget::RenderSpatialDataStructureControls()
 
 		// 전체 객체 수
 		int32 TotalCount = 0;
-		auto* Octree = Editor->GetOctree();
-		if (Octree && Octree->IsValid())
+		if (CurrentSpatialStructure == ESpatialDataStructure::Octree)
 		{
-			TotalCount = Octree->GetTotalObjectCount();
+			auto* Octree = Editor->GetOctree();
+			if (Octree && Octree->IsValid())
+			{
+				TotalCount = Octree->GetTotalObjectCount();
+			}
+		}
+		else if (CurrentSpatialStructure == ESpatialDataStructure::BVH)
+		{
+			auto* BVH = Editor->GetBVH();
+			if (BVH && BVH->IsValid())
+			{
+				TotalCount = BVH->GetTotalObjectCount();
+			}
 		}
 
 		ImGui::Text("Visible Objects: %d", VisibleCount);

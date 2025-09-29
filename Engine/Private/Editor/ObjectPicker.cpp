@@ -9,6 +9,7 @@
 #include "ImGui/imgui.h"
 #include "Level/Level.h"
 #include "Math/Octree.h"
+#include "Math/BVH.h"
 
 IMPLEMENT_CLASS(UObjectPicker, UObject)
 
@@ -78,6 +79,26 @@ UPrimitiveComponent* UObjectPicker::PickPrimitiveWithOctree(const FRay& WorldRay
 	// 기존 피킹 로직 재사용
 	UPrimitiveComponent* Result = PickPrimitive(WorldRay, OctreeCandidates, Distance);
 	UE_LOG("Octree picking result: %s", Result ? "Found" : "Not Found");
+	return Result;
+}
+
+UPrimitiveComponent* UObjectPicker::PickPrimitiveWithBVH(const FRay& WorldRay, FBVH* BVH, float* Distance)
+{
+	if (!BVH || !BVH->IsValid())
+	{
+		UE_LOG("BVH is not valid.");
+		return nullptr;
+	}
+
+	// BVH에서 레이와 교차하는 객체들만 추출
+	TArray<UPrimitiveComponent*> BVHCandidates;
+	BVH->QueryRay(WorldRay, BVHCandidates);
+
+	UE_LOG("BVH QueryRay found %d candidates", BVHCandidates.Num());
+
+	// 기존 피킹 로직 재사용
+	UPrimitiveComponent* Result = PickPrimitive(WorldRay, BVHCandidates, Distance);
+	UE_LOG("BVH picking result: %s", Result ? "Found" : "Not Found");
 	return Result;
 }
 

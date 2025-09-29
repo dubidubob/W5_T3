@@ -7,8 +7,8 @@ enum class ESpatialDataStructure
 {
 	None = 0,
 	Octree = 1,
-	KDTree = 2,  // 추후 구현
-	BVH = 3,     // 추후 구현
+	BVH = 2,
+	KDTree = 3,  // 추후 구현
 	BSPTree = 4  // 추후 구현
 };
 

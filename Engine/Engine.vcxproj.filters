@@ -136,6 +136,7 @@
     <ClCompile Include="Private\Render\UI\Widget\PickingPerformanceWidget.cpp" />
     <ClCompile Include="Private\Math\Octree.cpp" />
     <ClCompile Include="Private\Math\Frustum.cpp" />
+    <ClCompile Include="Private\Math\BVH.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\\Core\\Object.h" />
@@ -280,6 +281,7 @@
     <ClInclude Include="Global\PlatformTime.h" />
     <ClInclude Include="Public\Math\Octree.h" />
     <ClInclude Include="Public\Math\Frustum.h" />
+    <ClInclude Include="Public\Math\BVH.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />

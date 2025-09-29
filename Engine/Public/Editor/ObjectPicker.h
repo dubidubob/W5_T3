@@ -7,6 +7,7 @@ class ULevel;
 class UCamera;
 class UGizmo;
 class FOctree;
+class FBVH;
 struct FRay;
 
 class UObjectPicker : public UObject
@@ -22,6 +23,9 @@ public:
 
 	/** Octree-based picking methods */
 	UPrimitiveComponent* PickPrimitiveWithOctree(const FRay& WorldRay, FOctree* Octree, float* Distance);
+
+	/** BVH-based picking methods */
+	UPrimitiveComponent* PickPrimitiveWithBVH(const FRay& WorldRay, FBVH* BVH, float* Distance);
 
 	/** Gizmo and utility methods */
 	void PickGizmo(const FRay& WorldRay, UGizmo* Gizmo, FVector& CollisionPoint);

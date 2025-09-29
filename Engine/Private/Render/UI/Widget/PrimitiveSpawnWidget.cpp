@@ -126,7 +126,14 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 
 			if (Editor)
 			{
-				Editor->RebuildOctree();
+				if (Editor->IsUsingOctreeForPicking())
+				{
+					Editor->RebuildOctree();
+				}
+				else if (Editor->IsUsingBVHForPicking())
+				{
+					Editor->RebuildBVH();
+				}
 			}
 		}
 		else
