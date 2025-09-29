@@ -7,6 +7,7 @@ cbuffer PerFrame : register(b1)
 {
 	row_major float4x4 ViewMatrix; // View Matrix Calculation of MVP Matrix
 	row_major float4x4 ProjectionMatrix; // Projection Matrix Calculation of MVP Matrix
+	row_major float4x4 ViewProj;
 	uint ViewModeIndex; // View Mode (0: Lit, 1: Unlit, 2: WireFrame)
 	float3 Padding;
 };

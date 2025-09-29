@@ -80,13 +80,14 @@ void UFPSWidget::RenderWidget()
 	ImGui::Separator();
 
 #ifdef _DEVELOP
-	ImGui::Text("Profiling");
+	ImGui::Text("Develop Log");
 	ImGui::Text("Material Change : %s", to_string(Renderer.GetMaterialChangeCount()).c_str());
 	ImGui::Text("StaticMesh Change : %s", to_string(Renderer.GetStaticMeshChangeCount()).c_str());
 	ImGui::Text("StaticMeshComponent Change : %s", to_string(Renderer.GetStaticMeshComponentChagneCount()).c_str());
 	ImGui::Text("MeshSectionDraw Count : %s", to_string(Renderer.GetMeshSectionDrawCount()).c_str());
 
-
+	ImGui::Separator();
+	ImGui::Text("Time");
 	static TArray<FString> TimeProfileKeys;
 	static TArray<FTimeProfile> TimeProfileValues;
 	if (bRefresh)
@@ -106,7 +107,17 @@ void UFPSWidget::RenderWidget()
 #endif
 
 
-
+	const TArray<uint32>& ZAreaMeshCount = Renderer.GetZAreaMeshCount();
+	const TArray<float>& ZAreaDepthValueCount = Renderer.GetZAreaValueCount();
+	int ZAreaCount = ZAreaMeshCount.size();
+	for (int i = 0; i < ZAreaCount; i++)
+	{
+		ImGui::Text("ZArea %d MeshCount : %s", i, to_string(ZAreaMeshCount[i]).c_str());
+	}
+	for (int i = 0; i < ZAreaCount - 1; i++)
+	{
+		ImGui::Text("ZArea Depth %d : %s", i, to_string(ZAreaDepthValueCount[i]).c_str());
+	}
 	ImGui::Checkbox("Show Details", &bShowGraph);
 
 	// Details

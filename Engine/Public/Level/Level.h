@@ -26,8 +26,6 @@ public:
 	TArray<AActor*> GetLevelActors() const { return LevelActors; }
 	TArray<UPrimitiveComponent*>& GetLevelPrimitiveComponents() { return LevelPrimitiveComponents; }
 	TArray<UStaticMeshComponent*>& GetStaticMeshComponents() { return LevelStaticMeshComponents; }
-	TArray<bool>& GetVisiblePrimitives() { return VisiblePrimitives; }
-	TArray<bool>& GetLastVisiblePrimitives() { return LastVisiblePrimitives; }
 
 	TArray<UTextComponent*> GetTextComponents() const { return TextComponents; }
 	//Deprecated : EditorPrimitive는 에디터에서 처리
@@ -59,8 +57,6 @@ private:
 	TArray<AActor*> LevelActors;
 	TArray<UPrimitiveComponent*> LevelPrimitiveComponents;
 	TArray<UStaticMeshComponent*> LevelStaticMeshComponents;
-	TArray<bool> VisiblePrimitives;
-	TArray<bool> LastVisiblePrimitives;
 	TArray<UTextComponent*> TextComponents;
 
 	//Deprecated : EditorPrimitive는 에디터에서 처리

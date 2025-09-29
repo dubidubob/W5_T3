@@ -177,6 +177,7 @@ void UCamera::UpdateMatrixByPers()
 	P.Data[3][3] = 0.0f;
 
 	ViewProjConstants.Projection = P;
+	ViewProjConstants.ViewProj = ViewProjConstants.View * ViewProjConstants.Projection;
 }
 
 void UCamera::UpdateMatrixByOrth()
@@ -208,6 +209,7 @@ void UCamera::UpdateMatrixByOrth()
 	P.Data[3][2] = -NearZ / (FarZ - NearZ);
 	P.Data[3][3] = 1.0f;
 	ViewProjConstants.Projection = P;
+	ViewProjConstants.ViewProj = ViewProjConstants.View * ViewProjConstants.Projection;
 }
 
 FViewProjConstants UCamera::GetFViewProjConstantsInverse() const

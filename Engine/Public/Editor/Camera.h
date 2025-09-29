@@ -31,8 +31,16 @@ public:
 	void SetRotation(const FVector& InOtherRotation) { RelativeRotation = InOtherRotation; }
 	void SetFovY(const float InOtherFovY) { FovY = InOtherFovY; }
 	void SetAspect(const float InOtherAspect) { Aspect = InOtherAspect; }
-	void SetNearZ(const float InOtherNearZ) { NearZ = InOtherNearZ; }
-	void SetFarZ(const float InOtherFarZ) { FarZ = InOtherFarZ; }
+	void SetNearZ(const float InOtherNearZ)
+	{
+		NearZ = InOtherNearZ;
+		ViewProjConstants.CamNear = NearZ;
+	}
+	void SetFarZ(const float InOtherFarZ)
+	{
+		FarZ = InOtherFarZ;
+		ViewProjConstants.CamFar = FarZ;
+	}
 
 	void SetCameraType(const EViewportViewType InCameraType, bool bIsWindowDivided);
 	void SaveMainCameraInfo();

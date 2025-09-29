@@ -12,7 +12,6 @@ struct FBVHItem
     UStaticMeshComponent* Comp = nullptr;
     FAABB Bounds;
     FVector Centroid;
-	int OriginIdx;
 };
 
 struct FBVHNode
@@ -30,13 +29,13 @@ class FBVH
 public:
     void Build(const TArray<UStaticMeshComponent*>& Comps);
     void QueryAABB(const FAABB& Q, TArray<UStaticMeshComponent*>& Out) const;
-	void QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& OutVisibles) const;
+	void QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<UStaticMeshComponent*>& Out) const;
 	void Clear();
 
 private:
     int32 BuildRange(int32 First, int32 Last, int32 Depth);
     void AddSubtree(int32 NodeIdx, TArray<UStaticMeshComponent*>& Out) const;
-    void AddSubtreeAll(int32 NodeIdx, TArray<bool>& OutVisible) const;
+    void AddSubtreeAll(int32 NodeIdx, TArray<UStaticMeshComponent*>& Out) const;
     static bool AABBOutsideFrustum(const FAABB& B, const TStaticArray<FVector4,6>& Planes);
     static bool AABBInsideFrustum(const FAABB& B, const TStaticArray<FVector4,6>& Planes);
     static int32 ChooseAxis(const FAABB& Bounds);

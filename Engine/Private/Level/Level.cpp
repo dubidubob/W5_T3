@@ -97,8 +97,6 @@ void ULevel::AddLevelActor(AActor* Actor)
 			{
 				LevelPrimitiveComponents.push_back(PrimitiveComponent);
 				LevelStaticMeshComponents.Push(S);
-				VisiblePrimitives.Push(false);
-				LastVisiblePrimitives.push_back(false);
 			}
 		}
 		else if (Component->GetComponentType() == EComponentType::Text)
@@ -125,8 +123,6 @@ void ULevel::AddLevelPrimitiveComponent(AActor* Actor)
 			{
 				LevelPrimitiveComponents.push_back(PrimitiveComponent);
 				LevelStaticMeshComponents.Push(S);
-				VisiblePrimitives.Push(false);
-				LastVisiblePrimitives.push_back(false);
 			}
 		}
 		else if (Component->GetComponentType() == EComponentType::Text)
@@ -208,12 +204,9 @@ bool ULevel::DestroyActor(AActor* InActor)
 	{
 		if (InActor == LevelActors[i])
 		{
-			URenderer::GetInstance().RemoveActorRenderStream(LevelStaticMeshComponents[i]);
 			LevelActors.erase(LevelActors.begin() + i);
 			LevelPrimitiveComponents.erase(LevelPrimitiveComponents.begin() + i);
 			LevelStaticMeshComponents.erase(LevelStaticMeshComponents.begin() + i);
-			VisiblePrimitives.erase(VisiblePrimitives.begin() + i);
-			LastVisiblePrimitives.erase(LastVisiblePrimitives.begin() + i);
 			break;
 		}
 	}
@@ -323,12 +316,9 @@ void ULevel::ProcessPendingDeletions()
 		{
 			if (ActorToDelete == LevelActors[i])
 			{
-				URenderer::GetInstance().RemoveActorRenderStream(LevelStaticMeshComponents[i]);
 				LevelActors.erase(LevelActors.begin() + i);
 				LevelPrimitiveComponents.erase(LevelPrimitiveComponents.begin() + i);
 				LevelStaticMeshComponents.erase(LevelStaticMeshComponents.begin() + i);
-				VisiblePrimitives.erase(VisiblePrimitives.begin() + i);
-				LastVisiblePrimitives.erase(LastVisiblePrimitives.begin() + i);
 				break;
 			}
 		}
