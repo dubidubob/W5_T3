@@ -2,6 +2,7 @@
 #include "Editor/Gizmo.h"
 
 class UPrimitiveComponent;
+class UStaticMeshComponent;
 class AActor;
 class ULevel;
 class UCamera;
@@ -18,7 +19,7 @@ public:
 	void SetCamera(UCamera* Camera);
 	void SetDeviceResources(UDeviceResources* InDeviceResources);
 
-	UPrimitiveComponent* PickPrimitive( const FRay& WorldRay, TArray<UPrimitiveComponent*> Candidate, float* Distance);
+	UStaticMeshComponent* PickPrimitive(const FRay& WorldRay, TArray<UStaticMeshComponent*> Candidate, float* Distance);
 	UPrimitiveComponent* PickPrimitiveByColor(int32 MouseX, int32 MouseY);
 
 	void PickGizmo(const FRay& WorldRay, UGizmo* Gizmo, FVector& CollisionPoint);

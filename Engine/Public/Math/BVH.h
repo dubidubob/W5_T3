@@ -31,6 +31,7 @@ public:
     void Build(const TArray<UStaticMeshComponent*>& Comps);
     void QueryAABB(const FAABB& Q, TArray<UStaticMeshComponent*>& Out) const;
 	void QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& OutVisibles) const;
+	void QueryRayCandidates(const FRay& Ray, int MaxK, TArray<UStaticMeshComponent*>& Out);
 	void Clear();
 
 private:
@@ -46,6 +47,6 @@ private:
     TArray<FBVHItem> Items;
     TArray<FBVHNode> Nodes;
     int32 Root = -1;
-    int32 LeafMax = 6;
-    int32 MaxDepth = 64;
+    int32 LeafMax = 6; // Max Item Number in One Leaf Node
+    int32 MaxDepth = 64; // Max Tree Height
 };
