@@ -19,6 +19,7 @@
 #include "Slate/Viewport.h"
 #include "Global/PlatformTime.h"
 #include "Mesh/TextComponent.h"
+#include "Math/Octree.h"
 #if IS_OBJ_VIEWER
 #include "Render/UI/Widget/TargetActorTransformWidget.h"
 #include "Utility/ObjectPreviewScene.h"
@@ -41,6 +42,11 @@ UEditor::UEditor()
 
 	ObjectPicker->SetCamera(Camera);
 	ViewportManager->Initialize(Camera);
+
+	// Initialize Octree with default world bounds
+	SceneOctree = NewObject<FOctree>();
+	FAABB DefaultWorldBounds(FVector(-100, -100, -100), FVector(100, 100, 100));
+	SceneOctree->Initialize(DefaultWorldBounds);
 
 	// Set Camera to Control Panel
 	auto& UIManager = UUIManager::GetInstance();
@@ -73,6 +79,7 @@ UEditor::~UEditor()
 	delete Gizmo;
 	delete Grid;
 	delete Axis;
+	delete SceneOctree;
 }
 
 void UEditor::Update()
@@ -80,8 +87,23 @@ void UEditor::Update()
 	Camera->Update(ViewportManager->GetIsWindowDivided());
 	ViewportManager->Update();
 
-	ProcessMouseInput(ULevelManager::GetInstance().GetCurrentLevel());
+	ULevel* CurrentLevel = ULevelManager::GetInstance().GetCurrentLevel();
+	ProcessMouseInput(CurrentLevel);
 	ProcessKeyboardInput();
+
+	// Update Octree conditionally and repopulate if needed
+	if (SceneOctree && CurrentLevel)
+	{
+		// Level이 바뀌었거나 처음 실행시 Octree를 재구성
+		static ULevel* PreviousLevel = nullptr;
+		if (PreviousLevel != CurrentLevel)
+		{
+			PopulateOctreeFromLevel(CurrentLevel);
+			PreviousLevel = CurrentLevel;
+		}
+
+		SceneOctree->ConditionalUpdate();
+	}
 
 	auto& Renderer = URenderer::GetInstance();
 	Renderer.UpdateViewProjConstants(Camera->GetFViewProjConstants());
@@ -126,10 +148,21 @@ void UEditor::RenderEditorBatched(int Idx)
 					if (!Bounds.IsValid()) { continue; }
 					if (Renderer.IsShowFlagEnabled(EEngineShowFlags::SF_Bounds))
 					{
-						LineBatch.AddAABB(Bounds.Min, Bounds.Max, FVector4(0, 1, 0, 1));
+						LineBatch.AddAABB(Bounds.Min, Bounds.Max, FVector4(0.1, 1, 0.3, 1));
 					}
 				}
 			}
+		}
+
+		/** Octree 시각화 */
+		if (bShowOctreeVisualization && SceneOctree && SceneOctree->IsValid())
+		{
+			UE_LOG("Drawing Octree visualization");
+			SceneOctree->DebugDraw(&LineBatch, -1); // 모든 깊이 표시
+		}
+		else if (bShowOctreeVisualization)
+		{
+			UE_LOG("Octree visualization enabled but Octree is not valid");
 		}
 
 		/** Gizmo 라인들 추가 (오브젝트가 선택된 경우) */
@@ -274,10 +307,20 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 			++TotalPickCount;
 
 			// 피킹 후보들 찾기
-			TArray<UPrimitiveComponent*> Candidate = FindCandidatePrimitives(InLevel);
+			UPrimitiveComponent* PrimitiveCollided = nullptr;
 
-			// 피킹 시도
-			UPrimitiveComponent* PrimitiveCollided = ObjectPicker->PickPrimitive(InWorldRay, Candidate, &ActorDistance);
+			// Octree 기반 피킹 또는 기존 방식
+			if (bUseOctreeForPicking && SceneOctree && SceneOctree->IsValid())
+			{
+				// Octree를 사용한 최적화된 피킹
+				PrimitiveCollided = ObjectPicker->PickPrimitiveWithOctree(InWorldRay, SceneOctree, &ActorDistance);
+			}
+			else
+			{
+				// 기존 브루트포스 방식
+				TArray<UPrimitiveComponent*> Candidate = FindCandidatePrimitives(InLevel);
+				PrimitiveCollided = ObjectPicker->PickPrimitive(InWorldRay, Candidate, &ActorDistance);
+			}
 
 			// 피킹된 프리미티브의 액터를 선택
 			if (PrimitiveCollided)
@@ -327,6 +370,15 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 
 TArray<UPrimitiveComponent*> UEditor::FindCandidatePrimitives(ULevel* InLevel)
 {
+	// Octree가 활성화된 경우 Octree에서 모든 객체 반환 (레이 쿼리는 피킹 시에 수행)
+	if (bUseOctreeForPicking && SceneOctree && SceneOctree->IsValid())
+	{
+		// Octree 사용시 빈 배열 반환 - 실제 쿼리는 PickPrimitive에서 레이로 수행
+		TArray<UPrimitiveComponent*> EmptyCandidate;
+		return EmptyCandidate;
+	}
+
+	// 기존 브루트포스 방식
 	TArray<UPrimitiveComponent*> Candidate;
 
 	for (AActor* Actor : InLevel->GetLevelActors())
@@ -507,4 +559,137 @@ FVector UEditor::GetGizmoDragScale(const FRay& WorldRay)
 		return Gizmo->GetActorScale();
 	}
 	return Gizmo->GetActorScale();
+}
+
+// =============================================================================
+// Octree Management Methods
+// =============================================================================
+
+void UEditor::InitializeOctree(const FAABB& WorldBounds)
+{
+	if (SceneOctree)
+	{
+		SceneOctree->Initialize(WorldBounds);
+	}
+}
+
+void UEditor::RebuildOctree()
+{
+	if (SceneOctree)
+	{
+		SceneOctree->ForceRebuild();
+	}
+}
+
+void UEditor::UpdateOctree()
+{
+	if (SceneOctree)
+	{
+		SceneOctree->ConditionalUpdate();
+	}
+}
+
+void UEditor::PopulateOctreeFromLevel(ULevel* InLevel)
+{
+	if (!SceneOctree || !InLevel)
+	{
+		return;
+	}
+
+	// Level의 모든 객체들로부터 동적으로 월드 바운드 계산
+	FAABB WorldBounds;
+	bool bFoundAnyObject = false;
+
+	for (AActor* Actor : InLevel->GetLevelActors())
+	{
+		for (auto& ActorComponent : Actor->GetOwnedComponents())
+		{
+			if (ActorComponent->IsA(UTextComponent::StaticClass()))
+			{
+				continue;
+			}
+
+			UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(ActorComponent);
+			if (Primitive)
+			{
+				FAABB PrimitiveBounds = Primitive->GetWorldBounds();
+				if (PrimitiveBounds.IsValid())
+				{
+					if (!bFoundAnyObject)
+					{
+						WorldBounds = PrimitiveBounds;
+						bFoundAnyObject = true;
+					}
+					else
+					{
+						WorldBounds.AddAABB(PrimitiveBounds);
+					}
+				}
+			}
+		}
+	}
+
+	// 객체가 없으면 기본 월드 바운드 사용
+	if (!bFoundAnyObject)
+	{
+		WorldBounds = FAABB(FVector(-10, -10, -10), FVector(10, 10, 10));
+	}
+	else
+	{
+		// 약간 여유 공간 추가
+		FVector Expansion(0, 0, 0);
+		WorldBounds.ExpandBy(Expansion);
+	}
+
+	/*UE_LOG("Calculated world bounds: Min(%.1f,%.1f,%.1f) Max(%.1f,%.1f,%.1f)",
+		WorldBounds.Min.X, WorldBounds.Min.Y, WorldBounds.Min.Z,
+		WorldBounds.Max.X, WorldBounds.Max.Y, WorldBounds.Max.Z);*/
+
+	// Octree 초기화
+	SceneOctree->Initialize(WorldBounds);
+
+	// Level의 모든 Actor로부터 Primitive들을 Octree에 등록
+	for (AActor* Actor : InLevel->GetLevelActors())
+	{
+		for (auto& ActorComponent : Actor->GetOwnedComponents())
+		{
+			// UUID Text는 Octree에서 제외
+			if (ActorComponent->IsA(UTextComponent::StaticClass()))
+			{
+				continue;
+			}
+
+			UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(ActorComponent);
+			if (Primitive)
+			{
+				RegisterPrimitiveToOctree(Primitive);
+			}
+		}
+	}
+
+	int32 TotalObjects = SceneOctree->GetTotalObjectCount();
+	//UE_LOG("Octree populated with %d total objects", TotalObjects);
+
+	// 추가 디버깅 정보
+	if (TotalObjects == 0)
+	{
+		//UE_LOG("Warning: No objects were added to Octree!");
+	}
+}
+
+void UEditor::RegisterPrimitiveToOctree(UPrimitiveComponent* Primitive)
+{
+	if (!SceneOctree || !Primitive)
+	{
+		UE_LOG("RegisterPrimitive failed: SceneOctree=%s, Primitive=%s",
+			SceneOctree ? "Valid" : "NULL", Primitive ? "Valid" : "NULL");
+		return;
+	}
+
+	FAABB PrimitiveBounds = Primitive->GetWorldBounds();
+	UE_LOG("Registering primitive with bounds: Min(%.1f,%.1f,%.1f) Max(%.1f,%.1f,%.1f)",
+		PrimitiveBounds.Min.X, PrimitiveBounds.Min.Y, PrimitiveBounds.Min.Z,
+		PrimitiveBounds.Max.X, PrimitiveBounds.Max.Y, PrimitiveBounds.Max.Z);
+
+	SceneOctree->InsertObject(Primitive);
 }

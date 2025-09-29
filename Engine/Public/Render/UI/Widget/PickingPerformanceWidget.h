@@ -25,11 +25,19 @@ private:
 	double DisplayLastPickTime = 0.0;
 	uint32_t DisplayTotalPickCount = 0;
 
+	// Octree vs BruteForce comparison
+	double LastBruteForceTime = 0.0;
+	double LastOctreeTime = 0.0;
+	uint32_t BruteForceObjectCount = 0;
+	uint32_t OctreeObjectCount = 0;
+
 	// Calculated metrics
 	double AveragePickTime = 0.0;
+	double PerformanceGain = 0.0; // Octree speedup ratio
 
 	// Display control
 	bool bShowDetails = false;
+	bool bShowOctreeComparison = true;
 
 	// Refresh control
 	float LastUpdateTime = 0.0f;

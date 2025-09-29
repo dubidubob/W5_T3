@@ -11,6 +11,8 @@ class UGizmo;
 class UAxis;
 class UGrid;
 class ULevel;
+class FOctree;
+struct FAABB;
 class UEditor : public UObject
 {
 	DECLARE_CLASS(UEditor, UObject)
@@ -36,12 +38,26 @@ public:
 	double GetTotalPickTime() const { return TotalPickTime; }
 	double GetLastPickTime() const { return LastPickTime; }
 	uint32_t GetTotalPickCount() const { return TotalPickCount; }
+
+	/** Octree Management */
+	FOctree* GetOctree() const { return SceneOctree; }
+	void InitializeOctree(const FAABB& WorldBounds);
+	void RebuildOctree();
+	void UpdateOctree();
+
+	/** Octree Visualization */
+	void SetOctreeVisualization(bool bEnabled) { bShowOctreeVisualization = bEnabled; }
+	bool IsOctreeVisualizationEnabled() const { return bShowOctreeVisualization; }
+	void SetUseOctreeForPicking(bool bEnabled) { bUseOctreeForPicking = bEnabled; }
+
 private:
 	void ProcessKeyboardInput();
 	void ProcessMouseInput(ULevel* InLevel);
 
 	void HandleGizmo(ULevel* InLevel, FRay InWorldRay);
 	TArray<class UPrimitiveComponent*> FindCandidatePrimitives(ULevel* InLevel);
+	void PopulateOctreeFromLevel(ULevel* InLevel);
+	void RegisterPrimitiveToOctree(UPrimitiveComponent* Primitive);
 
 	FVector GetGizmoDragLocation(const FRay& WorldRay);
 	FVector GetGizmoDragRotation(const FRay& WorldRay);
@@ -58,6 +74,11 @@ private:
 	UGizmo* Gizmo;
 	UAxis* Axis;
 	UGrid* Grid;
+
+	/** Octree for spatial optimization */
+	FOctree* SceneOctree;
+	bool bUseOctreeForPicking = true;
+	bool bShowOctreeVisualization = true;
 
 	FVector2 LastMousePosition = FVector2(0.0f, 0.0f);
 

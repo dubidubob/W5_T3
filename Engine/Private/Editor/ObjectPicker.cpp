@@ -8,6 +8,7 @@
 #include "Core/AppWindow.h"
 #include "ImGui/imgui.h"
 #include "Level/Level.h"
+#include "Math/Octree.h"
 
 IMPLEMENT_CLASS(UObjectPicker, UObject)
 
@@ -58,6 +59,26 @@ UPrimitiveComponent* UObjectPicker::PickPrimitive(const FRay& WorldRay, TArray<U
 	*Distance = ShortestDistance;
 
 	return ShortestPrimitive;
+}
+
+UPrimitiveComponent* UObjectPicker::PickPrimitiveWithOctree(const FRay& WorldRay, FOctree* Octree, float* Distance)
+{
+	if (!Octree || !Octree->IsValid())
+	{
+		UE_LOG("Octree is not valid.");
+		return nullptr;
+	}
+
+	// Octree에서 레이와 교차하는 객체들만 추출
+	TArray<UPrimitiveComponent*> OctreeCandidates;
+	Octree->QueryRay(WorldRay, OctreeCandidates);
+
+	UE_LOG("Octree QueryRay found %d candidates", OctreeCandidates.Num());
+
+	// 기존 피킹 로직 재사용
+	UPrimitiveComponent* Result = PickPrimitive(WorldRay, OctreeCandidates, Distance);
+	UE_LOG("Octree picking result: %s", Result ? "Found" : "Not Found");
+	return Result;
 }
 
 void UObjectPicker::PickGizmo( const FRay& WorldRay, UGizmo* Gizmo, FVector& CollisionPoint)

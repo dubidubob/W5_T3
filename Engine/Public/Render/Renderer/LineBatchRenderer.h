@@ -59,7 +59,7 @@ private:
     /** 배치 설정 */
     static constexpr uint32 MaxVertices = 10000;
     static constexpr uint32 MaxIndices = MaxVertices * 2; // Line topology: 2 indices per line
-    static constexpr uint32 MaxAABBInstances = 4096;
+    static constexpr uint32 MaxAABBInstances = 4096 * 20;
 
     /** 현재 상태 */
     uint32 CurrentVertexCount = 0;
