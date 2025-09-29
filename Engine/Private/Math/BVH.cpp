@@ -242,29 +242,114 @@ void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& O
     }
 }
 
+static inline bool IntersectAABB(const FRay& Ray, const FAABB& b, float tMax, float& t0, float& t1)
+{
+	const FVector invD{ 1.0f / Ray.Direction.X, 1.0f / Ray.Direction.Y, 1.0f / Ray.Direction.Z };
+
+	const FVector MinBound = b.Min - FVector{ Ray.Origin.X, Ray.Origin.Y, Ray.Origin.Z };
+	const FVector MaxBound = b.Max - FVector{ Ray.Origin.X, Ray.Origin.Y, Ray.Origin.Z };
+
+	const FVector tminv = FVector(MinBound.X * invD.X, MinBound.Y * invD.Y, MinBound.Z * invD.Z);
+	const FVector tmaxv = FVector(MaxBound.X * invD.X, MaxBound.Y * invD.Y, MaxBound.Z * invD.Z);
+	const FVector t1v{ std::min(tminv.X, tmaxv.X),
+					   std::min(tminv.Y, tmaxv.Y),
+					   std::min(tminv.Z, tmaxv.Z) };
+	const FVector t2v{ std::max(tminv.X, tmaxv.X),
+					   std::max(tminv.Y, tmaxv.Y),
+					   std::max(tminv.Z, tmaxv.Z) };
+	t0 = std::max(std::max(t1v.X, t1v.Y), t1v.Z);
+	t1 = std::min(std::min(t2v.X, t2v.Y), t2v.Z);
+	return (t1 >= t0) && (t0 <= tMax) && (t1 >= 0.0f);
+}
+
+static inline bool RayBoxEntry(const FAABB& Box, const FRay& Ray, float& OutTNear)
+{
+	float TEntry = -1.0f;
+	const bool Hit = Box.IntersectsRay(Ray.Origin, Ray.Direction, &TEntry);
+	if (!Hit) return false;
+
+	OutTNear = (TEntry >= 0.0f) ? TEntry : 0.0f; // 내부 시작 → 0으로 간주
+	return true;
+}
+
 struct FCand { UStaticMeshComponent* Comp; float TNear; };
 
-void FBVH::QueryRayCandidates(const FRay& ray, int maxK, TArray<UStaticMeshComponent*>& out)
+void FBVH::QueryRayCandidates(const FRay& Ray, int MaxK, TArray<UStaticMeshComponent*>& Out)
 {
-	// Node로 SLAB AABB를 실행한다.
-	// 즉, 해당 노드의 Bounds 안에 Ray가 통과가 되면 재귀적으로 탐색하고, 아니라면 멈추는 Backtracking 방식
-	out.clear();
+	Out.clear();
 	if (Root < 0) return;
 
-	float TMax = FLT_MAX;
-	struct Stack { int32 NodeIdx; float TNear; };
-	TArray<Stack> Stack; Stack.reserve(64);
+	float TMaxGlobal = FLT_MAX;
+
+	struct FStackItem { int32 NodeIdx; float TNear; };
+	TArray<FStackItem> Stack; Stack.reserve(64);
 	Stack.push_back({ Root, 0.0f });
 
-	TArray<FCand> Candidates;
+	TArray<FCand> Cands; Cands.reserve(MaxK > 0 ? MaxK * 2 : 64);
 
-	// while(!Stack)
+	while (!Stack.empty())
+	{
+		const FStackItem It = Stack.back();
+		Stack.pop_back();
+		const FBVHNode& Node = Nodes[It.NodeIdx];
 
+		// 노드 박스와 레이 교차: front-to-back 순서를 위해 T0(엔트리), T1(출구) 확보
+		float N0 = 0.0f, N1 = 0.0f;
+		if (!IntersectAABB(Ray, Node.Bounds, TMaxGlobal, N0, N1)) continue;
 
+		if (Node.bLeaf)
+		{
+			// 리프: 각 아이템 AABB 교차 → 후보 수집
+			for (int i = 0; i < Node.Count; ++i)
+			{
+				const FBVHItem& Item = Items[Node.First + i];
+				float TNearItem;
+				if (RayBoxEntry(Item.Bounds, Ray, TNearItem))
+				{
+					if (TNearItem <= TMaxGlobal)
+						Cands.push_back({ Item.Comp, TNearItem });
+				}
+			}
+		}
+		else
+		{
+			// 자식들 front-to-back 방문 (가까운 쪽이 먼저 팝되도록 먼 쪽을 먼저 푸시)
+			int32 L = Node.Left, R = Node.Right;
+			float L0 = 0.f, L1 = 0.f, R0 = 0.f, R1 = 0.f;
+			bool HL = false, HR = false;
 
-	// Leaf까지 갔다면 해당 Leaf를 배열에 담는다.
+			if (L >= 0) HL = IntersectAABB(Ray, Nodes[L].Bounds, TMaxGlobal, L0, L1);
+			if (R >= 0) HR = IntersectAABB(Ray, Nodes[R].Bounds, TMaxGlobal, R0, R1);
 
-	// 다 담았으면 out에 반환한다.
+			if (HL && HR)
+			{
+				if (L0 > R0) { std::swap(L, R); std::swap(L0, R0); }
+				Stack.push_back({ R, R0 });
+				Stack.push_back({ L, L0 });
+			}
+			else if (HL)
+			{
+				Stack.push_back({ L, L0 });
+			}
+			else if (HR)
+			{
+				Stack.push_back({ R, R0 });
+			}
+		}
+	}
+
+	// 거리순 정렬 + K개 컷
+	std::sort(Cands.begin(), Cands.end(),
+		[](const FCand& A, const FCand& B) { return A.TNear < B.TNear; });
+
+	if (MaxK > 0 && (int)Cands.size() > MaxK)
+		Cands.resize(MaxK);
+
+	Out.reserve(Cands.size());
+	for (auto& C : Cands)
+		Out.push_back(C.Comp);
+
+	Out;
 }
 
 //void FBVH::QueryRayMBVH(const FRay& ray)
