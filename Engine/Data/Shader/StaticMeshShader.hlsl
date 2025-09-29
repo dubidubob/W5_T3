@@ -10,8 +10,11 @@ cbuffer PerFrame : register(b1)
 {
 	row_major float4x4 ViewMatrix;
 	row_major float4x4 ProjectionMatrix;
+	row_major float4x4 ViewProj;
 	uint ViewModeIndex;
-	float3 Padding;
+	float CamNear;
+	float CamFar;
+	float Padding;
 };
 
 cbuffer PerDrawColor : register(b2)
@@ -80,8 +83,7 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 	//}
 
 	Position = mul(Position, world);
-	Position = mul(Position, ViewMatrix);
-	Position = mul(Position, ProjectionMatrix);
+	Position = mul(Position, ViewProj);
 
 	Output.Position = Position;
 	Output.Color = ShadeColor;

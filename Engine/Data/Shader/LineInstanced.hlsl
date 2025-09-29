@@ -2,6 +2,7 @@ cbuffer PerFrame : register(b1)
 {
     row_major float4x4 View;
     row_major float4x4 Projection;
+	row_major float4x4 ViewProj;
     uint ViewModeIndex; // padding follows implicitly
     float3 _Pad0;
 }

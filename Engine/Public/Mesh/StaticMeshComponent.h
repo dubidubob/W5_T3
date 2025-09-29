@@ -44,6 +44,7 @@ public:
 private:
 	FAABB GetLocalBounds() const;
 	mutable FAABB CachedLocalBounds;
+	mutable FAABB CachedWorldBounds;
 	mutable bool bIsLocalBoundsDirty = true;
 
 public:

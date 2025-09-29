@@ -123,7 +123,6 @@ public:
 	void ReSetSortingBatchMap();
 	void CleanUpSortingBatch();
 	void SetRenderStream();
-	void RemoveActorRenderStream(UStaticMeshComponent* StaticMeshComp);
 
 	// ================== View Mode Management ==================
 	void SetViewMode(EViewportRenderMode ViewMode) { CurrentRenderMode = ViewMode; }
@@ -172,6 +171,11 @@ public:
 
 	// Actor Spawn, Actor Delete, Load Level
 	void MarkForceReRenderPicking() { bForceReRenderPicking = true; }
+	void UpdateZArea();
+	const float GetZArea(uint32 Idx) const
+	{
+		return ZAreaDepthValue[Idx];
+	}
 
 	FBVH* GetBVH() { return &SceneBVH; }
 #ifdef _DEVELOP
@@ -180,13 +184,18 @@ public:
 	const uint32 GetStaticMeshComponentChagneCount() const { return StaticMeshComponentChagneCount; }
 	const uint32 GetMeshSectionDrawCount() const { return MeshSectionDrawCount; }
 #endif
+	const TArray<uint32> GetZAreaMeshCount() const { return ZAreaMeshCount; }
+	const TArray<float> GetZAreaValueCount() const { return ZAreaDepthValue; }
+
 
 private:
 	UEditor* Editor = nullptr;
 	bool bSortingBatchMapDirty = true;
 
+	TArray<UStaticMeshComponent*> Candidate;
+
 	//bool(4byte), WorldMatrix, bool(4byte), WorldMatrix
-	TMap<FStaticMaterial*, TMap<FStaticMesh*, TArray<uint32>>> RenderStreamMap;
+	TMap<uint32, TMap<FStaticMaterial*, TMap<FStaticMesh*, TArray<FMatrix>>>> RenderStreamMap;
 
 	// ================== Frame Skipping Optimization ==================
 	uint32 FrameCounter = 0;
@@ -203,6 +212,10 @@ private:
 	uint32 StaticMeshComponentChagneCount = 0;
 	uint32 MeshSectionDrawCount = 0;
 #endif
+
+
+	TArray<uint32> ZAreaMeshCount;
+	TArray<float> ZAreaDepthValue;
 
 		// ================== Core Components ==================
 	UPipeline* Pipeline = nullptr;

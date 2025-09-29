@@ -9,12 +9,16 @@ struct FViewProjConstants
 	{
 		View = FMatrix::Identity;
 		Projection = FMatrix::Identity;
+		ViewProj = FMatrix::Identity;
 		ViewModeIndex = 0;
 	}
 
 	FMatrix View;
 	FMatrix Projection;
+	FMatrix ViewProj;
 	uint32 ViewModeIndex;
+	float CamNear = 0;
+	float CamFar = 0;
 };
 
 struct FMaterialParamsCB

@@ -7,6 +7,7 @@ cbuffer PerFrame : register(b1)
 {
     row_major float4x4 ViewMatrix;
     row_major float4x4 ProjectionMatrix;
+	row_major float4x4 ViewProj;
     uint ViewModeIndex;
     float3 Padding;
 };

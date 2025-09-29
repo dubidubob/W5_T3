@@ -23,7 +23,6 @@ void FBVH::Build(const TArray<UStaticMeshComponent*>& Components)
         CandidateItem.Comp = Component;
         CandidateItem.Bounds = BoundingBox;
         CandidateItem.Centroid = BoundingBox.GetCenter();
-		CandidateItem.OriginIdx = Idx++;
         Items.push_back(CandidateItem);
     }
     if (Items.empty()) { Root = -1; return; }
@@ -158,19 +157,19 @@ void FBVH::QueryAABB(const FAABB& Q, TArray<UStaticMeshComponent*>& Out) const
     }
 }
 
-void FBVH::AddSubtreeAll(int32 NodeIdx, TArray<bool>& OutVisible) const
+void FBVH::AddSubtreeAll(int32 NodeIdx, TArray<UStaticMeshComponent*>& Out) const
 {
     const FBVHNode& N = Nodes[NodeIdx];
     if (N.bLeaf)
     {
         for (int32 i = 0; i < N.Count; ++i)
         {
-			OutVisible[Items[N.First + i].OriginIdx] = true;
+			Out.Push(Items[N.First + i].Comp);
         }
         return;
     }
-    if (N.Left >= 0) AddSubtreeAll(N.Left, OutVisible);
-    if (N.Right >= 0) AddSubtreeAll(N.Right, OutVisible);
+    if (N.Left >= 0) AddSubtreeAll(N.Left, Out);
+    if (N.Right >= 0) AddSubtreeAll(N.Right, Out);
 }
 
 bool FBVH::AABBOutsideFrustum(const FAABB& B, const TStaticArray<FVector4,6>& Planes)
@@ -199,11 +198,9 @@ bool FBVH::AABBInsideFrustum(const FAABB& B, const TStaticArray<FVector4,6>& Pla
     return true;
 }
 
-void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& OutVisibles) const
+void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<UStaticMeshComponent*>& Out) const
 {
-	int itemSize = Items.size();
-
-	std::fill(OutVisibles.begin(), OutVisibles.end(), false);
+	Out.clear();
     if (Root < 0) return;
     TArray<int32> Stack;
     Stack.push_back(Root);
@@ -218,7 +215,7 @@ void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& O
 		}
         if (AABBInsideFrustum(N.Bounds, Planes))
         {
-            AddSubtreeAll(Idx, OutVisibles);
+            AddSubtreeAll(Idx, Out);
             continue;
         }
 
@@ -230,7 +227,7 @@ void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& O
                 const FBVHItem& It = Items[N.First + i];
 				if (!AABBOutsideFrustum(It.Bounds, Planes))
 				{
-					OutVisibles[It.OriginIdx] = true;
+					Out.Push(It.Comp);
 				}
             }
         }

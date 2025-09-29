@@ -121,9 +121,9 @@ const FVector& USceneComponent::GetWorldLocation() const
 
 const FMatrix& USceneComponent::GetWorldTransformMatrix() const
 {
-	TIME_PROFILE(TransformMatrix)
     if (bIsTransformDirty)
     {
+		TIME_PROFILE(TransformMatrix)
         // Quaternion-based TRS (row-major): I * S * R * T
         WorldTransformMatrix = FMatrix::GetModelMatrix(RelativeLocation, RelativeRotationQuat, RelativeScale3D);
 
