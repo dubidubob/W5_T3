@@ -2,8 +2,6 @@
 struct FVector;
 struct FVector4;
 
-
-
 struct FMatrix
 {
 	/**
@@ -105,24 +103,4 @@ struct FMatrix
 	 * @brief 영행렬
 	 */
 	static const FMatrix Zero;
-};
-
-struct FMatrix3x4
-{
-	float Data[4][3];
-	FMatrix3x4(const FMatrix& Mat)
-	{
-		Data[0][0] = Mat.Data[0][0];
-		Data[0][1] = Mat.Data[0][1];
-		Data[0][2] = Mat.Data[0][2];
-		Data[1][0] = Mat.Data[1][0];
-		Data[1][1] = Mat.Data[1][1];
-		Data[1][2] = Mat.Data[1][2];
-		Data[2][0] = Mat.Data[2][0];
-		Data[2][1] = Mat.Data[2][1];
-		Data[2][2] = Mat.Data[2][2];
-		Data[3][0] = Mat.Data[3][0];
-		Data[3][1] = Mat.Data[3][1];
-		Data[3][2] = Mat.Data[3][2];
-	}
 };
