@@ -31,7 +31,7 @@ public:
     void Build(const TArray<UStaticMeshComponent*>& Comps);
     void QueryAABB(const FAABB& Q, TArray<UStaticMeshComponent*>& Out) const;
 	void QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& OutVisibles) const;
-	void QueryRayCandidates(const FRay& ray, int maxK, TArray<UStaticMeshComponent*>& out);
+	void QueryRayCandidates(const FRay& Ray, int MaxK, TArray<UStaticMeshComponent*>& Out);
 	void Clear();
 
 private:

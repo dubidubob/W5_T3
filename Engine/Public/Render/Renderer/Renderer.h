@@ -172,6 +172,7 @@ public:
 
 	void MarkForceReRenderPicking() { bForceReRenderPicking = true; }
 
+	FBVH* GetBVH() { return &SceneBVH; }
 #ifdef _DEVELOP
 	const uint32 GetMaterialChangeCount() const { return MaterialChangeCount; }
 	const uint32 GetStaticMeshChangeCount() const { return StaticMeshChangeCount; }
