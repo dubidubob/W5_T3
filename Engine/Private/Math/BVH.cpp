@@ -9,46 +9,41 @@ void FBVH::Clear()
     Root = -1;
 }
 
-void FBVH::Build(const TArray<UStaticMeshComponent*>& Comps)
+void FBVH::Build(const TArray<UStaticMeshComponent*>& Components)
 {
     Clear();
-    Items.reserve(Comps.size());
-	int idx = 0;
-    for (UStaticMeshComponent* C : Comps)
+    Items.reserve(Components.size());
+	int Idx = 0;
+    for (UStaticMeshComponent* Component : Components)
     {
-        if (!C) continue;
-        FAABB B = C->GetWorldBounds();
-        if (!B.IsValid()) continue;
-        FBVHItem It;
-        It.Comp = C;
-        It.Bounds = B;
-        It.Centroid = B.GetCenter();
-        Items.push_back(It);
+        if (!Component) continue;
+        FAABB BoundingBox = Component->GetWorldBounds();
+        if (!BoundingBox.IsValid()) continue;
+        FBVHItem CandidateItem;
+        CandidateItem.Comp = Component;
+        CandidateItem.Bounds = BoundingBox;
+        CandidateItem.Centroid = BoundingBox.GetCenter();
+        Items.push_back(CandidateItem);
     }
     if (Items.empty()) { Root = -1; return; }
     Nodes.reserve(Items.size() * 2);
-	int itemSize = Items.size();
 
     Root = BuildRange(0, static_cast<int32>(Items.size()), 0);
-}
-
-int32 FBVH::ChooseAxis(const FAABB& Bounds)
-{
-    FVector Ext = Bounds.GetExtent();
-    if (Ext.X >= Ext.Y && Ext.X >= Ext.Z) return 0;
-    if (Ext.Y >= Ext.X && Ext.Y >= Ext.Z) return 1;
-    return 2;
 }
 
 int32 FBVH::BuildRange(int32 First, int32 Last, int32 Depth)
 {
     FBVHNode Node;
-    FAABB B;
+	// Create new AABB that Include First ~ Last Objects
+    FAABB BoundingBox;
     for (int32 i = First; i < Last; ++i) {
-        B.AddAABB(Items[i].Bounds);
+        BoundingBox.AddAABB(Items[i].Bounds);
     }
-    Node.Bounds = B;
+    Node.Bounds = BoundingBox;
+
+
     int32 Count = Last - First;
+	// Make Leaf Node
     if (Count <= LeafMax || Depth >= MaxDepth)
     {
         Node.bLeaf = true;
@@ -56,18 +51,24 @@ int32 FBVH::BuildRange(int32 First, int32 Last, int32 Depth)
         Node.Count = Count;
         int32 Index = static_cast<int32>(Nodes.size());
         Nodes.push_back(Node);
-        return Index;
+        return Index; // Return to Parent with Their Index
     }
-    FAABB CB;
+
+	// Midian Split for Choose Axis
+    FAABB CentroidBoundingBox;
     for (int32 i = First; i < Last; ++i)
     {
-        CB.AddPoint(Items[i].Centroid);
+        CentroidBoundingBox.AddPoint(Items[i].Centroid);
     }
-    int Axis = ChooseAxis(CB);
+	// Choose Most Longest Axis
+    int Axis = ChooseAxis(CentroidBoundingBox);
+
     int32 Mid = (First + Last) / 2;
     auto ItBeg = Items.begin() + First;
     auto ItMid = Items.begin() + Mid;
     auto ItEnd = Items.begin() + Last;
+
+	// Midian is In ItMid after nth_element Executed, Partial reorder A : Small than Mid, B : Large than Mid
     if (Axis == 0)
     {
         std::nth_element(ItBeg, ItMid, ItEnd, [](const FBVHItem& A, const FBVHItem& B){ return A.Centroid.X < B.Centroid.X; });
@@ -81,6 +82,7 @@ int32 FBVH::BuildRange(int32 First, int32 Last, int32 Depth)
         std::nth_element(ItBeg, ItMid, ItEnd, [](const FBVHItem& A, const FBVHItem& B){ return A.Centroid.Z < B.Centroid.Z; });
     }
 
+
     int32 Index = static_cast<int32>(Nodes.size());
     Nodes.push_back(FBVHNode());
     int32 L = BuildRange(First, Mid, Depth + 1);
@@ -89,6 +91,16 @@ int32 FBVH::BuildRange(int32 First, int32 Last, int32 Depth)
     Nodes[Index].Left = L;
     Nodes[Index].Right = R;
     return Index;
+}
+
+
+int32 FBVH::ChooseAxis(const FAABB& Bounds)
+{
+	FVector Extent = Bounds.GetExtent();
+
+	if (Extent.X >= Extent.Y && Extent.X >= Extent.Z) return 0; // Choose X
+	if (Extent.Y >= Extent.X && Extent.Y >= Extent.Z) return 1; // Choose Y
+	return 2; // Choose Z
 }
 
 bool FBVH::AABBContains(const FAABB& Outer, const FAABB& Inner)
@@ -226,3 +238,117 @@ void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<UStaticM
         }
     }
 }
+
+static inline bool IntersectAABB(const FRay& Ray, const FAABB& b, float tMax, float& t0, float& t1)
+{
+	const FVector invD{ 1.0f / Ray.Direction.X, 1.0f / Ray.Direction.Y, 1.0f / Ray.Direction.Z };
+
+	const FVector MinBound = b.Min - FVector{ Ray.Origin.X, Ray.Origin.Y, Ray.Origin.Z };
+	const FVector MaxBound = b.Max - FVector{ Ray.Origin.X, Ray.Origin.Y, Ray.Origin.Z };
+
+	const FVector tminv = FVector(MinBound.X * invD.X, MinBound.Y * invD.Y, MinBound.Z * invD.Z);
+	const FVector tmaxv = FVector(MaxBound.X * invD.X, MaxBound.Y * invD.Y, MaxBound.Z * invD.Z);
+	const FVector t1v{ std::min(tminv.X, tmaxv.X),
+					   std::min(tminv.Y, tmaxv.Y),
+					   std::min(tminv.Z, tmaxv.Z) };
+	const FVector t2v{ std::max(tminv.X, tmaxv.X),
+					   std::max(tminv.Y, tmaxv.Y),
+					   std::max(tminv.Z, tmaxv.Z) };
+	t0 = std::max(std::max(t1v.X, t1v.Y), t1v.Z);
+	t1 = std::min(std::min(t2v.X, t2v.Y), t2v.Z);
+	return (t1 >= t0) && (t0 <= tMax) && (t1 >= 0.0f);
+}
+
+static inline bool RayBoxEntry(const FAABB& Box, const FRay& Ray, float& OutTNear)
+{
+	float TEntry = -1.0f;
+	const bool Hit = Box.IntersectsRay(Ray.Origin, Ray.Direction, &TEntry);
+	if (!Hit) return false;
+
+	OutTNear = (TEntry >= 0.0f) ? TEntry : 0.0f; // 내부 시작 → 0으로 간주
+	return true;
+}
+
+struct FCand { UStaticMeshComponent* Comp; float TNear; };
+
+void FBVH::QueryRayCandidates(const FRay& Ray, int MaxK, TArray<UStaticMeshComponent*>& Out)
+{
+	Out.clear();
+	if (Root < 0) return;
+
+	float TMaxGlobal = FLT_MAX;
+
+	struct FStackItem { int32 NodeIdx; float TNear; };
+	TArray<FStackItem> Stack; Stack.reserve(64);
+	Stack.push_back({ Root, 0.0f });
+
+	TArray<FCand> Cands; Cands.reserve(MaxK > 0 ? MaxK * 2 : 64);
+
+	while (!Stack.empty())
+	{
+		const FStackItem It = Stack.back();
+		Stack.pop_back();
+		const FBVHNode& Node = Nodes[It.NodeIdx];
+
+		// 노드 박스와 레이 교차: front-to-back 순서를 위해 T0(엔트리), T1(출구) 확보
+		float N0 = 0.0f, N1 = 0.0f;
+		if (!IntersectAABB(Ray, Node.Bounds, TMaxGlobal, N0, N1)) continue;
+
+		if (Node.bLeaf)
+		{
+			// 리프: 각 아이템 AABB 교차 → 후보 수집
+			for (int i = 0; i < Node.Count; ++i)
+			{
+				const FBVHItem& Item = Items[Node.First + i];
+				float TNearItem;
+				if (RayBoxEntry(Item.Bounds, Ray, TNearItem))
+				{
+					if (TNearItem <= TMaxGlobal)
+						Cands.push_back({ Item.Comp, TNearItem });
+				}
+			}
+		}
+		else
+		{
+			// 자식들 front-to-back 방문 (가까운 쪽이 먼저 팝되도록 먼 쪽을 먼저 푸시)
+			int32 L = Node.Left, R = Node.Right;
+			float L0 = 0.f, L1 = 0.f, R0 = 0.f, R1 = 0.f;
+			bool HL = false, HR = false;
+
+			if (L >= 0) HL = IntersectAABB(Ray, Nodes[L].Bounds, TMaxGlobal, L0, L1);
+			if (R >= 0) HR = IntersectAABB(Ray, Nodes[R].Bounds, TMaxGlobal, R0, R1);
+
+			if (HL && HR)
+			{
+				if (L0 > R0) { std::swap(L, R); std::swap(L0, R0); }
+				Stack.push_back({ R, R0 });
+				Stack.push_back({ L, L0 });
+			}
+			else if (HL)
+			{
+				Stack.push_back({ L, L0 });
+			}
+			else if (HR)
+			{
+				Stack.push_back({ R, R0 });
+			}
+		}
+	}
+
+	// 거리순 정렬 + K개 컷
+	std::sort(Cands.begin(), Cands.end(),
+		[](const FCand& A, const FCand& B) { return A.TNear < B.TNear; });
+
+	if (MaxK > 0 && (int)Cands.size() > MaxK)
+		Cands.resize(MaxK);
+
+	Out.reserve(Cands.size());
+	for (auto& C : Cands)
+		Out.push_back(C.Comp);
+}
+
+//void FBVH::QueryRayMBVH(const FRay& ray)
+//{
+//	각 Leaf Node에 대해 Mesh triangle을 쪼갠 다음, (매번 쪼개야하나?)
+//	Mesh triangle의 리프가 됐을 때 hit 체크를 해야하나?
+//}

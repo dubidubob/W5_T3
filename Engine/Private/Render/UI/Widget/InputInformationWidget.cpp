@@ -110,10 +110,10 @@ void UInputInformationWidget::RenderWidget()
 				ImGui::Separator();
 
 				// Triangle Picking (기존 Ray-AABB 방식)
-				if (ImGui::Checkbox("Triangle Picking (Ray-AABB-Triangle)", &Editor->bTrianglePicking))
+				if (ImGui::Checkbox("Triangle Picking (Ray-AABB-Triangle)", &Editor->bRayPicking))
 				{
 					// 삼각형 피킹이 활성화되면 컬러 피킹을 비활성화
-					if (Editor->bTrianglePicking)
+					if (Editor->bRayPicking)
 					{
 						Editor->bColorPicking = false;
 					}
@@ -125,7 +125,7 @@ void UInputInformationWidget::RenderWidget()
 					// 컬러 피킹이 활성화되면 삼각형 피킹을 비활성화
 					if (Editor->bColorPicking)
 					{
-						Editor->bTrianglePicking = false;
+						Editor->bRayPicking = false;
 					}
 				}
 

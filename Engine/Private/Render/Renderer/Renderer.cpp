@@ -84,7 +84,7 @@ void URenderer::Init(HWND WindowHandle)
 
 	ULineBatchRenderer::GetInstance().Init();
 
-	uint32 ZAreaCount = 8;
+	uint32 ZAreaCount = 4;
 	ZAreaMeshCount.resize(ZAreaCount);
 
 	for (int i = 0; i < ZAreaCount - 1; i++)
@@ -394,9 +394,11 @@ void URenderer::Update(UEditor* Editor)
 	if (Editor->GetObjPreview()->SelectActivated())
 		RenderObjectViewer(Editor);
 #endif
-	if (bForceReRenderPicking || ShouldPerformColorPicking())
+	if ((bForceReRenderPicking || ShouldPerformColorPicking())
+		&& !Editor->GetIsRayPicking())
 	{
 		RenderColorPicking();
+
 		if (bForceReRenderPicking)
 		{
 			bForceReRenderPicking = false;
@@ -406,10 +408,6 @@ void URenderer::Update(UEditor* Editor)
 	++FrameCounter;
 	if (FrameCounter >= SET_DIRTY_FRAME_INTERVAL)
 	{
-		if (UInputManager::GetInstance().IsKeyDown(EKeyInput::MouseRight))
-		{
-			RenderColorPicking();
-		}
 		SetSortingBatchMapDirty();
 		FrameCounter = 0;
 	}
@@ -768,7 +766,8 @@ bool URenderer::ShouldPerformColorPicking()
 	bool bLeftMouseReleased = bPrevLeftMouseState && !bCurrentLeftMouseState;
 	bPrevLeftMouseState = bCurrentLeftMouseState;
 
-	bool bMousePressed = InputManager.IsKeyPressed(EKeyInput::MouseLeft) || bRightMouseReleased || bLeftMouseReleased;
+	bool bMousePressed = InputManager.IsKeyPressed(EKeyInput::MouseLeft) || InputManager.IsKeyPressed(EKeyInput::MouseRight)
+		|| bRightMouseReleased || bLeftMouseReleased;
 	if (!bMousePressed)
 	{
 		return false;

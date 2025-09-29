@@ -169,6 +169,7 @@ public:
 	UEditor* GetEditor() { return Editor; }
 	void SetEditor(UEditor* InEditor) { Editor = InEditor; }
 
+	// Actor Spawn, Actor Delete, Load Level
 	void MarkForceReRenderPicking() { bForceReRenderPicking = true; }
 	void UpdateZArea();
 	const float GetZArea(uint32 Idx) const
@@ -176,6 +177,7 @@ public:
 		return ZAreaDepthValue[Idx];
 	}
 
+	FBVH* GetBVH() { return &SceneBVH; }
 #ifdef _DEVELOP
 	const uint32 GetMaterialChangeCount() const { return MaterialChangeCount; }
 	const uint32 GetStaticMeshChangeCount() const { return StaticMeshChangeCount; }
