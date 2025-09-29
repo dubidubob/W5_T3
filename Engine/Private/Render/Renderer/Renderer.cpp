@@ -398,7 +398,7 @@ void URenderer::Update(UEditor* Editor)
 		RenderObjectViewer(Editor);
 #endif
 	if ((bForceReRenderPicking || ShouldPerformColorPicking())
-		&& !Editor->GetIsRayPicking())
+		/*&& !Editor->GetIsRayPicking()*/)
 	{
 		RenderColorPicking();
 
