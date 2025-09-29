@@ -22,6 +22,7 @@ public:
 
 	ID3D11Device* GetDevice() const { return Device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return DeviceContext; }
+	ID3D11Texture2D* GetFrameBufferTex() const { return FrameBuffer; }
 	IDXGISwapChain* GetSwapChain() const { return SwapChain; }
 	ID3D11RenderTargetView* GetRenderTargetView() const { return FrameBufferRTV; }
 	ID3D11DepthStencilView* GetDepthStencilView() const { return DepthStencilView; }

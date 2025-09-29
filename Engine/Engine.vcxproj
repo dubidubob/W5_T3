@@ -301,6 +301,7 @@
     <ClInclude Include="Public\Archive\Archive.h" />
     <ClInclude Include="Public\Core\EngineStatics.h" />
     <ClInclude Include="Public\Core\ObjectIterator.h" />
+    <ClInclude Include="Public\Editor\Direct2D.h" />
     <ClInclude Include="Public\Manager\Viewport\ViewportManager.h" />
     <ClInclude Include="Public\Math\AABB.h" />
     <ClInclude Include="Public\Math\Frustum.h" />
@@ -406,6 +407,7 @@
     <ClCompile Include="Global\NameTable.cpp" />
     <ClCompile Include="Global\PlatformTime.cpp" />
     <ClCompile Include="Private\Archive\Archive.cpp" />
+    <ClCompile Include="Private\Editor\Direct2D.cpp" />
     <ClCompile Include="Private\Manager\Viewport\ViewportManager.cpp" />
     <ClCompile Include="Private\Math\AABB.cpp" />
     <ClCompile Include="Private\Math\Frustum.cpp" />

@@ -8,6 +8,7 @@
 #include "Mesh/StaticMesh/StaticMesh.h"
 #include "Global/CoreTypes.h"
 #include "Math/BVH.h"
+#include "Editor/Direct2D.h"
 
 class UPipeline;
 class UDeviceResources;
@@ -188,6 +189,8 @@ public:
 
 
 private:
+	UDirect2D* Direct2D;
+
 	UEditor* Editor = nullptr;
 	bool bSortingBatchMapDirty = true;
 
