@@ -5,7 +5,16 @@ cbuffer constants : register(b0)
 {
 	row_major float4x4 world;
 }
+cbuffer WorldMatrixArray : register(b5)
+{
+	row_major float4x4 WorldMatrixArray[1000];
+};
 
+cbuffer ModelIdxCBuffer : register(b6)
+{
+	uint ModelIdx;
+	uint3 Padding6;
+};
 cbuffer PerFrame : register(b1)
 {
 	row_major float4x4 ViewMatrix;
@@ -82,7 +91,7 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 	//	ShadeColor = lerp(ShadeColor, Instance.Color, Instance.Color.a);
 	//}
 
-	Position = mul(Position, world);
+	Position = mul(Position, WorldMatrixArray[ModelIdx]);
 	Position = mul(Position, ViewProj);
 
 	Output.Position = Position;

@@ -195,6 +195,7 @@ private:
 	TArray<UStaticMeshComponent*> Candidate;
 
 	//bool(4byte), WorldMatrix, bool(4byte), WorldMatrix
+	TArray<FMatrix> WorldMatrixes;
 	TMap<uint32, TMap<FStaticMaterial*, TMap<FStaticMesh*, TArray<FMatrix>>>> RenderStreamMap;
 
 	// ================== Frame Skipping Optimization ==================
@@ -236,6 +237,8 @@ private:
 	ID3D11BlendState* TextBlendState = nullptr;
 
 	// ================== Constant Buffers ==================
+	ID3D11Buffer* ConstantBufferModelIdx = nullptr;
+	ID3D11Buffer* ConstantBufferWorldMatrixArray = nullptr;
 	ID3D11Buffer* ConstantBufferModels = nullptr;
 	ID3D11Buffer* ConstantBufferPerFrame = nullptr;
 	ID3D11Buffer* ConstantBufferColor = nullptr;

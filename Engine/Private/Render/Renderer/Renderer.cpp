@@ -189,6 +189,8 @@ void URenderer::InitializeShaders()
 void URenderer::InitializeBuffers()
 {
 	CreateConstantBuffer(ConstantBufferModels, sizeof(FMatrix));
+	CreateConstantBuffer(ConstantBufferModelIdx, sizeof(FVector4));
+	CreateConstantBuffer(ConstantBufferWorldMatrixArray, sizeof(FMatrix) * 1000);
 	CreateConstantBuffer(ConstantBufferColor, sizeof(FVector4));
 	CreateConstantBuffer(ConstantBufferPerFrame, sizeof(FViewProjConstants));
 	CreateConstantBuffer(ConstantBufferInstance, sizeof(InstanceDrawConstants));
@@ -602,6 +604,7 @@ void URenderer::SetRenderStream()
 	{
 		MeshCount = 0;
 	}
+	WorldMatrixes.clear();
 	for (UStaticMeshComponent* Comp : Candidate)
 	{
 		FVector4 ViewPos = FVector4(Comp->GetWorldLocation(), 1) * ViewMat;
@@ -677,6 +680,8 @@ void URenderer::RenderSortingBatchMap()
 	const uint32 WorldMatValueCount = 16;
 	uint32 ActorIdx = 0;
 	TArray<uint32> ZAreaKeys = RenderStreamMap.GetKeys();
+	Pipeline->SetConstantBuffer(5, true, ConstantBufferWorldMatrixArray);
+	Pipeline->SetConstantBuffer(6, true, ConstantBufferModelIdx);
 	for (uint32 ZArea : ZAreaKeys)
 	{
 		TArray<FStaticMaterial*> MaterialKeys = RenderStreamMap[ZArea].GetKeys();
@@ -691,19 +696,25 @@ void URenderer::RenderSortingBatchMap()
 				const TArray<FStaticMeshSection*>& Sections = StaticMeshKey->GetSectionMap(MaterialKey);
 				TIME_PROFILE(DRAW)
 				TArray<FMatrix>& RenderStream = SortingMaterialMap[StaticMeshKey];
-				for (FMatrix& WorldMatrix : RenderStream)
+				uint32 RenderStreamSize = RenderStream.size();
+				uint32 CurRemainRenderStreamSize = RenderStreamSize;
+				for (int i = 0; i < RenderStreamSize; i += 1000)
 				{
-					UpdateBuffer(ConstantBufferModels, WorldMatrix, WorldMatSize);
-
-					for (const FStaticMeshSection* Section : Sections)
+					int CurSize = CurRemainRenderStreamSize > 1000 ? 1000 : CurRemainRenderStreamSize;
+					CurRemainRenderStreamSize -= CurSize;
+ 					UpdateBufferStream(ConstantBufferWorldMatrixArray, &RenderStream[i], WorldMatSize * CurSize);
+					for (int j = 0; j < CurSize; j++)
 					{
-						Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
+						UpdateBuffer(ConstantBufferModelIdx,j);
+						for (const FStaticMeshSection* Section : Sections)
+						{
+							Pipeline->DrawIndexed(Section->NumIndices, Section->FirstIndex, 0);
 #ifdef _DEVELOP
-						MeshSectionDrawCount++;
+							MeshSectionDrawCount++;
 #endif
+						}
 					}
 				}
-				TIME_PROFILE_END(DRAW)
 			}
 		}
 	}
@@ -1481,6 +1492,8 @@ void URenderer::CleanupShaders()
 void URenderer::CleanupBuffers()
 {
 	SafeRelease(ConstantBufferModels);
+	SafeRelease(ConstantBufferModelIdx);
+	SafeRelease(ConstantBufferWorldMatrixArray);
 	SafeRelease(ConstantBufferColor);
 	SafeRelease(ConstantBufferPerFrame);
 	SafeRelease(ConstantBufferInstance);
