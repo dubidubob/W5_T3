@@ -136,7 +136,7 @@ void OcclusionCulling::SelectOccluder(TArray<UStaticMeshComponent*> PreCandidate
 	FVector CameraLocation)
 {
 	NonOccluders.Empty();
-	Occluders.empty();
+	std::priority_queue<UStaticMeshIdx, std::vector<UStaticMeshIdx>, std::less<UStaticMeshIdx>>().swap(Occluders);
 
 	for (int i = 0; i < PreCandidates.Num(); ++i)
 	{
@@ -150,13 +150,14 @@ void OcclusionCulling::SelectOccluder(TArray<UStaticMeshComponent*> PreCandidate
 		UStaticMeshIdx node{ C, distSq };
 		Occluders.push(node);
 
-		// 큐 사이즈가 OccluderNum 초과하면 top()(가장 먼) 팝 → NonOccluders 로 이동
-		if (Occluders.size() > OccluderNum)
+		TSet<UStaticMeshComponent*> occSet;
 		{
-			UStaticMeshIdx popped = Occluders.top();
-			Occluders.pop(); // priority 특수화에서 top() pop
-			NonOccluders.Add(popped);
+			auto q = Occluders; // 복사
+			while (!q.empty()) { occSet.Add(q.top().Comp); q.pop(); }
 		}
+		for (UStaticMeshComponent* C : PreCandidates)
+			if (C && C->IsVisible() && !occSet.Contains(C))
+				NonOccluders.Add({ C, 0.f });
 	}
 
 	// 큐에 남은 N개(가장 가까운 occluder) 이외의 나머지 후보들도 NonOccluders에 합쳐야 전체가 완성됨
