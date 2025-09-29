@@ -115,8 +115,7 @@ const FVector& USceneComponent::GetRelativeScale3D() const
 
 const FVector& USceneComponent::GetWorldLocation() const
 {
-	const FMatrix& WorldMatrix = GetWorldTransformMatrix();
-	return FVector(WorldMatrix.Data[3][0], WorldMatrix.Data[3][1], WorldMatrix.Data[3][2]);
+	return FVector(WorldTransformMatrix.Data[3][0], WorldTransformMatrix.Data[3][1], WorldTransformMatrix.Data[3][2]);
 }
 
 const FMatrix& USceneComponent::GetWorldTransformMatrix() const

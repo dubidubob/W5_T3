@@ -24,6 +24,12 @@ const FName& UStaticMesh::GetAssetPathFileName() const
 	return EmptyString;
 }
 
+void FStaticMesh::CreateBVH()
+{
+	MeshBVH.Build(*this);
+}
+
+
 void FStaticMesh::Serialize(FArchive& Ar)
 {
 	FString NameString = FileName.ToString();
