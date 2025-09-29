@@ -79,8 +79,7 @@ void URenderer::Init(HWND WindowHandle)
 	InitializeBuffers();
 
 
-	Direct2D = NewObject<UDirect2D>();
-	Direct2D->Init(DeviceResources->GetFrameBufferTex());
+	Direct2D.Init(DeviceResources->GetFrameBufferTex());
 
 	// Initialize color picking cache
 	bPickingDataValid = false;
@@ -99,7 +98,7 @@ void URenderer::Init(HWND WindowHandle)
 
 void URenderer::Release()
 {
-	delete Direct2D;
+	Direct2D.Release();
 	ULineBatchRenderer::GetInstance().Release();
 	CleanupAll();
 	SafeDelete(Pipeline);
@@ -422,7 +421,7 @@ void URenderer::Update(UEditor* Editor)
 	GetDeviceContext()->OMSetRenderTargets(1, &MainRTV, MainDSV);
 	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
 	UUIManager::GetInstance().Render(); //0.1ms
-	Direct2D->DrawOverlay();
+	Direct2D.DrawOverlay();
 	RenderEnd();
 }
 
@@ -1403,8 +1402,7 @@ void URenderer::OnResize(uint32 Width, uint32 Height)
 	DeviceResources->ReleaseDepthBuffer();
 	GetDeviceContext()->OMSetRenderTargets(0, nullptr, nullptr);
 
-	delete Direct2D;
-
+	Direct2D.Release();
 	// Resize swap chain buffers
 	HRESULT hr = GetSwapChain()->ResizeBuffers(2, Width, Height, DXGI_FORMAT_UNKNOWN, 0);
 	if (FAILED(hr))
@@ -1428,8 +1426,7 @@ void URenderer::OnResize(uint32 Width, uint32 Height)
 	ID3D11RenderTargetView* RenderTargetViews[] = { RenderTargetView };
 	GetDeviceContext()->OMSetRenderTargets(1, RenderTargetViews, DeviceResources->GetDepthStencilView());
 
-	Direct2D = NewObject<UDirect2D>();
-	Direct2D->Init(DeviceResources->GetFrameBufferTex());
+	Direct2D.Init(DeviceResources->GetFrameBufferTex());
 	// Render Picking Texture
 	RenderColorPicking();
 }

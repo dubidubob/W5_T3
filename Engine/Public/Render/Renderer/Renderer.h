@@ -189,7 +189,7 @@ public:
 
 
 private:
-	UDirect2D* Direct2D;
+	UDirect2D Direct2D;
 
 	UEditor* Editor = nullptr;
 	bool bSortingBatchMapDirty = true;
