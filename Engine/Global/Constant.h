@@ -10,7 +10,7 @@ namespace Render
 namespace Time
 {
 	// Time Sample Count
-	constexpr int32 FPS_SAMPLE_COUNT = 60;
+	constexpr int32 FPS_SAMPLE_COUNT = 1;
 }
 
 constexpr float Pi = 3.141592f;
