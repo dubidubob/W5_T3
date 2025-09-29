@@ -33,7 +33,6 @@ FStaticMesh* FObjImporter::ParseAndConvert(const FString& FileName)
 	CookedData->Serialize(Writer);
 	UE_LOG("Successfully baked mesh to binary file: %s", BinaryFilePath.string().c_str());
 
-
 	return CookedData;
 }
 
@@ -64,6 +63,7 @@ FStaticMesh* FObjImporter::LoadStaticMeshFromBinary(const FString& FileName)
 
 		FStaticMesh* CookedData = new FStaticMesh();
 		CookedData->Serialize(Reader);
+		CookedData->CreateBVH();
 		return CookedData;
 	}
 

@@ -26,8 +26,9 @@ const FName& UStaticMesh::GetAssetPathFileName() const
 
 void FStaticMesh::CreateBVH()
 {
-	// MeeshBVH.Build();
+	MeshBVH.Build(*this);
 }
+
 
 void FStaticMesh::Serialize(FArchive& Ar)
 {

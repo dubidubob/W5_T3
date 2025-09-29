@@ -10,20 +10,20 @@ void FMeshBVH::Clear()
 	LeafMax = 4;
 }
 
-void FMeshBVH::Build(const FStaticMesh*& Mesh)
+void FMeshBVH::Build(const FStaticMesh& Mesh)
 {
 	// 지금까지 자료구조 지우기
 	Clear();
-	if (!Mesh || Mesh->Indices.IsEmpty()) return;
+	if (!&Mesh || Mesh.Indices.IsEmpty()) return;
 
-	uint32 NumTriangles = Mesh->Indices.Num() / 3;
+	uint32 NumTriangles = Mesh.Indices.Num() / 3;
 	Items.Reserve(NumTriangles);
 
 	for (uint32 i = 0; i < NumTriangles; ++i)
 	{
-		const FVector& V0 = Mesh->Vertices[Mesh->Indices[i * 3 + 0]].Pos;
-		const FVector& V1 = Mesh->Vertices[Mesh->Indices[i * 3 + 1]].Pos;
-		const FVector& V2 = Mesh->Vertices[Mesh->Indices[i * 3 + 2]].Pos;
+		const FVector& V0 = Mesh.Vertices[Mesh.Indices[i * 3 + 0]].Pos;
+		const FVector& V1 = Mesh.Vertices[Mesh.Indices[i * 3 + 1]].Pos;
+		const FVector& V2 = Mesh.Vertices[Mesh.Indices[i * 3 + 2]].Pos;
 
 		FMeshBVHItem Item;
 		Item.VertexPosX[0] = V0.X; Item.VertexPosX[1] = V1.X; Item.VertexPosX[2] = V2.X;
@@ -181,10 +181,13 @@ int32 FMeshBVH::BuildRange(int32 First, int32 Last, int32 Depth)
 
 	int32 Index = static_cast<int32>(Nodes.size());
 	Nodes.push_back(FBVHNode());
+
 	int32 L = BuildRange(First, Mid, Depth + 1);
 	int32 R = BuildRange(Mid, Last, Depth + 1);
+
 	Nodes[Index].Bounds = Nodes[L].Bounds + Nodes[R].Bounds;
 	Nodes[Index].Left = L;
 	Nodes[Index].Right = R;
+
 	return Index;
 }

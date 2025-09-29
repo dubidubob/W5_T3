@@ -20,7 +20,7 @@ class FMeshBVH : public FBVH
 public:
 	virtual ~FMeshBVH() = default;
 
-	void Build(const FStaticMesh*& Mesh);
+	void Build(const FStaticMesh& Mesh);
 	void QueryRayLocalMesh(const FRay& ModelRay, int MaxK, TArray<FMeshBVHItem*>& Out); // return Triangle, always 4*n
 
 protected:

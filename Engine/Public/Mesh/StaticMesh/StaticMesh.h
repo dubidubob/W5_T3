@@ -70,7 +70,7 @@ struct FStaticMesh
 
 private:
 	TMap<FStaticMaterial*, TArray<FStaticMeshSection*>> SectionMap;
-	FMeshBVH MeeshBVH;
+	FMeshBVH MeshBVH;
 
 public:
 	FStaticMesh() = default;
@@ -102,7 +102,9 @@ public:
 		return FullName; 
 	}
 
+	FMeshBVH* GetMeshBVH() { return &MeshBVH; }
 	void CreateBVH();
+	
 	void Serialize(class FArchive& Ar);
 
 	const TArray<FStaticMeshSection*>& GetSectionMap(FStaticMaterial* Material) const
