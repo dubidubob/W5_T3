@@ -137,23 +137,6 @@ void ULevel::AddLevelPrimitiveComponent(AActor* Actor)
 		}
 	}
 }
-//Deprecated : EditorPrimitive는 에디터에서 처리
-//void ULevel::AddEditorPrimitiveComponent(AActor* Actor)
-//{
-//	if (!Actor) return;
-//
-//	for (auto& Component : Actor->GetOwnedComponents())
-//	{
-//		if (Component->GetComponentType() >= EComponentType::Primitive)
-//		{
-//			UPrimitiveComponent* PrimitiveComponent = static_cast<UPrimitiveComponent*>(Component);
-//			if (PrimitiveComponent->IsVisible())
-//			{
-//				EditorPrimitiveComponents.push_back(PrimitiveComponent);
-//			}
-//		}
-//	}
-//}
 
 void ULevel::SetSelectedActor(AActor* InActor)
 {

@@ -9,47 +9,42 @@ void FBVH::Clear()
     Root = -1;
 }
 
-void FBVH::Build(const TArray<UStaticMeshComponent*>& Comps)
+void FBVH::Build(const TArray<UStaticMeshComponent*>& Components)
 {
     Clear();
-    Items.reserve(Comps.size());
-	int idx = 0;
-    for (UStaticMeshComponent* C : Comps)
+    Items.reserve(Components.size());
+	int Idx = 0;
+    for (UStaticMeshComponent* Component : Components)
     {
-        if (!C) continue;
-        FAABB B = C->GetWorldBounds();
-        if (!B.IsValid()) continue;
-        FBVHItem It;
-        It.Comp = C;
-        It.Bounds = B;
-        It.Centroid = B.GetCenter();
-		It.OriginIdx = idx++;
-        Items.push_back(It);
+        if (!Component) continue;
+        FAABB BoundingBox = Component->GetWorldBounds();
+        if (!BoundingBox.IsValid()) continue;
+        FBVHItem CandidateItem;
+        CandidateItem.Comp = Component;
+        CandidateItem.Bounds = BoundingBox;
+        CandidateItem.Centroid = BoundingBox.GetCenter();
+		CandidateItem.OriginIdx = Idx++;
+        Items.push_back(CandidateItem);
     }
     if (Items.empty()) { Root = -1; return; }
     Nodes.reserve(Items.size() * 2);
-	int itemSize = Items.size();
 
     Root = BuildRange(0, static_cast<int32>(Items.size()), 0);
-}
-
-int32 FBVH::ChooseAxis(const FAABB& Bounds)
-{
-    FVector Ext = Bounds.GetExtent();
-    if (Ext.X >= Ext.Y && Ext.X >= Ext.Z) return 0;
-    if (Ext.Y >= Ext.X && Ext.Y >= Ext.Z) return 1;
-    return 2;
 }
 
 int32 FBVH::BuildRange(int32 First, int32 Last, int32 Depth)
 {
     FBVHNode Node;
-    FAABB B;
+	// Create new AABB that Include First ~ Last Objects
+    FAABB BoundingBox;
     for (int32 i = First; i < Last; ++i) {
-        B.AddAABB(Items[i].Bounds);
+        BoundingBox.AddAABB(Items[i].Bounds);
     }
-    Node.Bounds = B;
+    Node.Bounds = BoundingBox;
+
+
     int32 Count = Last - First;
+	// Make Leaf Node
     if (Count <= LeafMax || Depth >= MaxDepth)
     {
         Node.bLeaf = true;
@@ -57,18 +52,24 @@ int32 FBVH::BuildRange(int32 First, int32 Last, int32 Depth)
         Node.Count = Count;
         int32 Index = static_cast<int32>(Nodes.size());
         Nodes.push_back(Node);
-        return Index;
+        return Index; // Return to Parent with Their Index
     }
-    FAABB CB;
+
+	// Midian Split for Choose Axis
+    FAABB CentroidBoundingBox;
     for (int32 i = First; i < Last; ++i)
     {
-        CB.AddPoint(Items[i].Centroid);
+        CentroidBoundingBox.AddPoint(Items[i].Centroid);
     }
-    int Axis = ChooseAxis(CB);
+	// Choose Most Longest Axis
+    int Axis = ChooseAxis(CentroidBoundingBox);
+
     int32 Mid = (First + Last) / 2;
     auto ItBeg = Items.begin() + First;
     auto ItMid = Items.begin() + Mid;
     auto ItEnd = Items.begin() + Last;
+
+	// Midian is In ItMid after nth_element Executed, Partial reorder A : Small than Mid, B : Large than Mid
     if (Axis == 0)
     {
         std::nth_element(ItBeg, ItMid, ItEnd, [](const FBVHItem& A, const FBVHItem& B){ return A.Centroid.X < B.Centroid.X; });
@@ -82,6 +83,7 @@ int32 FBVH::BuildRange(int32 First, int32 Last, int32 Depth)
         std::nth_element(ItBeg, ItMid, ItEnd, [](const FBVHItem& A, const FBVHItem& B){ return A.Centroid.Z < B.Centroid.Z; });
     }
 
+
     int32 Index = static_cast<int32>(Nodes.size());
     Nodes.push_back(FBVHNode());
     int32 L = BuildRange(First, Mid, Depth + 1);
@@ -90,6 +92,16 @@ int32 FBVH::BuildRange(int32 First, int32 Last, int32 Depth)
     Nodes[Index].Left = L;
     Nodes[Index].Right = R;
     return Index;
+}
+
+
+int32 FBVH::ChooseAxis(const FAABB& Bounds)
+{
+	FVector Extent = Bounds.GetExtent();
+
+	if (Extent.X >= Extent.Y && Extent.X >= Extent.Z) return 0; // Choose X
+	if (Extent.Y >= Extent.X && Extent.Y >= Extent.Z) return 1; // Choose Y
+	return 2; // Choose Z
 }
 
 bool FBVH::AABBContains(const FAABB& Outer, const FAABB& Inner)
@@ -229,3 +241,34 @@ void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& O
         }
     }
 }
+
+struct FCand { UStaticMeshComponent* Comp; float TNear; };
+
+void FBVH::QueryRayCandidates(const FRay& ray, int maxK, TArray<UStaticMeshComponent*>& out)
+{
+	// Node로 SLAB AABB를 실행한다.
+	// 즉, 해당 노드의 Bounds 안에 Ray가 통과가 되면 재귀적으로 탐색하고, 아니라면 멈추는 Backtracking 방식
+	out.clear();
+	if (Root < 0) return;
+
+	float TMax = FLT_MAX;
+	struct Stack { int32 NodeIdx; float TNear; };
+	TArray<Stack> Stack; Stack.reserve(64);
+	Stack.push_back({ Root, 0.0f });
+
+	TArray<FCand> Candidates;
+
+	// while(!Stack)
+
+
+
+	// Leaf까지 갔다면 해당 Leaf를 배열에 담는다.
+
+	// 다 담았으면 out에 반환한다.
+}
+
+//void FBVH::QueryRayMBVH(const FRay& ray)
+//{
+//	각 Leaf Node에 대해 Mesh triangle을 쪼갠 다음, (매번 쪼개야하나?)
+//	Mesh triangle의 리프가 됐을 때 hit 체크를 해야하나?
+//}
