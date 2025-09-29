@@ -214,7 +214,6 @@ void URenderer::InitializeRenderStateChangeCount()
 {
 	MaterialChangeCount = 0;
 	StaticMeshChangeCount = 0;
-	StaticMeshComponentChagneCount = 0;
 	MeshSectionDrawCount = 0;
 }
 #endif
@@ -746,9 +745,6 @@ void URenderer::SetupStaticMeshAsset(FStaticMesh* StaticMeshAsset)
 void URenderer::SetupStaticMeshComponent(UStaticMeshComponent* StaticMeshComponent)
 {
 	UpdateBuffer(ConstantBufferModels, StaticMeshComponent->GetWorldTransformMatrix());
-#ifdef _DEVELOP
-	StaticMeshComponentChagneCount++;
-#endif
 }
 bool URenderer::ShouldPerformColorPicking()
 {

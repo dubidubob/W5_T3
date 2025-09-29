@@ -83,7 +83,6 @@ void UFPSWidget::RenderWidget()
 	ImGui::Text("Develop Log");
 	ImGui::Text("Material Change : %s", to_string(Renderer.GetMaterialChangeCount()).c_str());
 	ImGui::Text("StaticMesh Change : %s", to_string(Renderer.GetStaticMeshChangeCount()).c_str());
-	ImGui::Text("StaticMeshComponent Change : %s", to_string(Renderer.GetStaticMeshComponentChagneCount()).c_str());
 	ImGui::Text("MeshSectionDraw Count : %s", to_string(Renderer.GetMeshSectionDrawCount()).c_str());
 
 	ImGui::Separator();

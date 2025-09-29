@@ -181,7 +181,6 @@ public:
 #ifdef _DEVELOP
 	const uint32 GetMaterialChangeCount() const { return MaterialChangeCount; }
 	const uint32 GetStaticMeshChangeCount() const { return StaticMeshChangeCount; }
-	const uint32 GetStaticMeshComponentChagneCount() const { return StaticMeshComponentChagneCount; }
 	const uint32 GetMeshSectionDrawCount() const { return MeshSectionDrawCount; }
 #endif
 	const TArray<uint32> GetZAreaMeshCount() const { return ZAreaMeshCount; }
@@ -209,7 +208,6 @@ private:
 #ifdef _DEVELOP
 	uint32 MaterialChangeCount = 0;
 	uint32 StaticMeshChangeCount = 0;
-	uint32 StaticMeshComponentChagneCount = 0;
 	uint32 MeshSectionDrawCount = 0;
 #endif
 
