@@ -13,6 +13,7 @@
 #include "ImGui/imgui.h"
 #include "Render/Renderer/Renderer.h"
 #include "Mesh/StaticMeshComponent.h"
+#include "Global/PlatformTime.h"
 
 IMPLEMENT_CLASS(UObjectPicker, UObject)
 
@@ -41,18 +42,13 @@ FRay UObjectPicker::GetModelRay(const FRay& Ray, UPrimitiveComponent* Primitive)
 
 UStaticMeshComponent* UObjectPicker::PickPrimitive(const FRay& WorldRay, TArray<UStaticMeshComponent*> Candidate, float* Distance)
 {
+	TIME_PROFILE(PickPrimitive)
 	UStaticMeshComponent* ShortestPrimitive = nullptr;
 	float ShortestDistance = D3D11_FLOAT32_MAX;
 	float PrimitiveDistance = D3D11_FLOAT32_MAX;
 	
 	for (UStaticMeshComponent* Primitive : Candidate)
 	{
-		FAABB WorldBounds = Primitive->GetWorldBounds();
-		if (!WorldBounds.IntersectsRay(WorldRay.Origin, WorldRay.Direction))
-		{
-			continue;
-		}
-
 		FMatrix ModelMat = Primitive->GetWorldTransformMatrix();
 		FRay ModelRay = GetModelRay(WorldRay, Primitive);
 		if (IsRayPrimitiveCollided(ModelRay, Primitive, ModelMat, &PrimitiveDistance))

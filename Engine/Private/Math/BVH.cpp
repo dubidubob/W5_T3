@@ -349,9 +349,3 @@ void FBVH::QueryRayCandidates(const FRay& Ray, int MaxK, TArray<UStaticMeshCompo
 	for (auto& C : Cands)
 		Out.push_back(C.Comp);
 }
-
-//void FBVH::QueryRayMBVH(const FRay& ray)
-//{
-//	각 Leaf Node에 대해 Mesh triangle을 쪼갠 다음, (매번 쪼개야하나?)
-//	Mesh triangle의 리프가 됐을 때 hit 체크를 해야하나?
-//}
