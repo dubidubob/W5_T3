@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <vector>
 #include <stdexcept>
+#include "Render/Renderer/StatsOverlayD2D.h"
+
 
 IMPLEMENT_CLASS(UConsoleWidget, UWidget)
 
@@ -650,7 +652,20 @@ void UConsoleWidget::ProcessCommand(const char* InCommand)
 	{
 		ClearLog();
 	}
+	else if (FString CommandLower = InCommand;
+		std::transform(CommandLower.begin(), CommandLower.end(), CommandLower.begin(), ::tolower),
+		CommandLower == "stat fps")
+		{
+			UStatsOverlayD2D::Get().ChangeShowFPS();
 
+		}
+	else if (FString CommandLower = InCommand;
+		std::transform(CommandLower.begin(), CommandLower.end(), CommandLower.begin(), ::tolower),
+		CommandLower == "stat pickingtime")
+		{
+			UStatsOverlayD2D::Get().ChangeShowPickingTime();
+
+		}
 	// Help 명령어 입력
 	else if (FString CommandLower = InCommand;
 		std::transform(CommandLower.begin(), CommandLower.end(), CommandLower.begin(), ::tolower),

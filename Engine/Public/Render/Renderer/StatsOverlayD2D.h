@@ -14,6 +14,14 @@ public:
     void SetShowFPS(bool b); 
     void SetShowMemory(bool b);
     void SetShowPickingTime(bool b);
+	void ChangeShowFPS()
+	{
+		SetShowFPS(!bShowFPS);
+	}
+	void ChangeShowPickingTime()
+	{
+		SetShowPickingTime(!bShowPicking);
+	}
     void TogglePickingTime();
     void ToggleFPS();
     void ToggleMemory();

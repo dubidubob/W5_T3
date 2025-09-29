@@ -87,8 +87,6 @@ void URenderer::Init(HWND WindowHandle)
 
 	UStatsOverlayD2D::Get().Initialize(GetDevice(), GetDeviceContext(), GetSwapChain());
     // Enable basic stats by default
-    UStatsOverlayD2D::Get().SetShowFPS(true);
-    UStatsOverlayD2D::Get().SetShowPickingTime(true);
 
 	uint32 ZAreaCount = 4;
 	ZAreaMeshCount.resize(ZAreaCount);
