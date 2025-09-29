@@ -510,6 +510,25 @@ void URenderer::UpdateZArea()
 	float NextValue = 0;
 
 	//이전구역 현재구역 다음구역 메쉬갯수 구해서 평행해지게 만들기
+	uint32 CandidateMeshSize = Candidate.size();
+	uint32 AreaAverageMeshCount = CandidateMeshSize / ZAreaValueCount + 100;
+	for (int i = 0; i < ZAreaValueCount + 1; i++)
+	{
+		int PrevCount = i == 0 ? 0 : ZAreaMeshCount[i - 1];
+		int CurCount = ZAreaMeshCount[i];
+		int NextCount = i == ZAreaValueCount ? 0 : ZAreaMeshCount[i + 1];
+		if (CurCount < AreaAverageMeshCount)
+		{
+			if (CurCount < PrevCount)
+			{
+				ZAreaDepthValue[i - 1] -= 0.05f;
+			}
+			if (CurCount < NextCount)
+			{
+				ZAreaDepthValue[i] += 0.05f;
+			}
+		}
+	}
 	for (int i = 0; i < ZAreaValueCount; i++)
 	{
 		int PrevCount = ZAreaMeshCount[i];
