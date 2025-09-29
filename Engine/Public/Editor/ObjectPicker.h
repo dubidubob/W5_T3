@@ -26,6 +26,7 @@ public:
 	bool IsRayCollideWithPlane(const FRay& WorldRay, FVector PlanePoint, FVector Normal, FVector& PointOnPlane);
 
 private:
+	bool IsRayPrimitiveCollided(const FRay& ModelRay, UStaticMeshComponent* Primitive, const FMatrix& ModelMatrix, float* ShortestDistance);
 	bool IsRayPrimitiveCollided(const FRay& ModelRay, UPrimitiveComponent* Primitive, const FMatrix& ModelMatrix, float* ShortestDistance);
 	FRay GetModelRay(const FRay& Ray, UPrimitiveComponent* Primitive);
 	bool IsRayTriangleCollided(const FRay& Ray, const FVector& Vertex1, const FVector& Vertex2, const FVector& Vertex3,

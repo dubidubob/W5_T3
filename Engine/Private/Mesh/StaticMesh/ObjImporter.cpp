@@ -63,6 +63,7 @@ FStaticMesh* FObjImporter::LoadStaticMeshFromBinary(const FString& FileName)
 
 		FStaticMesh* CookedData = new FStaticMesh();
 		CookedData->Serialize(Reader);
+		CookedData->CreateBVH();
 		return CookedData;
 	}
 
