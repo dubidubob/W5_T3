@@ -15,6 +15,7 @@
 #include "Manager/Viewport/ViewportManager.h"
 #include "Slate/Viewport.h"
 #include "Manager/Input/InputManager.h"
+#include "Core/ObjectIterator.h"
 #if IS_OBJ_VIEWER
 #include "Utility/ObjectPreviewScene.h"
 #endif
@@ -390,9 +391,19 @@ void URenderer::RenderLevel()
 		return;
 	}
 
-	const TArray<UPrimitiveComponent*>& PrimitiveComponents =
-		ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
+	UEditor* Editor = nullptr;
+	for (TObjectIterator<UEditor> it; it; ++it)
+	{
+		if (it->IsA(UEditor::StaticClass()))
+		{
+			Editor = static_cast<UEditor*>(*it);
+			break;
+		}
+	}
+	if (!Editor) return;
 
+	// 프러스텀에 존재하는 객체들만 렌더링
+	const TArray<UPrimitiveComponent*>& PrimitiveComponents = Editor->GetVisiblePrimitivesInFrustum();
 	for (UPrimitiveComponent* Component : PrimitiveComponents)
 	{
 		RenderStaticMeshComponent(Component);

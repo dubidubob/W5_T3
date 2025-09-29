@@ -2,12 +2,19 @@
 #include "Render/UI/Widget/InputInformationWidget.h"
 
 #include "Manager/Input/InputManager.h"
+#include "Editor/Editor.h"
+#include "Core/ObjectIterator.h"
+#include "ImGui/imgui.h"
+#include "Math/Octree.h"	
 
 constexpr uint8 MaxKeyHistory = 10;
 
 IMPLEMENT_CLASS(UInputInformationWidget, UWidget)
 
 UInputInformationWidget::UInputInformationWidget()
+	: Editor(nullptr)
+	, CurrentSpatialStructure(ESpatialDataStructure::None)
+	, bShowSpatialVisualization(false)
 {
 }
 
@@ -93,6 +100,13 @@ void UInputInformationWidget::RenderWidget()
 		if (ImGui::BeginTabItem("Statistics"))
 		{
 			RenderKeyStatistics();
+			ImGui::EndTabItem();
+		}
+
+		// 공간 분할 구조 탭
+		if (ImGui::BeginTabItem("Spatial Data Structure"))
+		{
+			RenderSpatialDataStructureControls();
 			ImGui::EndTabItem();
 		}
 
@@ -196,6 +210,192 @@ void UInputInformationWidget::RenderKeyStatistics()
 		if (ImGui::Button("Clear Statistics"))
 		{
 			KeyPressCount.clear();
+		}
+	}
+}
+
+void UInputInformationWidget::RenderSpatialDataStructureControls()
+{
+	if (!Editor)
+	{
+		for (TObjectIterator<UEditor> It; It; ++It)
+		{
+			if (It->IsA(UEditor::StaticClass()))
+			{
+				Editor = static_cast<UEditor*>(*It);
+				break;
+			}
+		}
+
+		// 기본값 설정
+		CurrentSpatialStructure = ESpatialDataStructure::Octree; // 기본적으로 Octree 활성화
+		bShowSpatialVisualization = true;
+
+		// Editor에 설정 적용
+		if (Editor)
+		{
+			Editor->SetUseOctreeForPicking(true);
+			Editor->SetOctreeVisualization(bShowSpatialVisualization);
+		}
+	}
+
+	ImGui::Text("=== Spatial Data Structure Controls ===");
+	ImGui::Separator();
+
+	// 공간 분할 구조 선택
+	ImGui::Text("Picking Method:");
+	const char* spatialMethods[] = { "None (Brute Force)", "Octree", "KD-Tree (Coming Soon)", "BVH (Coming Soon)", "BSP Tree (Coming Soon)" };
+	int currentMethod = static_cast<int>(CurrentSpatialStructure);
+
+	if (ImGui::Combo("##SpatialMethod", &currentMethod, spatialMethods, IM_ARRAYSIZE(spatialMethods)))
+	{
+		CurrentSpatialStructure = static_cast<ESpatialDataStructure>(currentMethod);
+
+		// Editor에 설정 적용
+		switch (CurrentSpatialStructure)
+		{
+		case ESpatialDataStructure::None:
+			Editor->SetUseOctreeForPicking(false);
+			bShowSpatialVisualization = false;
+			Editor->SetOctreeVisualization(false);
+			break;
+		case ESpatialDataStructure::Octree:
+			Editor->SetUseOctreeForPicking(true);
+			Editor->SetOctreeVisualization(bShowSpatialVisualization);
+			break;
+		default:
+			// 다른 구조들은 아직 구현되지 않음
+			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "This method is not implemented yet!");
+			break;
+		}
+	}
+
+	ImGui::Spacing();
+
+	// 시각화 옵션 (Octree가 선택된 경우만)
+	if (CurrentSpatialStructure == ESpatialDataStructure::Octree)
+	{
+		ImGui::Text("Visualization Options:");
+
+		if (ImGui::Checkbox("Show Octree Visualization", &bShowSpatialVisualization))
+		{
+			Editor->SetOctreeVisualization(bShowSpatialVisualization);
+		}
+
+		ImGui::Spacing();
+
+		// Frustum Culling 컨트롤
+		ImGui::Text("Rendering Optimization:");
+		bool bUseFrustumCulling = Editor->IsUsingFrustumCulling();
+		if (ImGui::Checkbox("Enable Frustum Culling", &bUseFrustumCulling))
+		{
+			Editor->SetUseFrustumCulling(bUseFrustumCulling);
+		}
+
+		ImGui::SameLine();
+		ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(?)");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Frustum culling reduces rendering load by only rendering objects visible to the camera");
+		}
+
+		ImGui::Spacing();
+
+		// Octree 통계 표시
+		auto* Octree = Editor->GetOctree();
+		if (Octree && Octree->IsValid())
+		{
+			ImGui::Text("--- Octree Statistics ---");
+			auto Stats = Octree->GetStats();
+
+			ImGui::Text("Total Nodes: %d", Stats.TotalNodes);
+			ImGui::Text("Leaf Nodes: %d", Stats.LeafNodes);
+			ImGui::Text("Total Objects: %d", Stats.TotalObjects);
+
+			if (Stats.LeafNodes > 0)
+			{
+				ImGui::Text("Avg Objects/Leaf: %.2f", Stats.AverageObjectsPerLeaf);
+			}
+
+			// 효율성 표시
+			if (Stats.TotalNodes > 0)
+			{
+				float LeafRatio = static_cast<float>(Stats.LeafNodes) / Stats.TotalNodes;
+				ImVec4 EfficiencyColor = (LeafRatio > 0.5f) ? ImVec4(0, 1, 0, 1) : ImVec4(1, 1, 0, 1);
+				ImGui::TextColored(EfficiencyColor, "Leaf Ratio: %.1f%%", LeafRatio * 100.0f);
+			}
+
+			ImGui::Spacing();
+
+			// 수동 재구성 버튼
+			if (ImGui::Button("Rebuild Octree"))
+			{
+				Editor->RebuildOctree();
+			}
+		}
+		else
+		{
+			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Octree not initialized");
+		}
+	}
+
+	ImGui::Spacing();
+
+	// 성능 정보 표시
+	ImGui::Text("--- Performance Info ---");
+	ImGui::Text("Total Pick Count: %u", Editor->GetTotalPickCount());
+	ImGui::Text("Last Pick Time: %.6f ms", Editor->GetLastPickTime());
+
+	if (Editor->GetTotalPickCount() > 0)
+	{
+		double avgTime = Editor->GetTotalPickTime() / Editor->GetTotalPickCount();
+		ImGui::Text("Average Pick Time: %.6f ms", avgTime);
+
+		// 성능 상태 표시
+		ImVec4 PerformanceColor;
+		if (avgTime < 1.0)
+			PerformanceColor = ImVec4(0, 1, 0, 1); // 녹색 (우수)
+		else if (avgTime < 5.0)
+			PerformanceColor = ImVec4(1, 1, 0, 1); // 노랑 (보통)
+		else
+			PerformanceColor = ImVec4(1, 0, 0, 1); // 빨강 (주의)
+
+		ImGui::TextColored(PerformanceColor, "Performance: %s",
+			avgTime < 1.0 ? "Excellent" : avgTime < 5.0 ? "Good" : "Needs Optimization");
+	}
+
+	ImGui::Spacing();
+
+	// Frustum Culling 통계 표시
+	if (CurrentSpatialStructure == ESpatialDataStructure::Octree && Editor->IsUsingFrustumCulling())
+	{
+		ImGui::Text("--- Frustum Culling Stats ---");
+
+		// 현재 보이는 객체 수 계산
+		auto VisiblePrimitives = Editor->GetVisiblePrimitivesInFrustum();
+		int32 VisibleCount = VisiblePrimitives.size();
+
+		// 전체 객체 수
+		int32 TotalCount = 0;
+		auto* Octree = Editor->GetOctree();
+		if (Octree && Octree->IsValid())
+		{
+			TotalCount = Octree->GetTotalObjectCount();
+		}
+
+		ImGui::Text("Visible Objects: %d", VisibleCount);
+		ImGui::Text("Total Objects: %d", TotalCount);
+
+		if (TotalCount > 0)
+		{
+			int32 CulledCount = TotalCount - VisibleCount;
+			float CullingRatio = (float)CulledCount / TotalCount * 100.0f;
+
+			ImVec4 CullingColor = (CullingRatio > 50.0f) ? ImVec4(0, 1, 0, 1) :
+								  (CullingRatio > 25.0f) ? ImVec4(1, 1, 0, 1) : ImVec4(1, 0, 0, 1);
+
+			ImGui::Text("Culled Objects: %d", CulledCount);
+			ImGui::TextColored(CullingColor, "Culling Efficiency: %.1f%%", CullingRatio);
 		}
 	}
 }

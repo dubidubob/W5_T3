@@ -4,6 +4,7 @@
 #include "Manager/Time/TimeManager.h"
 #include "Manager/Path/PathManager.h"
 #include "Render/Renderer/Renderer.h"
+#include "Math/Frustum.h"
 #include <algorithm>
 
 IMPLEMENT_CLASS(UCamera, UObject)
@@ -528,4 +529,17 @@ void UCamera::RefreshViewMatrices()
 			UpdateMatrixByOrth();
 			break;
 	}
+}
+
+FFrustum UCamera::GetViewFrustum() const
+{
+	FFrustum Frustum;
+
+	// Calculate view-projection matrix
+	FMatrix ViewProjMatrix = ViewProjConstants.View * ViewProjConstants.Projection;
+
+	// Extract frustum planes from view-projection matrix using the ExtractFromMatrix method
+	Frustum.ExtractFromMatrix(ViewProjMatrix);
+
+	return Frustum;
 }

@@ -4,6 +4,7 @@
 #include "Mesh/SceneComponent.h"
 #include "Render/Renderer/LineBatchRenderer.h"
 #include "Manager/Time/TimeManager.h"
+#include "Manager/Level/LevelManager.h"
 
 IMPLEMENT_CLASS(FOctree, UObject)
 
@@ -52,6 +53,7 @@ void FOctreeNode::Clear()
 
 bool FOctreeNode::ShouldSubdivide() const
 {
+	// 객체수가 최대치 초과, 깊이 제한 미달, 리프 노드인 경우 분할
 	return Objects.Num() > MAX_OBJECTS_PER_NODE &&
 		   Depth < MAX_DEPTH &&
 		   IsLeaf();
@@ -350,8 +352,8 @@ void FOctreeNode::DebugDrawRecursive(ULineBatchRenderer* Renderer, int32 Current
 	int32 ColorIndex = std::min(CurrentDepth, 7);
 	FVector4 Color = Colors[ColorIndex];
 
-	UE_LOG("Drawing node at depth %d with bounds: Min(%.1f,%.1f,%.1f) Max(%.1f,%.1f,%.1f)",
-		CurrentDepth, Bounds.Min.X, Bounds.Min.Y, Bounds.Min.Z, Bounds.Max.X, Bounds.Max.Y, Bounds.Max.Z);
+	//UE_LOG("Drawing node at depth %d with bounds: Min(%.1f,%.1f,%.1f) Max(%.1f,%.1f,%.1f)",
+	//	CurrentDepth, Bounds.Min.X, Bounds.Min.Y, Bounds.Min.Z, Bounds.Max.X, Bounds.Max.Y, Bounds.Max.Z);
 
 	// 이 노드의 경계 박스 그리기
 	Renderer->AddAABB(Bounds.Min, Bounds.Max, Color);
@@ -376,7 +378,6 @@ void FOctreeNode::DebugDrawRecursive(ULineBatchRenderer* Renderer, int32 Current
 FOctree::FOctree()
 	: Root(nullptr)
 	, bNeedsRebuild(false)
-	, LastRebuildTime(0.0f)
 {
 }
 
@@ -391,7 +392,6 @@ void FOctree::Initialize(const FAABB& InWorldBounds)
 	WorldBounds = InWorldBounds;
 	Root = new FOctreeNode(WorldBounds, 0);
 	bNeedsRebuild = false;
-	LastRebuildTime = UTimeManager::GetInstance().GetGameTime();
 }
 
 void FOctree::Clear()
@@ -461,11 +461,18 @@ void FOctree::QueryFrustum(const FFrustum& Frustum, TArray<UPrimitiveComponent*>
 	Root->GetObjectsInFrustum(Frustum, OutObjects);
 }
 
+TArray<UPrimitiveComponent*> FOctree::QueryFrustum(const FFrustum& Frustum) const
+{
+	TArray<UPrimitiveComponent*> Result;
+	QueryFrustum(Frustum, Result);
+	return Result;
+}
+
 void FOctree::ConditionalUpdate()
 {
 	float CurrentTime = UTimeManager::GetInstance().GetGameTime();
 
-	if (bNeedsRebuild/* || (CurrentTime - LastRebuildTime > REBUILD_INTERVAL)*/)
+	if (bNeedsRebuild)
 	{
 		ForceRebuild();
 	}
@@ -495,7 +502,6 @@ void FOctree::ForceRebuild()
 	}
 
 	bNeedsRebuild = false;
-	LastRebuildTime = UTimeManager::GetInstance().GetGameTime();
 }
 
 void FOctree::RebuildTree()
@@ -563,7 +569,7 @@ void FOctree::DebugDraw(ULineBatchRenderer* Renderer, int32 MaxDepthToDraw) cons
 		return;
 	}
 
-	UE_LOG("Octree DebugDraw: Drawing octree with max depth %d", MaxDepthToDraw);
+	//UE_LOG("Octree DebugDraw: Drawing octree with max depth %d", MaxDepthToDraw);
 	Root->DebugDraw(Renderer, MaxDepthToDraw);
 }
 
@@ -574,7 +580,6 @@ FOctree::FStats FOctree::GetStats() const
 	if (Root)
 	{
 		CalculateStats(Root, Stats);
-		Stats.LastRebuildTime = LastRebuildTime;
 	}
 
 	return Stats;

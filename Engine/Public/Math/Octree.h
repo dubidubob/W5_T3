@@ -41,7 +41,7 @@ public:
 
 	/** 상수 */
 	static const int32 MAX_OBJECTS_PER_NODE = 10;
-	static const int32 MAX_DEPTH = 8;
+	static const int32 MAX_DEPTH = 4;
 
 public:
 	FOctreeNode* Children[8]; // CalculateStats에서 접근 필요
@@ -86,6 +86,9 @@ public:
 	void QueryRay(const FRay& Ray, TArray<UPrimitiveComponent*>& OutObjects) const;
 	void QueryFrustum(const FFrustum& Frustum, TArray<UPrimitiveComponent*>& OutObjects) const;
 
+	/** 편의 메서드 - 반환값으로 결과 제공 */
+	TArray<UPrimitiveComponent*> QueryFrustum(const FFrustum& Frustum) const;
+
 	/** 업데이트 관리 */
 	void MarkForRebuild() { bNeedsRebuild = true; }
 	void ConditionalUpdate();
@@ -116,8 +119,6 @@ private:
 
 	/** 업데이트 관리 */
 	bool bNeedsRebuild;
-	float LastRebuildTime;
-	static constexpr float REBUILD_INTERVAL = 1.0f; // 1초마다 체크
 
 	/** 전체 재구성 */
 	void RebuildTree();

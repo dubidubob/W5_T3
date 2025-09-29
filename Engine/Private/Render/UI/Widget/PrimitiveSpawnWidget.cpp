@@ -11,6 +11,9 @@
 #include "Mesh/StaticMeshComponent.h"
 #include "Manager/Path/PathManager.h"
 
+#include "Editor/Editor.h"
+#include "Core/ObjectIterator.h"
+
 IMPLEMENT_CLASS(UPrimitiveSpawnWidget, UWidget)
 
 UPrimitiveSpawnWidget::UPrimitiveSpawnWidget()
@@ -86,7 +89,6 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 
 	// 지정된 개수만큼 액터 생성
 	for (int32 i = 0; i < NumberOfSpawn; i++)
-
 	{
 		AStaticMeshActor* NewActor = nullptr;
 
@@ -112,7 +114,20 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 			float RandomScale = 0.5f + (static_cast<float>(rand()) / RAND_MAX) * 1.5f;
 			NewActor->SetActorScale3D(FVector(RandomScale, RandomScale, RandomScale));
 
-			UE_LOG("ControlPanel: (%.2f, %.2f, %.2f) 지점에 Actor를 생성했습니다", RandomX, RandomY, RandomZ);
+			UEditor* Editor = nullptr;
+			for (TObjectIterator<UEditor> it; it; ++it)
+			{
+				if (it->IsA(UEditor::StaticClass()))
+				{
+					Editor = static_cast<UEditor*>(*it);
+					break;
+				}
+			}
+
+			if (Editor)
+			{
+				Editor->RebuildOctree();
+			}
 		}
 		else
 		{

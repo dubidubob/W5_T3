@@ -13,6 +13,8 @@ class UGrid;
 class ULevel;
 class FOctree;
 struct FAABB;
+class UPrimitiveComponent;
+
 class UEditor : public UObject
 {
 	DECLARE_CLASS(UEditor, UObject)
@@ -50,13 +52,19 @@ public:
 	bool IsOctreeVisualizationEnabled() const { return bShowOctreeVisualization; }
 	void SetUseOctreeForPicking(bool bEnabled) { bUseOctreeForPicking = bEnabled; }
 
+	/** Frustum Culling */
+	void SetUseFrustumCulling(bool bEnabled) { bUseFrustumCulling = bEnabled; }
+	bool IsUsingFrustumCulling() const { return bUseFrustumCulling; }
+	TArray<UPrimitiveComponent*> GetVisiblePrimitivesInFrustum() const;
+
 private:
 	void ProcessKeyboardInput();
 	void ProcessMouseInput(ULevel* InLevel);
 
 	void HandleGizmo(ULevel* InLevel, FRay InWorldRay);
-	TArray<class UPrimitiveComponent*> FindCandidatePrimitives(ULevel* InLevel);
+	TArray<UPrimitiveComponent*> FindCandidatePrimitives(ULevel* InLevel);
 	void PopulateOctreeFromLevel(ULevel* InLevel);
+	void PopulateOctreeFromCurrentLevel();
 	void RegisterPrimitiveToOctree(UPrimitiveComponent* Primitive);
 
 	FVector GetGizmoDragLocation(const FRay& WorldRay);
@@ -79,6 +87,9 @@ private:
 	FOctree* SceneOctree;
 	bool bUseOctreeForPicking = true;
 	bool bShowOctreeVisualization = true;
+
+	/** Frustum Culling */
+	bool bUseFrustumCulling = true;
 
 	FVector2 LastMousePosition = FVector2(0.0f, 0.0f);
 

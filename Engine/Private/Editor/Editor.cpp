@@ -20,6 +20,8 @@
 #include "Global/PlatformTime.h"
 #include "Mesh/TextComponent.h"
 #include "Math/Octree.h"
+#include "Math/Frustum.h"
+#include "Core/ObjectIterator.h"
 #if IS_OBJ_VIEWER
 #include "Render/UI/Widget/TargetActorTransformWidget.h"
 #include "Utility/ObjectPreviewScene.h"
@@ -45,8 +47,6 @@ UEditor::UEditor()
 
 	// Initialize Octree with default world bounds
 	SceneOctree = NewObject<FOctree>();
-	FAABB DefaultWorldBounds(FVector(-100, -100, -100), FVector(100, 100, 100));
-	SceneOctree->Initialize(DefaultWorldBounds);
 
 	// Set Camera to Control Panel
 	auto& UIManager = UUIManager::GetInstance();
@@ -157,19 +157,7 @@ void UEditor::RenderEditorBatched(int Idx)
 		/** Octree 시각화 */
 		if (bShowOctreeVisualization && SceneOctree && SceneOctree->IsValid())
 		{
-			UE_LOG("Drawing Octree visualization");
 			SceneOctree->DebugDraw(&LineBatch, -1); // 모든 깊이 표시
-		}
-		else if (bShowOctreeVisualization)
-		{
-			UE_LOG("Octree visualization enabled but Octree is not valid");
-		}
-
-		/** Gizmo 라인들 추가 (오브젝트가 선택된 경우) */
-		if (AActor* SelectedActor = ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor())
-		{
-			/** Gizmo는 현재 RenderGizmo를 통해 렌더링되므로 따로 처리 */
-			/** 추후 Gizmo도 배칭 지원하도록 수정 가능 */
 		}
 	}
 	/** 1회 드로우콜로 모든 라인 렌더링 */
@@ -577,7 +565,8 @@ void UEditor::RebuildOctree()
 {
 	if (SceneOctree)
 	{
-		SceneOctree->ForceRebuild();
+		//SceneOctree->ForceRebuild();
+		PopulateOctreeFromCurrentLevel();
 	}
 }
 
@@ -641,10 +630,6 @@ void UEditor::PopulateOctreeFromLevel(ULevel* InLevel)
 		WorldBounds.ExpandBy(Expansion);
 	}
 
-	/*UE_LOG("Calculated world bounds: Min(%.1f,%.1f,%.1f) Max(%.1f,%.1f,%.1f)",
-		WorldBounds.Min.X, WorldBounds.Min.Y, WorldBounds.Min.Z,
-		WorldBounds.Max.X, WorldBounds.Max.Y, WorldBounds.Max.Z);*/
-
 	// Octree 초기화
 	SceneOctree->Initialize(WorldBounds);
 
@@ -668,13 +653,84 @@ void UEditor::PopulateOctreeFromLevel(ULevel* InLevel)
 	}
 
 	int32 TotalObjects = SceneOctree->GetTotalObjectCount();
-	//UE_LOG("Octree populated with %d total objects", TotalObjects);
+}
 
-	// 추가 디버깅 정보
-	if (TotalObjects == 0)
+void UEditor::PopulateOctreeFromCurrentLevel()
+{
+	const ULevel* CurrentLevel = ULevelManager::GetInstance().GetCurrentLevel();
+	if (!SceneOctree || !CurrentLevel)
 	{
-		//UE_LOG("Warning: No objects were added to Octree!");
+		return;
 	}
+
+	// Level의 모든 객체들로부터 동적으로 월드 바운드 계산
+	FAABB WorldBounds;
+	bool bFoundAnyObject = false;
+
+	for (AActor* Actor : CurrentLevel->GetLevelActors())
+	{
+		for (auto& ActorComponent : Actor->GetOwnedComponents())
+		{
+			if (ActorComponent->IsA(UTextComponent::StaticClass()))
+			{
+				continue;
+			}
+
+			UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(ActorComponent);
+			if (Primitive)
+			{
+				FAABB PrimitiveBounds = Primitive->GetWorldBounds();
+				if (PrimitiveBounds.IsValid())
+				{
+					if (!bFoundAnyObject)
+					{
+						WorldBounds = PrimitiveBounds;
+						bFoundAnyObject = true;
+					}
+					else
+					{
+						WorldBounds.AddAABB(PrimitiveBounds);
+					}
+				}
+			}
+		}
+	}
+
+	// 객체가 없으면 기본 월드 바운드 사용
+	if (!bFoundAnyObject)
+	{
+		WorldBounds = FAABB(FVector(-10, -10, -10), FVector(10, 10, 10));
+	}
+	else
+	{
+		// 약간 여유 공간 추가
+		FVector Expansion(10, 10, 10);
+		WorldBounds.ExpandBy(Expansion);
+	}
+
+	// Octree 초기화
+	SceneOctree->Initialize(WorldBounds);
+
+	// Level의 모든 Actor로부터 Primitive들을 Octree에 등록
+	for (AActor* Actor : CurrentLevel->GetLevelActors())
+	{
+		for (auto& ActorComponent : Actor->GetOwnedComponents())
+		{
+			// UUID Text는 Octree에서 제외
+			if (ActorComponent->IsA(UTextComponent::StaticClass()))
+			{
+				continue;
+			}
+
+			UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(ActorComponent);
+			if (Primitive)
+			{
+				RegisterPrimitiveToOctree(Primitive);
+			}
+		}
+	}
+
+	int32 TotalObjects = SceneOctree->GetTotalObjectCount();
 }
 
 void UEditor::RegisterPrimitiveToOctree(UPrimitiveComponent* Primitive)
@@ -686,10 +742,42 @@ void UEditor::RegisterPrimitiveToOctree(UPrimitiveComponent* Primitive)
 		return;
 	}
 
-	FAABB PrimitiveBounds = Primitive->GetWorldBounds();
-	UE_LOG("Registering primitive with bounds: Min(%.1f,%.1f,%.1f) Max(%.1f,%.1f,%.1f)",
-		PrimitiveBounds.Min.X, PrimitiveBounds.Min.Y, PrimitiveBounds.Min.Z,
-		PrimitiveBounds.Max.X, PrimitiveBounds.Max.Y, PrimitiveBounds.Max.Z);
-
 	SceneOctree->InsertObject(Primitive);
+}
+
+TArray<UPrimitiveComponent*> UEditor::GetVisiblePrimitivesInFrustum() const
+{
+	TArray<UPrimitiveComponent*> VisiblePrimitives;
+
+	if (!bUseFrustumCulling || !SceneOctree || !SceneOctree->IsValid() || !Camera)
+	{
+		ULevel* CurrentLevel = ULevelManager::GetInstance().GetCurrentLevel();
+		if (CurrentLevel)
+		{
+			for (AActor* Actor : CurrentLevel->GetLevelActors())
+			{
+				for (auto& ActorComponent : Actor->GetOwnedComponents())
+				{
+					if (ActorComponent->IsA(UTextComponent::StaticClass()))
+					{
+						continue;
+					}
+
+					UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(ActorComponent);
+					if (Primitive)
+					{
+						VisiblePrimitives.push_back(Primitive);
+					}
+				}
+			}
+		}
+		return VisiblePrimitives;
+	}
+
+	FFrustum CameraFrustum = Camera->GetViewFrustum();
+
+	// 옥트리를 쿼리하여 프러스텀 내의 프리미티브 가져오기
+	VisiblePrimitives = SceneOctree->QueryFrustum(CameraFrustum);
+
+	return VisiblePrimitives;
 }

@@ -1,6 +1,8 @@
 #pragma once
 #include "Core/Object.h"
 #include "ViewportTypes.h"
+
+struct FFrustum;
 class UCamera : public UObject
 {
 	DECLARE_CLASS(UCamera, UObject)
@@ -45,6 +47,9 @@ public:
 	FViewProjConstants GetFViewProjConstantsInverse() const;
 
 	FRay ConvertToWorldRay(float NdcX, float NdcY) const;
+
+	/** Frustum extraction */
+	FFrustum GetViewFrustum() const;
 
 	FVector CalculatePlaneNormal(const FVector4& Axis);
 	FVector CalculatePlaneNormal(const FVector& Axis);
