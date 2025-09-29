@@ -278,11 +278,9 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 
 			UPrimitiveComponent* PrimitiveCollided = nullptr;
 
-			const bool bWireframeMode = URenderer::GetInstance().GetViewMode() == EViewportRenderMode::Wireframe;
-			const bool bMultiViewportMode = ViewportManager->GetIsWindowDivided();
 
 			// 피킹 방식에 따라 피킹 수행
-			if (bMultiViewportMode || bWireframeMode || (bTrianglePicking && !bColorPicking))
+			if (GetIsRayPicking())
 			{
 				// Renderer에 있는 BVH를 가져와 ActorCandidate를 선정한다.
 				TArray<UStaticMeshComponent*> ActorCandidate;
@@ -292,7 +290,7 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 				// const TArray<UPrimitiveComponent*> Candidates = InLevel->GetLevelPrimitiveComponents();
 				PrimitiveCollided = ObjectPicker->PickPrimitive(InWorldRay, ActorCandidate, &ActorDistance);
 			}
-			else if (!bTrianglePicking && bColorPicking)
+			else if (!bRayPicking && bColorPicking)
 			{
 				// 마우스 위치 한 번만 계산
 				const FVector2& MousePosition = InputManager.GetMousePosition();
@@ -336,6 +334,15 @@ void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 			}
 		}
 	}
+}
+
+bool UEditor::GetIsRayPicking()
+{
+	const bool bWireframeMode = URenderer::GetInstance().GetViewMode() == EViewportRenderMode::Wireframe;
+	const bool bMultiViewportMode = ViewportManager->GetIsWindowDivided();
+
+	// 피킹 방식에 따라 피킹 수행
+	return bMultiViewportMode || bWireframeMode || (bRayPicking && !bColorPicking);
 }
 
 TArray<UPrimitiveComponent*> UEditor::FindCandidatePrimitives(ULevel* InLevel)

@@ -348,8 +348,6 @@ void FBVH::QueryRayCandidates(const FRay& Ray, int MaxK, TArray<UStaticMeshCompo
 	Out.reserve(Cands.size());
 	for (auto& C : Cands)
 		Out.push_back(C.Comp);
-
-	Out;
 }
 
 //void FBVH::QueryRayMBVH(const FRay& ray)

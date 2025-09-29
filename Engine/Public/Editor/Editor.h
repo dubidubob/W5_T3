@@ -40,8 +40,9 @@ public:
 	/** Performance Metrics Management */
 	void ResetPickingStatistics() { TotalPickTime = 0.0; TotalPickCount = 0; LastPickTime = 0.0; }
 
+	bool GetIsRayPicking();
 	/** Picking Configuration Variables */
-	bool bTrianglePicking = false;
+	bool bRayPicking = false;
 	bool bColorPicking = true;
 	bool bUUIDColorPicking = false;
 	bool bIndexColorPicking = true;

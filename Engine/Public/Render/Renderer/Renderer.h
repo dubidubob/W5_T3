@@ -170,6 +170,7 @@ public:
 	UEditor* GetEditor() { return Editor; }
 	void SetEditor(UEditor* InEditor) { Editor = InEditor; }
 
+	// Actor Spawn, Actor Delete, Load Level
 	void MarkForceReRenderPicking() { bForceReRenderPicking = true; }
 
 	FBVH* GetBVH() { return &SceneBVH; }
