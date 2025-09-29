@@ -241,7 +241,12 @@ void UObjectPicker::PickGizmo( const FRay& WorldRay, UGizmo* Gizmo, FVector& Col
 	Gizmo->SetGizmoDirection(EGizmoDirection::None);
 }
 
-//개별 primitive와 ray 충돌 검사
+bool UObjectPicker::IsRayPrimitiveCollided(const FRay& ModelRay, UStaticMeshComponent* Primitive, const FMatrix& ModelMatrix, float* ShortestDistance)
+{
+
+	return false;
+}
+
 bool UObjectPicker::IsRayPrimitiveCollided(const FRay& ModelRay, UPrimitiveComponent* Primitive, const FMatrix& ModelMatrix, float* ShortestDistance)
 {
 	const void* RawVertices = Primitive->GetRawVertexData();
@@ -285,6 +290,52 @@ bool UObjectPicker::IsRayPrimitiveCollided(const FRay& ModelRay, UPrimitiveCompo
 
 	return bIsHit;
 }
+
+//개별 primitive와 ray 충돌 검사
+// [[Deprecated]]
+//bool UObjectPicker::IsRayPrimitiveCollided(const FRay& ModelRay, UPrimitiveComponent* Primitive, const FMatrix& ModelMatrix, float* ShortestDistance)
+//{
+//	const void* RawVertices = Primitive->GetRawVertexData();
+//	const uint32 VertexCount = Primitive->GetVertexCount();
+//	const uint32 VertexStride = Primitive->GetVertexStride();
+//	const uint32 PositionOffset = Primitive->GetVertexPositionOffset();
+//
+//	const TArray<uint32>* Indices = Primitive->GetIndicesData();
+//	const uint32 IndicesCount = Indices->Num();
+//
+//	if (!RawVertices || !Indices) { return false; }
+//
+//	bool bIsHit = false;
+//	float CurrentDistance = D3D11_FLOAT32_MAX;
+//
+//	for (uint32 Idx = 0; Idx < IndicesCount; Idx += 3)
+//	{
+//		const uint32 Index1 = (*Indices)[Idx];
+//		const uint32 Index2 = (*Indices)[Idx + 1];
+//		const uint32 Index3 = (*Indices)[Idx + 2];
+//
+//		const FVector& Vertex1 = *reinterpret_cast<const FVector*>(static_cast<const char*>(RawVertices) + (Index1 * VertexStride) + PositionOffset);
+//		const FVector& Vertex2 = *reinterpret_cast<const FVector*>(static_cast<const char*>(RawVertices) + (Index2 * VertexStride) + PositionOffset);
+//		const FVector& Vertex3 = *reinterpret_cast<const FVector*>(static_cast<const char*>(RawVertices) + (Index3 * VertexStride) + PositionOffset);
+//
+//		float TriangleDistance = 0.0f;
+//		if (IsRayTriangleCollided(ModelRay, Vertex1, Vertex2, Vertex3, ModelMatrix, &TriangleDistance))
+//		{
+//			bIsHit = true;
+//			if (TriangleDistance < CurrentDistance)
+//			{
+//				CurrentDistance = TriangleDistance;
+//			}
+//		}
+//	}
+//
+//	if (bIsHit)
+//	{
+//		*ShortestDistance = CurrentDistance;
+//	}
+//
+//	return bIsHit;
+//}
 
 bool UObjectPicker::IsRayTriangleCollided(const FRay& Ray, const FVector& Vertex1, const FVector& Vertex2, const FVector& Vertex3,
                            const FMatrix& ModelMatrix, float* Distance)

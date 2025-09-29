@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/Object.h"
+#include "Math/MeshBVH.h"
 class UMaterial;
 class FArchive;
 
@@ -12,6 +13,7 @@ struct FNormalVertex
 
 	void Serialize(class FArchive& Ar);
 };
+
 inline FArchive& operator<<(FArchive& Ar, FNormalVertex& Vertex);
 
 struct FStaticMaterial
@@ -68,6 +70,7 @@ struct FStaticMesh
 
 private:
 	TMap<FStaticMaterial*, TArray<FStaticMeshSection*>> SectionMap;
+	FMeshBVH MeeshBVH;
 
 public:
 	FStaticMesh() = default;
@@ -99,6 +102,7 @@ public:
 		return FullName; 
 	}
 
+	void CreateBVH();
 	void Serialize(class FArchive& Ar);
 
 	const TArray<FStaticMeshSection*>& GetSectionMap(FStaticMaterial* Material) const

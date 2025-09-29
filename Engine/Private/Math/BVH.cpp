@@ -242,7 +242,7 @@ void FBVH::QueryFrustum(const TStaticArray<FVector4, 6>& Planes, TArray<bool>& O
     }
 }
 
-static inline bool IntersectAABB(const FRay& Ray, const FAABB& b, float tMax, float& t0, float& t1)
+bool FBVH::IntersectAABB(const FRay& Ray, const FAABB& b, float tMax, float& t0, float& t1)
 {
 	const FVector invD{ 1.0f / Ray.Direction.X, 1.0f / Ray.Direction.Y, 1.0f / Ray.Direction.Z };
 
@@ -262,7 +262,7 @@ static inline bool IntersectAABB(const FRay& Ray, const FAABB& b, float tMax, fl
 	return (t1 >= t0) && (t0 <= tMax) && (t1 >= 0.0f);
 }
 
-static inline bool RayBoxEntry(const FAABB& Box, const FRay& Ray, float& OutTNear)
+bool FBVH::RayBoxEntry(const FAABB& Box, const FRay& Ray, float& OutTNear)
 {
 	float TEntry = -1.0f;
 	const bool Hit = Box.IntersectsRay(Ray.Origin, Ray.Direction, &TEntry);
@@ -277,6 +277,7 @@ struct FCand { UStaticMeshComponent* Comp; float TNear; };
 void FBVH::QueryRayCandidates(const FRay& Ray, int MaxK, TArray<UStaticMeshComponent*>& Out)
 {
 	Out.clear();
+
 	if (Root < 0) return;
 
 	float TMaxGlobal = FLT_MAX;

@@ -3,6 +3,7 @@
 #include "Mesh/StaticMesh/StaticMesh.h"
 #include "Mesh/StaticMesh/ObjManager.h"
 #include "Manager/Time/TimeManager.h"
+#include "Global/PlatformTime.h"
 
 IMPLEMENT_CLASS(UStaticMeshComponent, UMeshComponent)
 
