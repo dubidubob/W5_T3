@@ -134,6 +134,11 @@ public:
 	void ToggleShowFlag(EEngineShowFlags Flag) { CurrentShowFlags = CurrentShowFlags ^ Flag; }
 	bool IsShowFlagEnabled(EEngineShowFlags Flag) const { return HasFlag(CurrentShowFlags, Flag); }
 
+	// ================== Color Picking Debug Display ==================
+	void ToggleColorPickingDisplay() { bShowColorPickingTexture = !bShowColorPickingTexture; }
+	bool IsColorPickingDisplayEnabled() const { return bShowColorPickingTexture; }
+	void RenderColorPickingToScreen();
+
 	// ================== Window Management ==================
 	bool GetIsResizing() const { return bIsResizing; }
 	void SetIsResizing(bool IsResizing) { bIsResizing = IsResizing; }
@@ -225,6 +230,7 @@ private:
 	EViewportRenderMode CurrentRenderMode = EViewportRenderMode::Lit;
 	EEngineShowFlags CurrentShowFlags = EEngineShowFlags::SF_Default;
 	bool bIsResizing = false;
+	bool bShowColorPickingTexture = false;
 
 	// ================== Clear Color ==================
 	FLOAT ClearColor[4] = { 0.025f, 0.025f, 0.025f, 1.0f };
@@ -278,6 +284,11 @@ private:
     FBVH SceneBVH;
 	// ================== Picking Shader Set ==================
 	ID3D11PixelShader* PickingPixelShader = nullptr;
+
+	// ================== ColorPicking Debug Shader Set ==================
+	ID3D11VertexShader* ColorPickingDebugVertexShader = nullptr;
+	ID3D11PixelShader* ColorPickingDebugPixelShader = nullptr;
+	ID3D11InputLayout* ColorPickingDebugInputLayout = nullptr;
 
 	// ================== Vertex Strides ==================
 	uint32 Stride = 0;

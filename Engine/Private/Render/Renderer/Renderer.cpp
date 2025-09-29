@@ -184,6 +184,14 @@ void URenderer::InitializeShaders()
 	{
 		assert(!"Failed to create Picking Pixel Shader");
 	}
+
+	// Create ColorPicking Debug Shader Set
+	CreateShaderSet(L"Data/Shader/ColorPickingDebugShader.hlsl", "VS_ColorPickingDebug", "PS_ColorPickingDebug",
+		{
+			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+		},
+		ColorPickingDebugVertexShader, ColorPickingDebugPixelShader, ColorPickingDebugInputLayout);
 }
 
 void URenderer::InitializeBuffers()
@@ -378,6 +386,13 @@ void URenderer::UpdateInstanceDrawConstants(bool UseInstancing, uint32 BaseOffse
 void URenderer::Update(UEditor* Editor)
 {
 	TIME_PROFILE(Update)
+
+	// Check for F5 key press to toggle ColorPickingTexture display
+	if (UInputManager::GetInstance().IsKeyPressed(EKeyInput::F5))
+	{
+		ToggleColorPickingDisplay();
+	}
+
 	RenderBegin(); // 0.003
 	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo()); // 0
 	if (Editor->GetViewportManager()->GetIsWindowDivided())
@@ -418,6 +433,13 @@ void URenderer::Update(UEditor* Editor)
 	GetDeviceContext()->OMSetRenderTargets(1, &MainRTV, MainDSV);
 	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
 	UUIManager::GetInstance().Render(); //0.1ms
+
+	// Render ColorPickingTexture to screen if enabled
+	if (bShowColorPickingTexture)
+	{
+		RenderColorPickingToScreen();
+	}
+
 	RenderEnd();
 }
 
@@ -1476,6 +1498,7 @@ void URenderer::CleanupShaders()
 	ReleaseShaderSet(SlateVertexShader, SlatePixelShader, SlateInputLayout);
 	ReleaseShaderSet(LineInstancedVertexShader, LineInstancedPixelShader, LineInstancedInputLayout);
 	SafeRelease(PickingPixelShader);
+	ReleaseShaderSet(ColorPickingDebugVertexShader, ColorPickingDebugPixelShader, ColorPickingDebugInputLayout);
 }
 
 void URenderer::CleanupBuffers()
@@ -1575,3 +1598,94 @@ void URenderer::RenderObjectViewer(UEditor* Editor)
 	SafeRelease(OriginalDSV);
 }
 #endif
+
+void URenderer::RenderColorPickingToScreen()
+{
+	// Get the ColorPickingTexture from DeviceResources
+	ID3D11Texture2D* ColorPickingTexture = DeviceResources->GetColorPickingTexture();
+	if (!ColorPickingTexture || !ColorPickingDebugVertexShader || !ColorPickingDebugPixelShader)
+	{
+		return;
+	}
+
+	// Create a shader resource view for the ColorPickingTexture
+	ID3D11ShaderResourceView* ColorPickingSRV = nullptr;
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = DXGI_FORMAT_R32_UINT;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+
+	HRESULT hr = GetDevice()->CreateShaderResourceView(ColorPickingTexture, &srvDesc, &ColorPickingSRV);
+	if (FAILED(hr))
+	{
+		return;
+	}
+
+	// Create a simple fullscreen quad with texture coordinates
+	struct FullscreenVertex
+	{
+		float x, y, z;
+		float u, v;
+	};
+
+	FullscreenVertex vertices[] = {
+		{-1.0f, -1.0f, 0.0f, 0.0f, 1.0f}, // Bottom-left
+		{-1.0f,  1.0f, 0.0f, 0.0f, 0.0f}, // Top-left
+		{ 1.0f, -1.0f, 0.0f, 1.0f, 1.0f}, // Bottom-right
+		{ 1.0f,  1.0f, 0.0f, 1.0f, 0.0f}  // Top-right
+	};
+
+	// Create vertex buffer for fullscreen quad
+	D3D11_BUFFER_DESC bufferDesc = {};
+	bufferDesc.ByteWidth = sizeof(vertices);
+	bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+	D3D11_SUBRESOURCE_DATA initData = {};
+	initData.pSysMem = vertices;
+
+	ID3D11Buffer* vertexBuffer = nullptr;
+	hr = GetDevice()->CreateBuffer(&bufferDesc, &initData, &vertexBuffer);
+	if (FAILED(hr))
+	{
+		SafeRelease(ColorPickingSRV);
+		return;
+	}
+
+	// Set up rendering pipeline for displaying the ColorPicking texture
+	GetDeviceContext()->IASetInputLayout(ColorPickingDebugInputLayout);
+	GetDeviceContext()->VSSetShader(ColorPickingDebugVertexShader, nullptr, 0);
+	GetDeviceContext()->PSSetShader(ColorPickingDebugPixelShader, nullptr, 0);
+
+	// Set vertex buffer
+	UINT stride = sizeof(FullscreenVertex);
+	UINT offset = 0;
+	GetDeviceContext()->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+	// Bind the ColorPickingTexture as a shader resource
+	GetDeviceContext()->PSSetShaderResources(0, 1, &ColorPickingSRV);
+	GetDeviceContext()->PSSetSamplers(0, 1, &DiffuseSampler);
+
+	// Disable depth testing for fullscreen quad
+	GetDeviceContext()->OMSetDepthStencilState(DisabledDepthStencilState, 0);
+
+	// Enable alpha blending to overlay on top of existing scene
+	GetDeviceContext()->OMSetBlendState(TextBlendState, nullptr, 0xFFFFFFFF);
+
+	// Render the fullscreen quad
+	GetDeviceContext()->Draw(4, 0);
+
+	// Restore states
+	GetDeviceContext()->OMSetDepthStencilState(DefaultDepthStencilState, 0);
+	GetDeviceContext()->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+
+	// Unbind shader resources
+	ID3D11ShaderResourceView* nullSRV = nullptr;
+	GetDeviceContext()->PSSetShaderResources(0, 1, &nullSRV);
+
+	// Clean up
+	SafeRelease(vertexBuffer);
+	SafeRelease(ColorPickingSRV);
+}

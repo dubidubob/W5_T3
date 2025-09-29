@@ -61,6 +61,7 @@ void UInputManager::InitializeKeyMapping()
 	VirtualKeyMap[VK_F2] = EKeyInput::F2;
 	VirtualKeyMap[VK_F3] = EKeyInput::F3;
 	VirtualKeyMap[VK_F4] = EKeyInput::F4;
+	VirtualKeyMap[VK_F5] = EKeyInput::F5;
 	VirtualKeyMap[VK_BACK] = EKeyInput::Backspace;
 	VirtualKeyMap[VK_DELETE] = EKeyInput::Delete;
 
@@ -335,6 +336,7 @@ const wchar_t* UInputManager::KeyInputToString(EKeyInput InKey)
 	case EKeyInput::F2: return L"F2";
 	case EKeyInput::F3: return L"F3";
 	case EKeyInput::F4: return L"F4";
+	case EKeyInput::F5: return L"F5";
 	case EKeyInput::Backspace: return L"Backspace";
 	case EKeyInput::Delete: return L"Delete";
 	default: return L"Unknown";
