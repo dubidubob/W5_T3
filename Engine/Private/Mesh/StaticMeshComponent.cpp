@@ -73,18 +73,21 @@ FAABB UStaticMeshComponent::GetLocalBounds() const
 
 FAABB UStaticMeshComponent::GetWorldBounds() const
 {
-	if (!StaticMesh || !StaticMesh->GetStaticMeshAsset())
+	if (bIsLocalBoundsDirty || GetTransformDirty())
 	{
-		return FAABB();
-	}
+		if (!StaticMesh || !StaticMesh->GetStaticMeshAsset())
+		{
+			return FAABB();
+		}
 
-	const FAABB LocalBounds = GetLocalBounds();
-	if (!LocalBounds.IsValid())
-	{
-		return FAABB();
+		const FAABB LocalBounds = GetLocalBounds();
+		if (!LocalBounds.IsValid())
+		{
+			return FAABB();
+		}
+		CachedWorldBounds = LocalBounds.TransformBy(GetWorldTransformMatrix());
 	}
-
-	return LocalBounds.TransformBy(GetWorldTransformMatrix());
+	return CachedWorldBounds;
 }
 
 const void* UStaticMeshComponent::GetRawVertexData() const

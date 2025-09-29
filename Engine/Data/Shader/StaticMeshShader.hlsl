@@ -83,8 +83,7 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 	//}
 
 	Position = mul(Position, world);
-	Position = mul(Position, ViewMatrix);
-	Position = mul(Position, ProjectionMatrix);
+	Position = mul(Position, ViewProj);
 
 	Output.Position = Position;
 	Output.Color = ShadeColor;

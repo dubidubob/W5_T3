@@ -85,13 +85,11 @@ void URenderer::Init(HWND WindowHandle)
 	ULineBatchRenderer::GetInstance().Init();
 
 	uint32 ZAreaCount = 8;
-	for (int i = 0; i < ZAreaCount; i++)
-	{
-		ZAreaMeshCount.resize(ZAreaCount);
-	}
+	ZAreaMeshCount.resize(ZAreaCount);
+
 	for (int i = 0; i < ZAreaCount - 1; i++)
 	{
-		ZAreaDepthValue[i] = (i + 1) * 10;
+		ZAreaDepthValue.Push((i + 1) * 10);
 	}
 }
 
@@ -218,10 +216,6 @@ void URenderer::InitializeRenderStateChangeCount()
 	StaticMeshChangeCount = 0;
 	StaticMeshComponentChagneCount = 0;
 	MeshSectionDrawCount = 0;
-	ZAreaMeshCount[0] = 0;
-	ZAreaMeshCount[1] = 0;
-	ZAreaMeshCount[2] = 0;
-	ZAreaMeshCount[3] = 0;
 }
 #endif
 // ================== Core Creation Functions ==================
@@ -509,11 +503,71 @@ void URenderer::ReSetSortingBatchMap()
     }
     SceneBVH.Build(AllComps);
 }
+void URenderer::UpdateZArea()
+{
+	int ZAreaValueCount = ZAreaDepthValue.size();
+	float PrevValue = 0;
+	float NextValue = 0;
 
+	//이전구역 현재구역 다음구역 메쉬갯수 구해서 평행해지게 만들기
+	for (int i = 0; i < ZAreaValueCount; i++)
+	{
+		int PrevCount = ZAreaMeshCount[i];
+		int CurCount = ZAreaMeshCount[i + 1];
+		int Diff = PrevCount - CurCount;
+		int AbsDiff = abs(Diff);
+
+		if (PrevCount + CurCount > 100)
+		{
+			if (AbsDiff > (PrevCount + CurCount) * 0.1f) //둘이 합친거의 10퍼센트 이상 차이난다면
+			{
+				if (Diff > 0) //이전이 현재보다 많음 => DepthValue 감소
+				{
+					ZAreaDepthValue[i] -= 0.1f;
+				}
+				else
+				{
+					ZAreaDepthValue[i] += 0.1f;
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < ZAreaValueCount; i++)
+	{
+		if (i == 0)
+		{
+			PrevValue = CachedViewProj.CamNear;
+			NextValue = ZAreaDepthValue[1];
+			if (PrevValue > NextValue)
+			{
+				NextValue = PrevValue;
+			}
+		}
+		else if (i == ZAreaValueCount - 1)
+		{
+			PrevValue = ZAreaDepthValue[i - 1];
+			NextValue = CachedViewProj.CamFar; //Camera Far 연결해야함
+			if (PrevValue > NextValue)
+			{
+				PrevValue = NextValue;
+			}
+		}
+		else
+		{
+			PrevValue = ZAreaDepthValue[i - 1];
+			NextValue = ZAreaDepthValue[i + 1];
+		}
+		ZAreaDepthValue[i] = clamp(ZAreaDepthValue[i], PrevValue, NextValue);
+	}
+
+
+
+}
 void URenderer::SetRenderStream()
 {
 	TIME_PROFILE(SetRenderStream)
-		TArray<uint32> ZAreas = RenderStreamMap.GetKeys();
+	TArray<uint32> ZAreas = RenderStreamMap.GetKeys();
 	for (uint32 ZAreaKey : ZAreas)
 	{
 		TArray<FStaticMaterial*> Materials = RenderStreamMap[ZAreaKey].GetKeys();
@@ -527,31 +581,26 @@ void URenderer::SetRenderStream()
 		}
 	}
 	FMatrix ViewMat = CachedViewProj.View;
+	for (uint32& MeshCount : ZAreaMeshCount)
+	{
+		MeshCount = 0;
+	}
 	for (UStaticMeshComponent* Comp : Candidate)
 	{
 		FVector4 ViewPos = FVector4(Comp->GetWorldLocation(), 1) * ViewMat;
 		FStaticMesh* StaticMeshAsset = Comp->GetStaticMesh()->GetStaticMeshAsset();
 		int MaterialSize = StaticMeshAsset->Materials.size();
-		int ZAreaIdx = 3;
-		if (ViewPos.Z < ZAreaDepthValue[0])
+		int ZAreaDepthValueCount = ZAreaDepthValue.size();
+		int ZAreaIdx = ZAreaDepthValueCount;
+		for (int i = 0; i < ZAreaDepthValueCount; i++)
 		{
-			ZAreaIdx = 0;
+			if (ZAreaDepthValue[i] > ViewPos.Z)
+			{
+				ZAreaIdx = i;
+				break;
+			}
 		}
-		else if (ViewPos.Z < ZAreaDepthValue[1])
-		{
-			ZAreaIdx = 1;
-		}
-		else if (ViewPos.Z < ZAreaDepthValue[2])
-		{
-			ZAreaIdx = 2;
-		}
-		else
-		{
-			ZAreaIdx = 3;
-		}
-#ifdef _DEVELOP
 		ZAreaMeshCount[ZAreaIdx]++;
-#endif
 		for (int i = 0; i < MaterialSize; i++)
 		{
 			FStaticMaterial* pMaterial = &StaticMeshAsset->Materials[i];
@@ -605,6 +654,7 @@ void URenderer::RenderSortingBatchMap()
 	TIME_PROFILE(Query);
 	SceneBVH.QueryFrustum(Planes, Candidate);
 	TIME_PROFILE_END(Query);
+	UpdateZArea();
 	SetRenderStream();
 	const uint32 WorldMatSize = sizeof(FMatrix);
 	const uint32 WorldMatValueCount = 16;
@@ -682,36 +732,6 @@ void URenderer::SetupStaticMeshComponent(UStaticMeshComponent* StaticMeshCompone
 #ifdef _DEVELOP
 	StaticMeshComponentChagneCount++;
 #endif
-}
-void URenderer::UpdateZArea()
-{
-	int ZAreaValueCount = ZAreaDepthValue.size();
-	float PrevValue = 0;
-	float NextValue = 0;
-
-	//이전구역 현재구역 다음구역 메쉬갯수 구해서 평행해지게 만들기
-
-	for (int i = 0; i < ZAreaValueCount; i++)
-	{
-		if (i == 0)
-		{
-			PrevValue = CachedViewProj.CamNear;
-			NextValue = ZAreaDepthValue[1];
-		}
-		else if (i == ZAreaValueCount - 1)
-		{
-			PrevValue = ZAreaDepthValue[i - 1];
-			NextValue = CachedViewProj.CamFar; //Camera Far 연결해야함
-		}
-		else
-		{
-			PrevValue = ZAreaDepthValue[i - 1];
-			NextValue = ZAreaDepthValue[i + 1];
-		}
-	}
-	
-
-
 }
 bool URenderer::ShouldPerformColorPicking()
 {
