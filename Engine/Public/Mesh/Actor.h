@@ -42,8 +42,9 @@ public:
 
 	const bool IsActorTickEnabled() const { return bCanEverTick; }
 
-private:
 	bool bTickInEditor = false;
+
+private:
 	bool bCanEverTick = true;
 	USceneComponent* RootComponent = nullptr;
 	TSet<UActorComponent*> OwnedComponents;

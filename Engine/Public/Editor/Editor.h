@@ -11,15 +11,15 @@ class UGizmo;
 class UAxis;
 class UGrid;
 class ULevel;
-class UEditorEngine : public UObject
+class UEditor : public UObject
 {
-	DECLARE_CLASS(UEditorEngine, UObject)
+	DECLARE_CLASS(UEditor, UObject)
 
 public:
-	UEditorEngine();
-	~UEditorEngine();
+	UEditor();
+	~UEditor();
 
-	virtual void Tick(float DeltaSeconds);
+	virtual void Tick();
 
 	const FVector& GetCameraLocation();
 	UCamera* GetCamera();

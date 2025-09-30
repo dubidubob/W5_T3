@@ -33,12 +33,12 @@ void UPickingPerformanceWidget::Update()
 	// 일정 간격으로만 업데이트
 	if (CurrentTime - LastUpdateTime > REFRESH_INTERVAL)
 	{
-		UEditorEngine* Editor = nullptr;
-		for (TObjectIterator<UEditorEngine> it; it; ++it)
+		UEditor* Editor = nullptr;
+		for (TObjectIterator<UEditor> it; it; ++it)
 		{
-			if (it->IsA(UEditorEngine::StaticClass()))
+			if (it->IsA(UEditor::StaticClass()))
 			{
-				Editor = static_cast<UEditorEngine*>(*it);
+				Editor = static_cast<UEditor*>(*it);
 				break;
 			}
 		}

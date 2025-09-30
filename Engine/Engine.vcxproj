@@ -411,7 +411,6 @@
     <ClCompile Include="Global\Name.cpp" />
     <ClCompile Include="Global\NameTable.cpp" />
     <ClCompile Include="Global\PlatformTime.cpp" />
-    <ClCompile Include="PIEController.cpp" />
     <ClCompile Include="Private\Archive\Archive.cpp" />
     <ClCompile Include="Private\Manager\Viewport\ViewportManager.cpp" />
     <ClCompile Include="Private\Math\AABB.cpp" />
@@ -431,6 +430,7 @@
     <ClCompile Include="Private\Render\UI\Widget\PickingPerformanceWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ViewSettingsWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Window\DetailWindow.cpp" />
+    <ClCompile Include="Private\Render\UI\Window\PIEController.cpp" />
     <ClCompile Include="Private\Slate\Box.cpp" />
     <ClCompile Include="Private\Slate\HorizontalBox.cpp" />
     <ClCompile Include="Private\Slate\Splitter.cpp" />

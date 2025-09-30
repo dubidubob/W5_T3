@@ -23,11 +23,11 @@ ULevelManager::ULevelManager() = default;
 
 ULevelManager::~ULevelManager() = default;
 
-void ULevelManager::Update() const
+void ULevelManager::Update(float DeltaTime) const
 {
 	if (CurrentLevel)
 	{
-		CurrentLevel->Update();
+		CurrentLevel->Update(DeltaTime);
 	}
 }
 

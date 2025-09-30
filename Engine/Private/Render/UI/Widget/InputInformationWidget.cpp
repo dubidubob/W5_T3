@@ -102,7 +102,7 @@ void UInputInformationWidget::RenderWidget()
 		if (ImGui::BeginTabItem("Picking Options"))
 		{
 			URenderer& Renderer = URenderer::GetInstance();
-			UEditorEngine* Editor = Renderer.GetEditor();
+			UEditor* Editor = Renderer.GetEditor();
 
 			if (Editor)
 			{

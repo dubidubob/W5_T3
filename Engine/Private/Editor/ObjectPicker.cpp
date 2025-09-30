@@ -155,7 +155,7 @@ UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 Mou
 		return nullptr;
 	}
 
-	UEditorEngine* Editor = URenderer::GetInstance().GetEditor();
+	UEditor* Editor = URenderer::GetInstance().GetEditor();
 	bool bIsUUIDPicking = Editor->bUUIDColorPicking;
 	bool bIsIndexPicking = Editor->bIndexColorPicking;
 

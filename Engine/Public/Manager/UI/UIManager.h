@@ -3,6 +3,7 @@
 
 class UUIWindow;
 class UImGuiHelper;
+class FClientApp;
 
 /**
  * @brief UI 매니저 클래스
@@ -46,6 +47,9 @@ public:
 
 	// F1 키로 Experimental Feature Window 토글
 	void ToggleExperimentalFeatureWindow();
+
+	bool bIsPIE = false;
+	FClientApp* ClientApp;
 
 private:
 	TArray<UUIWindow*> UIWindows;

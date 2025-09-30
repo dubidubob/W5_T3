@@ -24,9 +24,9 @@
 #include "Utility/ObjectPreviewScene.h"
 #endif
 
-IMPLEMENT_CLASS(UEditorEngine, UObject)
+IMPLEMENT_CLASS(UEditor, UObject)
 
-UEditorEngine::UEditorEngine()
+UEditor::UEditor()
 {
 	Camera = NewObject<UCamera>();
 	ObjectPicker = NewObject<UObjectPicker>();
@@ -63,7 +63,7 @@ UEditorEngine::UEditorEngine()
 	ViewSettingsWidget->SetViewportManager(ViewportManager);
 };
 
-UEditorEngine::~UEditorEngine()
+UEditor::~UEditor()
 {
 	delete Camera;
 	delete ObjectPicker;
@@ -76,7 +76,7 @@ UEditorEngine::~UEditorEngine()
 	delete Axis;
 }
 
-void UEditorEngine::Tick(float DeltaSeconds)
+void UEditor::Tick()
 {
 	Camera->Update(ViewportManager->GetIsWindowDivided());
 	ViewportManager->Update();
@@ -88,17 +88,17 @@ void UEditorEngine::Tick(float DeltaSeconds)
 	Renderer.UpdateViewProjConstants(Camera->GetFViewProjConstants());
 }
 
-const FVector& UEditorEngine::GetCameraLocation()
+const FVector& UEditor::GetCameraLocation()
 {
 	return Camera->GetLocation();
 }
 
-UCamera* UEditorEngine::GetCamera()
+UCamera* UEditor::GetCamera()
 {
 	return Camera;
 }
 
-void UEditorEngine::RenderEditorBatched(int Idx)
+void UEditor::RenderEditorBatched(int Idx)
 {
 	TIME_PROFILE(RenderEditBatched)
 
@@ -166,7 +166,7 @@ void UEditorEngine::RenderEditorBatched(int Idx)
 }
 
 
-void UEditorEngine::ProcessKeyboardInput()
+void UEditor::ProcessKeyboardInput()
 {
 	const UInputManager& InputManager = UInputManager::GetInstance();
 	auto& Renderer = URenderer::GetInstance();
@@ -211,7 +211,7 @@ void UEditorEngine::ProcessKeyboardInput()
 	}
 }
 
-void UEditorEngine::ProcessMouseInput(ULevel* InLevel)
+void UEditor::ProcessMouseInput(ULevel* InLevel)
 {
 	/*Make Input*/
 	const UInputManager& InputManager = UInputManager::GetInstance();
@@ -232,7 +232,7 @@ void UEditorEngine::ProcessMouseInput(ULevel* InLevel)
 	}	
 }
 
-void UEditorEngine::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
+void UEditor::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 {
 	static EGizmoDirection PreviousGizmoDirection = EGizmoDirection::None;
 	AActor* ActorPicked = InLevel->GetSelectedActor();
@@ -348,7 +348,7 @@ void UEditorEngine::HandleGizmo(ULevel* InLevel, FRay InWorldRay)
 	}
 }
 
-bool UEditorEngine::GetIsRayPicking()
+bool UEditor::GetIsRayPicking()
 {
 	const bool bWireframeMode = URenderer::GetInstance().GetViewMode() == EViewportRenderMode::Wireframe;
 	const bool bMultiViewportMode = ViewportManager->GetIsWindowDivided();
@@ -357,7 +357,7 @@ bool UEditorEngine::GetIsRayPicking()
 	return bMultiViewportMode || bWireframeMode || (bRayPicking && !bColorPicking);
 }
 
-TArray<UPrimitiveComponent*> UEditorEngine::FindCandidatePrimitives(ULevel* InLevel)
+TArray<UPrimitiveComponent*> UEditor::FindCandidatePrimitives(ULevel* InLevel)
 {
 	TArray<UPrimitiveComponent*> Candidate;
 
@@ -382,7 +382,7 @@ TArray<UPrimitiveComponent*> UEditorEngine::FindCandidatePrimitives(ULevel* InLe
 	return Candidate;
 }
 
-TArray<class UPrimitiveComponent*> UEditorEngine::GetAllPrimitives(ULevel* InLevel)
+TArray<class UPrimitiveComponent*> UEditor::GetAllPrimitives(ULevel* InLevel)
 {
 	TArray<UPrimitiveComponent*> Primitives;
 	for (AActor* Actor : InLevel->GetLevelActors())
@@ -399,7 +399,7 @@ TArray<class UPrimitiveComponent*> UEditorEngine::GetAllPrimitives(ULevel* InLev
 	return Primitives;
 }
 
-FVector UEditorEngine::GetGizmoDragLocation(const FRay& WorldRay)
+FVector UEditor::GetGizmoDragLocation(const FRay& WorldRay)
 {
 	FVector MouseWorld;
 	FVector PlaneOrigin{ Gizmo->GetGizmoLocation() };
@@ -433,7 +433,7 @@ FVector UEditorEngine::GetGizmoDragLocation(const FRay& WorldRay)
 	return Gizmo->GetGizmoLocation();
 }
 
-FVector UEditorEngine::GetGizmoDragRotation(const FRay& WorldRay)
+FVector UEditor::GetGizmoDragRotation(const FRay& WorldRay)
 {
 	FVector MouseWorld;
 	FVector PlaneOrigin{Gizmo->GetGizmoLocation()};
@@ -455,7 +455,7 @@ FVector UEditorEngine::GetGizmoDragRotation(const FRay& WorldRay)
 	return Gizmo->GetActorRotation();
 }
 
-FQuat UEditorEngine::GetGizmoDragRotationQuat(const FRay& WorldRay)
+FQuat UEditor::GetGizmoDragRotationQuat(const FRay& WorldRay)
 {
 	FVector MouseWorld;
 	FVector PlaneOrigin{Gizmo->GetGizmoLocation()};
@@ -501,7 +501,7 @@ FQuat UEditorEngine::GetGizmoDragRotationQuat(const FRay& WorldRay)
 	return Gizmo->GetActorRotationQuat();
 }
 
-FVector UEditorEngine::GetGizmoDragScale(const FRay& WorldRay)
+FVector UEditor::GetGizmoDragScale(const FRay& WorldRay)
 {
 	FVector MouseWorld;
 	FVector PlaneOrigin{Gizmo->GetGizmoLocation()};

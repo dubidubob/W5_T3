@@ -234,12 +234,12 @@ void UStatsOverlayD2D::Draw()
         double totalMs = 0.0;
         unsigned int attempts = 0u;
 
-        UEditorEngine* Editor = nullptr;
-        for (TObjectIterator<UEditorEngine> it; it; ++it)
+        UEditor* Editor = nullptr;
+        for (TObjectIterator<UEditor> it; it; ++it)
         {
-            if (it->IsA(UEditorEngine::StaticClass()))
+            if (it->IsA(UEditor::StaticClass()))
             {
-                Editor = static_cast<UEditorEngine*>(*it);
+                Editor = static_cast<UEditor*>(*it);
                 break;
             }
         }

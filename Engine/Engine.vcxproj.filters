@@ -101,8 +101,8 @@
     <ClCompile Include="Private\Math\MeshBVH.cpp" />
     <ClCompile Include="Public\Render\Renderer\StatsOverlayD2D.cpp" />
     <ClCompile Include="World.cpp" />
-    <ClCompile Include="PIEController.cpp" />
     <ClCompile Include="EditorEngine.cpp" />
+    <ClCompile Include="Private\Render\UI\Window\PIEController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Global\Name.h" />

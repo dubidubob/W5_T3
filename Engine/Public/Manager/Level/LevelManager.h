@@ -11,7 +11,7 @@ class ULevelManager : public UObject
 	DECLARE_SINGLETON(ULevelManager)
 
 public:
-	void Update() const;
+	void Update(float DeltaTime) const;
 	void Shutdown();
 
 	// Getter

@@ -2,6 +2,7 @@
 #include "Core/ClientApp.h"
 
 #include "Editor/Editor.h"
+#include "EditorEngine.h"
 #include "Core/AppWindow.h"
 #include "Manager/Input/InputManager.h"
 #include "Manager/Level/LevelManager.h"
@@ -20,6 +21,29 @@
 FClientApp::FClientApp() = default;
 
 FClientApp::~FClientApp() = default;
+
+void FClientApp::StartPIE()
+{
+	UWorld* EditorWorld = GEditor->GetEditorWorldContext().World();
+
+	UWorld* PIEWorld = UWorld::DuplicateWorldForPIE(EditorWorld);
+
+	GWorld = PIEWorld;
+
+	// AActor::BeginPlay()
+	//PIEWorld->InitializeActorsForPlay();
+}
+
+void FClientApp::EndPIE()
+{
+	if (GWorld && GWorld->IsPIEWorld())
+	{
+		//GWorld->CleanupWorld();
+		delete GWorld;
+	}
+
+	GWorld = GEditor->GetEditorWorldContext().World();
+}
 /**
  * @brief Client Main Runtime Function
  * App 초기화, Main Loop 실행을 통한 전체 Cycle
@@ -84,6 +108,7 @@ int FClientApp::InitializeSystem()
 	Renderer.Init(Window->GetWindowHandle());
 	// UIManager Initialize
 	auto& UiManager = UUIManager::GetInstance();
+	UiManager.ClientApp = this;
 	UiManager.Initialize(Window->GetWindowHandle());
 
 	UUIWindowFactory::CreateDefaultUILayout();
@@ -102,7 +127,8 @@ int FClientApp::InitializeSystem()
 	// UE_LOG("=== Engine Initialization Completed ===");
 
 	// Initialize Editor
-	Editor = NewObject<UEditorEngine>();
+	Editor = NewObject<UEditor>();
+	GEditor = NewObject<UEditorEngine>();
 	Renderer.SetEditor(Editor);
 
 	// Create Default Level
@@ -120,13 +146,14 @@ void FClientApp::UpdateSystem(float DeltaSeconds)
 	auto& TimeManager = UTimeManager::GetInstance();
 	auto& InputManager = UInputManager::GetInstance();
 	auto& Renderer = URenderer::GetInstance();
-	auto& LevelManager = ULevelManager::GetInstance();
+	//& LevelManager = ULevelManager::GetInstance();
 	auto& UiManager = UUIManager::GetInstance();
 
 	Editor->Tick();
+	GEditor->Tick(DeltaSeconds);
 	TimeManager.Update();
 	InputManager.Update(Window);
-	LevelManager.Update(float DeltaSeconds);
+	//LevelManager.Update(DeltaSeconds);
 	UiManager.Update();
 	Renderer.Update(Editor);
 }

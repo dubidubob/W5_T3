@@ -1,7 +1,9 @@
 #pragma once
 
-class UEditorEngine;
+class UEditor;
 class FAppWindow;
+class UEditorEngine;
+class UWorld;
 
 /**
  * @brief Main Client Class
@@ -20,6 +22,9 @@ public:
     FClientApp();
     ~FClientApp();
 
+	void StartPIE();
+	void EndPIE();
+
 private:
     int InitializeSystem();
     void UpdateSystem(float DeltaSeconds);
@@ -29,5 +34,7 @@ private:
     HACCEL AcceleratorTable;
     MSG MainMessage;
     FAppWindow* Window;
-	UEditorEngine* Editor = nullptr;
+	UEditor* Editor = nullptr;
+	UEditorEngine* GEditor;
+	UWorld* GWorld;
 };

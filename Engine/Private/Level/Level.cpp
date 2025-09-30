@@ -52,7 +52,7 @@ void ULevel::Update(float DeltaTime)
 	{
 		if (Actor)
 		{
-			Actor->Tick();
+			Actor->Tick(DeltaTime);
 			//AddLevelPrimitiveComponent(Actor);
 		}
 	}
