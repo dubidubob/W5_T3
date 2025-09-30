@@ -27,11 +27,11 @@ public:
 
 	virtual void BeginPlay();
 	virtual void EndPlay();
-	virtual void Tick();
+	virtual void Tick(float DeltaTime);
 
 	// Getter & Setter
 	USceneComponent* GetRootComponent() const { return RootComponent; }
-	TArray<UActorComponent*> GetOwnedComponents() const { return OwnedComponents; }
+	TSet<UActorComponent*> GetOwnedComponents() const { return OwnedComponents; }
 
 	void SetRootComponent(USceneComponent* InOwnedComponents) { RootComponent = InOwnedComponents; }
 
@@ -40,9 +40,13 @@ public:
     const FQuat& GetActorRotationQuat() const;
 	const FVector& GetActorScale3D() const;
 
+	const bool IsActorTickEnabled() const { return bCanEverTick; }
+
 private:
+	bool bTickInEditor = false;
+	bool bCanEverTick = true;
 	USceneComponent* RootComponent = nullptr;
-	TArray<UActorComponent*> OwnedComponents;
+	TSet<UActorComponent*> OwnedComponents;
 };
 
 template <typename T>
@@ -61,7 +65,7 @@ T* AActor::CreateDefaultSubobject(const FString& InName)
 	///RTTI로 Owner와 Outer 동일화 필////
 
 	NewComponent->SetName(InName);
-	OwnedComponents.push_back(NewComponent);
+	OwnedComponents.insert(NewComponent);
 
 	return NewComponent;
 }

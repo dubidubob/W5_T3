@@ -16,7 +16,7 @@ public:
 	}*/
 
 	virtual void BeginPlay();
-	virtual void TickComponent();
+	virtual void TickComponent(float DeltaTime);
 	virtual void EndPlay();
 
 	EComponentType GetComponentType() { return ComponentType; }
@@ -25,8 +25,10 @@ public:
 	AActor* GetOwner() const {return Owner;}
 
 	EComponentType GetComponentType() const { return ComponentType; }
+	const bool IsComponentTickEnabled() const { return bCanEverTick; }
 protected:
 	EComponentType ComponentType;
 private:
 	AActor* Owner;
+	bool bCanEverTick = true;
 };

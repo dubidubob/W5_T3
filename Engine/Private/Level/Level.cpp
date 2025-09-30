@@ -32,7 +32,7 @@ void ULevel::Init()
 	// TEST CODE
 }
 
-void ULevel::Update()
+void ULevel::Update(float DeltaTime)
 {
 	// Process Delayed Task
 	ProcessPendingDeletions();

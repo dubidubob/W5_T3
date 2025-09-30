@@ -19,7 +19,7 @@ public:
 	~ULevel() override;
 
 	virtual void Init();
-	virtual void Update();
+	virtual void Update(float DeltaTime);
 	virtual void Render();
 	virtual void Cleanup();
 
@@ -75,7 +75,7 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// Comment: LevelManager에서 Save & Load 시 Editor의 카메라에 접근할 수 있어야 하므로
 	//         Level의 Camera 포인터가 Editor의 Camera를 가리키도록 하였습니다.
-	           
+
 	UCamera* CameraPtr = nullptr;
 
 	// 지연 삭제 처리 함수

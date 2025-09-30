@@ -99,6 +99,10 @@
     <ClCompile Include="Private\\Utility\\LevelSerializer.cpp" />
     <ClCompile Include="Global\Rect.cpp" />
     <ClCompile Include="Private\Math\MeshBVH.cpp" />
+    <ClCompile Include="Public\Render\Renderer\StatsOverlayD2D.cpp" />
+    <ClCompile Include="World.cpp" />
+    <ClCompile Include="PIEController.cpp" />
+    <ClCompile Include="EditorEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Global\Name.h" />
@@ -208,6 +212,10 @@
     <ClInclude Include="Global\Rect.h" />
     <ClInclude Include="ViewportTypes.h" />
     <ClInclude Include="Public\Math\MeshBVH.h" />
+    <ClInclude Include="Public\Render\Renderer\StatsOverlayD2D.h" />
+    <ClInclude Include="World.h" />
+    <ClInclude Include="PIEController.h" />
+    <ClInclude Include="EditorEngine.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />

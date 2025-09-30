@@ -1,6 +1,6 @@
 #pragma once
 
-class UEditor;
+class UEditorEngine;
 class FAppWindow;
 
 /**
@@ -22,12 +22,12 @@ public:
 
 private:
     int InitializeSystem();
-    void UpdateSystem();
+    void UpdateSystem(float DeltaSeconds);
     void MainLoop();
 	void ShutdownSystem();
 
     HACCEL AcceleratorTable;
     MSG MainMessage;
     FAppWindow* Window;
-	UEditor* Editor = nullptr;
+	UEditorEngine* Editor = nullptr;
 };

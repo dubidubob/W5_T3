@@ -14,7 +14,7 @@ class UDeviceResources;
 class UPrimitiveComponent;
 class AActor;
 class AGizmo;
-class UEditor;
+class UEditorEngine;
 class UTextComponent;
 class SWindow;
 struct FPipelineInfo;
@@ -36,7 +36,7 @@ public:
 	// ================== Core Lifecycle ==================
 	void Init(HWND WindowHandle);
 	void Release();
-	void Update(UEditor* Editor);
+	void Update(UEditorEngine* Editor);
 	void OnResize(uint32 Width = 0, uint32 Height = 0);
 
 	// ================== Rendering Functions ==================
@@ -48,7 +48,7 @@ public:
 	uint32 GetPickedObjectFromCache(int32 MouseX, int32 MouseY);
 	void DebugPrintSamplePickingData(); // Debug function to print some sample data
 	void RenderText(const FVector& CameraLocation);
-	void RenderSlate(UEditor* Editor);
+	void RenderSlate(UEditorEngine* Editor);
 	void RenderEditorPrimitive(FEditorPrimitive& Primitive, FRenderState& RenderState);
 	void RenderSortingBatchMap();
 
@@ -166,8 +166,8 @@ public:
 	ID3D11DepthStencilState* GetDefaultDepthStencilState() const { return DefaultDepthStencilState; }
 	ID3D11RasterizerState* GetRasterizerState(const FRenderState& RenderState);
 
-	UEditor* GetEditor() { return Editor; }
-	void SetEditor(UEditor* InEditor) { Editor = InEditor; }
+	UEditorEngine* GetEditor() { return Editor; }
+	void SetEditor(UEditorEngine* InEditor) { Editor = InEditor; }
 
 	// Actor Spawn, Actor Delete, Load Level
 	void MarkForceReRenderPicking() { bForceReRenderPicking = true; }
@@ -188,7 +188,7 @@ public:
 
 
 private:
-	UEditor* Editor = nullptr;
+	UEditorEngine* Editor = nullptr;
 	bool bSortingBatchMapDirty = true;
 
 	TArray<UStaticMeshComponent*> Candidate;
@@ -402,8 +402,8 @@ private:
 	void SetupStaticMeshAsset(FStaticMesh* StaticMeshAsset);
 	void SetupStaticMeshComponent(UStaticMeshComponent* StaticMeshComponent);
 	
-	void RenderMultiViewport(UEditor* Editor);
-	void RenderScene(UEditor* Editor, int Idx = 0);
+	void RenderMultiViewport(UEditorEngine* Editor);
+	void RenderScene(UEditorEngine* Editor, int Idx = 0);
 	void RenderStaticMeshComponent(UPrimitiveComponent* Component);
 	void RenderStaticMeshComponentForPicking(UPrimitiveComponent* Component);
 	void SetupStaticMeshRendering(UStaticMeshComponent* Component, FStaticMesh* MeshData);

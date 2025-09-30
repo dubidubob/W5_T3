@@ -102,13 +102,12 @@ int FClientApp::InitializeSystem()
 	// UE_LOG("=== Engine Initialization Completed ===");
 
 	// Initialize Editor
-	Editor = NewObject<UEditor>();
+	Editor = NewObject<UEditorEngine>();
 	Renderer.SetEditor(Editor);
 
 	// Create Default Level
 	// TODO(KHJ): 나중에 Init에서 처리하도록 하는 게 맞을 듯
 	ULevelManager::GetInstance().Init(Editor->GetCamera());
-
 
 	return S_OK;
 }
@@ -116,7 +115,7 @@ int FClientApp::InitializeSystem()
 /**
  * @brief Update System While Game Processing
  */
-void FClientApp::UpdateSystem()
+void FClientApp::UpdateSystem(float DeltaSeconds)
 {
 	auto& TimeManager = UTimeManager::GetInstance();
 	auto& InputManager = UInputManager::GetInstance();
@@ -124,10 +123,10 @@ void FClientApp::UpdateSystem()
 	auto& LevelManager = ULevelManager::GetInstance();
 	auto& UiManager = UUIManager::GetInstance();
 
-	Editor->Update();
+	Editor->Tick();
 	TimeManager.Update();
 	InputManager.Update(Window);
-	LevelManager.Update();
+	LevelManager.Update(float DeltaSeconds);
 	UiManager.Update();
 	Renderer.Update(Editor);
 }
@@ -175,7 +174,7 @@ void FClientApp::MainLoop()
 		// 60fps 제한: 16.67ms마다 업데이트
 		if (ElapsedTime >= TargetFrameTime)
 		{
-			UpdateSystem();
+			UpdateSystem(ElapsedTime);
 			LastTime = CurrentTime;
 		}
 		else

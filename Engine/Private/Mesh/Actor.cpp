@@ -108,21 +108,21 @@ const FVector& AActor::GetActorScale3D() const
 	return RootComponent->GetRelativeScale3D();
 }
 
-void AActor::Tick()
-{
-	for (auto& Component : OwnedComponents)
-	{
-		if (Component)
-		{
-			Component->TickComponent();
-		}
-	}
-}
-
 void AActor::BeginPlay()
 {
 }
 
 void AActor::EndPlay()
 {
+}
+
+void AActor::Tick(float DeltaTime)
+{
+	for (UActorComponent* Component : OwnedComponents)
+	{
+		if (Component && Component->IsComponentTickEnabled())
+		{
+			Component->TickComponent(DeltaTime);
+		}
+	}
 }

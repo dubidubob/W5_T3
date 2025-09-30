@@ -378,7 +378,7 @@ void URenderer::UpdateInstanceDrawConstants(bool UseInstancing, uint32 BaseOffse
 
 // ================== Main Rendering Loop ==================
 
-void URenderer::Update(UEditor* Editor)
+void URenderer::Update(UEditorEngine* Editor)
 {
 	TIME_PROFILE(Update)
 	RenderBegin(); // 0.003
@@ -424,7 +424,7 @@ void URenderer::Update(UEditor* Editor)
 	RenderEnd();
 }
 
-void URenderer::RenderMultiViewport(UEditor* Editor)
+void URenderer::RenderMultiViewport(UEditorEngine* Editor)
 {
 	long WindowWidth = GetDeviceResources()->GetViewportInfo().Width;
 	long WindowHeight = GetDeviceResources()->GetViewportInfo().Height;
@@ -456,7 +456,7 @@ void URenderer::RenderMultiViewport(UEditor* Editor)
 	//RenderColorPicking();
 }
 
-void URenderer::RenderScene(UEditor* Editor, int Idx)
+void URenderer::RenderScene(UEditorEngine* Editor, int Idx)
 {
 	RenderLevel(); //11
 	Editor->RenderEditorBatched(Idx);
@@ -1213,7 +1213,7 @@ FVector URenderer::CalculateTextPosition(UTextComponent* Component)
 	return Component->GetWorldLocation() + FVector(0, 0, 2.0f);
 }
 
-void URenderer::RenderSlate(UEditor* Editor)
+void URenderer::RenderSlate(UEditorEngine* Editor)
 {
 	FPipelineInfo PipelineInfo{
 		SlateInputLayout, SlateVertexShader,

@@ -294,10 +294,12 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="EditorEngine.h" />
     <ClInclude Include="Global\Name.h" />
     <ClInclude Include="Global\NameTable.h" />
     <ClInclude Include="Global\PlatformTime.h" />
     <ClInclude Include="Global\Quat.h" />
+    <ClInclude Include="PIEController.h" />
     <ClInclude Include="Public\Archive\Archive.h" />
     <ClInclude Include="Public\Core\EngineStatics.h" />
     <ClInclude Include="Public\Core\ObjectIterator.h" />
@@ -402,11 +404,14 @@
     <ClInclude Include="Public\\Utility\\Metadata.h" />
     <ClInclude Include="Global\Rect.h" />
     <ClInclude Include="ViewportTypes.h" />
+    <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="EditorEngine.cpp" />
     <ClCompile Include="Global\Name.cpp" />
     <ClCompile Include="Global\NameTable.cpp" />
     <ClCompile Include="Global\PlatformTime.cpp" />
+    <ClCompile Include="PIEController.cpp" />
     <ClCompile Include="Private\Archive\Archive.cpp" />
     <ClCompile Include="Private\Manager\Viewport\ViewportManager.cpp" />
     <ClCompile Include="Private\Math\AABB.cpp" />
@@ -498,6 +503,7 @@
     <ClCompile Include="Private\\Utility\\LevelSerializer.cpp" />
     <ClCompile Include="Global\Rect.cpp" />
     <ClCompile Include="Public\Render\Renderer\StatsOverlayD2D.cpp" />
+    <ClCompile Include="World.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

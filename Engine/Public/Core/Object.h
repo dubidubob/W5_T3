@@ -1,6 +1,8 @@
 #pragma once
 #include "Class.h"
 
+class ULevel;
+
 UCLASS()
 class UObject
 {
@@ -30,6 +32,9 @@ public:
 	uint32 GetAllocatedCount() const { return AllocatedCounts; }
 
 	bool IsA(const UClass* InClass) const;
+
+	virtual void DuplicateSubObjects(ULevel* InLevel);
+	virtual UObject* Duplicate(ULevel* InLevel);
 
 private:
 	uint32 UUID = -1;

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Core/Object.h"
 #include "Core/EngineStatics.h"
+#include "Level/Level.h"
 
 uint32 UEngineStatics::NextUUID = 0;
 TArray<UObject*> GUObjectArray;
@@ -88,4 +89,20 @@ bool UObject::IsA(const UClass* InClass) const
 	}
 
 	return GetClass()->IsChildOf(InClass);
+}
+
+void UObject::DuplicateSubObjects(ULevel* InLevel)
+{
+	UUID = UEngineStatics::GenUUID();
+
+	Outer = InLevel;
+}
+
+UObject* UObject::Duplicate(ULevel* InLevel)
+{
+	UObject* NewObject = new UObject(*this);
+
+	NewObject->DuplicateSubObjects(InLevel);
+
+	return NewObject;
 }
