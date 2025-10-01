@@ -91,18 +91,16 @@ bool UObject::IsA(const UClass* InClass) const
 	return GetClass()->IsChildOf(InClass);
 }
 
-void UObject::DuplicateSubObjects(ULevel* InLevel)
+void UObject::DuplicateSubObjects()
 {
 	UUID = UEngineStatics::GenUUID();
-
-	Outer = InLevel;
 }
 
-UObject* UObject::Duplicate(ULevel* InLevel)
+UObject* UObject::Duplicate()
 {
 	UObject* NewObject = new UObject(*this);
 
-	NewObject->DuplicateSubObjects(InLevel);
+	NewObject->DuplicateSubObjects();
 
 	return NewObject;
 }

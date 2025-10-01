@@ -19,8 +19,18 @@ class UWorld : public UObject
 public:
 	UWorld();
 	~UWorld();
+
 	const EWorldType GetWorldType() const { return WorldType; }
 	ULevel* GetLevel() const { return Level; }
+
+	void SetWorldType(EWorldType InWorldType) { WorldType = InWorldType; }
+	void SetLevel(ULevel* InLevel) { Level = InLevel; }
+
+	static UWorld* DuplicateWorldForPIE(UWorld* InWorld);
+
+	void InitializeActorsForPlay();
+
+	bool IsPIEWorld() { return WorldType == EWorldType::PIE; }
 
 private:
 	ULevel* Level;
@@ -32,7 +42,7 @@ private:
 
 struct FWorldContext
 {
-	EWorldType WorldType;
+	//EWorldType WorldType;
 	UWorld* OnWorld;
 	FName ContextHandle;
 

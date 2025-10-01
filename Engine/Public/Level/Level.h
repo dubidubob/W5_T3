@@ -51,6 +51,9 @@ public:
 	void SetCamera(UCamera* InCamera) { CameraPtr = InCamera; }
 	UCamera* GetCamera() const { return CameraPtr; }
 
+	virtual void DuplicateSubObjects() override;
+	virtual ULevel* Duplicate() override;
+
 private:
 
 	void AddLevelActor(AActor* Actor);

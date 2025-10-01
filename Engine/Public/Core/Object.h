@@ -33,8 +33,8 @@ public:
 
 	bool IsA(const UClass* InClass) const;
 
-	virtual void DuplicateSubObjects(ULevel* InLevel);
-	virtual UObject* Duplicate(ULevel* InLevel);
+	virtual void DuplicateSubObjects();
+	virtual UObject* Duplicate();
 
 private:
 	uint32 UUID = -1;

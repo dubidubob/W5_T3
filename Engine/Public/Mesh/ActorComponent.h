@@ -26,6 +26,10 @@ public:
 
 	EComponentType GetComponentType() const { return ComponentType; }
 	const bool IsComponentTickEnabled() const { return bCanEverTick; }
+
+	virtual void DuplicateSubObjects() override;
+	virtual UActorComponent* Duplicate() override;
+	
 protected:
 	EComponentType ComponentType;
 private:

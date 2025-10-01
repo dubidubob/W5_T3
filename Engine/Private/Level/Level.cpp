@@ -82,6 +82,7 @@ void ULevel::Cleanup()
 	}
 	LevelActors.Empty();
 }
+
 void ULevel::AddLevelActor(AActor* Actor)
 {
 	URenderer::GetInstance().SetSortingBatchMapDirty();
@@ -327,4 +328,54 @@ void ULevel::ProcessPendingDeletions()
 	// Clear TArray
 	ActorsToDelete.Empty();
 	//UE_LOG("[Level] All Pending Deletions Processed");
+}
+
+void ULevel::DuplicateSubObjects()
+{
+	for (auto& Actor : LevelActors)
+	{
+		if (Actor)
+		{
+			Actor = Actor->Duplicate();
+		}
+	}
+
+	for (auto& PrimComp : LevelPrimitiveComponents)
+	{
+		if (PrimComp)
+		{
+			PrimComp = PrimComp->Duplicate();
+		}
+	}
+
+	for (auto& SMComp : LevelStaticMeshComponents)
+	{
+		if (SMComp)
+		{
+			SMComp = SMComp->Duplicate();
+		}
+	}
+
+	for (auto& TextComp : TextComponents)
+	{
+		if (TextComp)
+		{
+			TextComp = TextComp->Duplicate();
+		}
+	}
+}
+
+ULevel* ULevel::Duplicate()
+{
+	ULevel* NewLevel = new ULevel(*this);
+
+	NewLevel->Gizmo = nullptr;
+	NewLevel->SelectedActor = nullptr;
+	NewLevel->Axis = nullptr;
+	NewLevel->Grid = nullptr;
+	NewLevel->CameraPtr = nullptr;
+
+	NewLevel->DuplicateSubObjects();
+
+	return NewLevel;
 }

@@ -16,6 +16,7 @@ public:
 
 	// Getter
 	ULevel* GetCurrentLevel() const { return CurrentLevel; }
+	void SetCurrentLevel(ULevel* InLevel) { CurrentLevel = InLevel; }
 
 	// Level Operations
 	bool Init(UCamera* InCamera);

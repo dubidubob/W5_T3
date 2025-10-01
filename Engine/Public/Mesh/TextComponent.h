@@ -14,6 +14,9 @@ public:
 	void SetText(const FWstring& InText);
 	FWstring GetText() const { return Text; }
 
+	virtual void DuplicateSubObjects() override;
+	virtual UTextComponent* Duplicate() override;
+
 private:
 	FWstring Text;
 	TArray<FTextInstance> InstanceData;

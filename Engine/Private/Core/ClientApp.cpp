@@ -28,6 +28,8 @@ void FClientApp::StartPIE()
 
 	UWorld* PIEWorld = UWorld::DuplicateWorldForPIE(EditorWorld);
 
+	ULevelManager::GetInstance().SetCurrentLevel(PIEWorld->GetLevel());
+
 	GWorld = PIEWorld;
 
 	// AActor::BeginPlay()
@@ -43,6 +45,7 @@ void FClientApp::EndPIE()
 	}
 
 	GWorld = GEditor->GetEditorWorldContext().World();
+	ULevelManager::GetInstance().SetCurrentLevel(GWorld->GetLevel());
 }
 /**
  * @brief Client Main Runtime Function
@@ -128,12 +131,13 @@ int FClientApp::InitializeSystem()
 
 	// Initialize Editor
 	Editor = NewObject<UEditor>();
+	ULevelManager::GetInstance().Init(Editor->GetCamera());
 	GEditor = NewObject<UEditorEngine>();
 	Renderer.SetEditor(Editor);
 
 	// Create Default Level
 	// TODO(KHJ): 나중에 Init에서 처리하도록 하는 게 맞을 듯
-	ULevelManager::GetInstance().Init(Editor->GetCamera());
+	GEditor = NewObject<UEditorEngine>();
 
 	return S_OK;
 }

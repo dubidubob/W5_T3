@@ -31,7 +31,7 @@ public:
 
 	// Getter & Setter
 	USceneComponent* GetRootComponent() const { return RootComponent; }
-	TSet<UActorComponent*> GetOwnedComponents() const { return OwnedComponents; }
+	TArray<UActorComponent*> GetOwnedComponents() const { return OwnedComponents; }
 
 	void SetRootComponent(USceneComponent* InOwnedComponents) { RootComponent = InOwnedComponents; }
 
@@ -40,6 +40,9 @@ public:
     const FQuat& GetActorRotationQuat() const;
 	const FVector& GetActorScale3D() const;
 
+	virtual void DuplicateSubObjects() override;
+	virtual AActor* Duplicate() override;
+
 	const bool IsActorTickEnabled() const { return bCanEverTick; }
 
 	bool bTickInEditor = false;
@@ -47,7 +50,7 @@ public:
 private:
 	bool bCanEverTick = true;
 	USceneComponent* RootComponent = nullptr;
-	TSet<UActorComponent*> OwnedComponents;
+	TArray<UActorComponent*> OwnedComponents;
 };
 
 template <typename T>
@@ -66,7 +69,7 @@ T* AActor::CreateDefaultSubobject(const FString& InName)
 	///RTTI로 Owner와 Outer 동일화 필////
 
 	NewComponent->SetName(InName);
-	OwnedComponents.insert(NewComponent);
+	OwnedComponents.push_back(NewComponent);
 
 	return NewComponent;
 }

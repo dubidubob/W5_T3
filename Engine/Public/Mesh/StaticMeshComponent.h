@@ -27,6 +27,9 @@ public:
 	virtual FAABB GetWorldBounds() const;
 	UStaticMesh* GetStaticMesh() { return StaticMesh; }
 
+	virtual void DuplicateSubObjects() override;
+	virtual UStaticMeshComponent* Duplicate() override;
+
 	void AddRenderStreamKey(const FRenderStreamKey& RenderStreamKey)
 	{
 		RenderStreamKeys.Push(RenderStreamKey);

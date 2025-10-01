@@ -105,6 +105,9 @@ public:
 	void OnMouseDragStart(FVector& CollisionPoint);
 	void OnMouseRelease(EGizmoDirection DirectionReleased) {}
 
+	virtual void DuplicateSubObjects() override;
+	virtual UGizmo* Duplicate() override;
+
 private:
 	static inline int AxisIndex(EGizmoDirection InDirection)
 	{

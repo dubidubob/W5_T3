@@ -155,6 +155,18 @@ const FMatrix& USceneComponent::GetWorldTransformMatrixInverse() const
 	return WorldTransformMatrixInverse;
 }
 
+void USceneComponent::DuplicateSubObjects()
+{
+
+}		
+
+USceneComponent* USceneComponent::Duplicate()
+{
+	USceneComponent* NewComp = new USceneComponent(*this);
+
+	return NewComp;
+}
+
 const void* UPrimitiveComponent::GetRawVertexData() const
 {
     UResourceManager& ResourceManager = UResourceManager::GetInstance();
@@ -196,6 +208,17 @@ D3D11_PRIMITIVE_TOPOLOGY UPrimitiveComponent::GetTopology() const
 FAABB UPrimitiveComponent::GetWorldBounds() const
 {
 	return FAABB();
+}
+
+void UPrimitiveComponent::DuplicateSubObjects()
+{
+}
+
+UPrimitiveComponent* UPrimitiveComponent::Duplicate()
+{
+	UPrimitiveComponent* NewComp = new UPrimitiveComponent(*this);
+
+	return NewComp;
 }
 
 //FAABB UPrimitiveComponent::GetWorldBounds() const

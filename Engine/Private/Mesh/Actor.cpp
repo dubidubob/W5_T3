@@ -126,3 +126,26 @@ void AActor::Tick(float DeltaTime)
 		}
 	}
 }
+
+void AActor::DuplicateSubObjects()
+{
+	if (RootComponent)
+	{
+		RootComponent = RootComponent->Duplicate();
+	}
+
+	for (auto& Comp : OwnedComponents)
+	{
+		Comp = Comp->Duplicate();
+		Comp->SetOwner(this);
+	}
+}
+
+AActor* AActor::Duplicate()
+{
+	AActor* NewActor = new AActor(*this);
+
+	NewActor->DuplicateSubObjects();
+
+	return NewActor;
+}

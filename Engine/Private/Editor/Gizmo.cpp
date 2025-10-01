@@ -168,6 +168,15 @@ void UGizmo::OnMouseDragStart(FVector& CollisionPoint)
     DragStartActorScale = TargetActor->GetActorScale3D();
 }
 
+void UGizmo::DuplicateSubObjects()
+{
+}
+
+UGizmo* UGizmo::Duplicate()
+{
+	return nullptr;
+}
+
 // 하이라이트 색상은 렌더 시점에만 계산 (상태 오염 방지)
 FVector4 UGizmo::ColorFor(EGizmoDirection InAxis) const
 {

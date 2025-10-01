@@ -7,6 +7,7 @@ IMPLEMENT_CLASS(UEditorEngine, UObject)
 UEditorEngine::UEditorEngine()
 {
 	EditorWorldContext.OnWorld = NewObject<UWorld>();
+	EditorWorldContext.OnWorld->SetWorldType(EWorldType::Editor);
 }
 
 UEditorEngine::~UEditorEngine()
@@ -46,10 +47,4 @@ void UEditorEngine::Tick(float DeltaSeconds)
 			}
 		}
 	}
-}
-
-UWorld* UEditorEngine::DuplicateWorldForPIE(UWorld* InWorld)
-{
-
-	return nullptr;
 }

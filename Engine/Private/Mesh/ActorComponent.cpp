@@ -27,3 +27,17 @@ void UActorComponent::EndPlay()
 {
 
 }
+
+void UActorComponent::DuplicateSubObjects()
+{
+
+}
+
+UActorComponent* UActorComponent::Duplicate()
+{
+	UActorComponent* NewComp = new UActorComponent(*this);
+
+	NewComp->DuplicateSubObjects();
+
+	return NewComp;
+}

@@ -38,6 +38,9 @@ public:
 		return  bIsTransformDirty;
 	}
 
+	virtual void DuplicateSubObjects() override;
+	virtual USceneComponent* Duplicate() override;
+
 private:
 	mutable bool bIsTransformDirty = true;
 	mutable bool bIsTransformDirtyInverse = true;
@@ -89,6 +92,9 @@ public:
 
 	virtual FAABB GetWorldBounds() const;
 	//FAABB GetWorldBounds() const;
+
+	virtual void DuplicateSubObjects() override;
+	virtual UPrimitiveComponent* Duplicate() override;
 
 protected:
 	const TArray<FVertex>* Vertices = nullptr;

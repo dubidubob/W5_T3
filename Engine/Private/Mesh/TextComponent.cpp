@@ -44,3 +44,14 @@ void UTextComponent::SetText(const FWstring& InText)
 	Text = InText;
 	SetInstanceData(Text);
 }
+
+void UTextComponent::DuplicateSubObjects()
+{
+}
+
+UTextComponent* UTextComponent::Duplicate()
+{
+	UTextComponent* NewComp = new UTextComponent(*this);
+
+	return NewComp;
+}

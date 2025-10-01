@@ -2,6 +2,10 @@
 #include "Render/UI/Widget/SceneIOWidget.h"
 
 #include "Manager/Level/LevelManager.h"
+#include "Manager/UI/UIManager.h"
+#include "Core/ClientApp.h"
+#include "World.h"
+#include "EditorEngine.h"
 
 IMPLEMENT_CLASS(USceneIOWidget, UWidget)
 
@@ -81,6 +85,59 @@ void USceneIOWidget::RenderWidget()
 	}
 
 	ImGui::Separator();
+
+	FClientApp* App = UUIManager::GetInstance().ClientApp;
+
+	static bool bIsPIE = false;
+		
+	static UWorld* PIEWorld = nullptr;
+
+	UWorld* EditorWorld = App->GetEditorEngine()->GetEditorWorldContext().OnWorld;
+	
+	if (!bIsPIE)
+	{
+		if (ImGui::Button("▶ Play"))
+		{
+			//PIEWorld = UWorld::DuplicateWorldForPIE(EditorWorld);
+			//App->SetGWorld(PIEWorld);
+			//ULevelManager::GetInstance().SetCurrentLevel(PIEWorld->GetLevel());
+			//PIEWorld->InitializeActorsForPlay();
+
+			App->StartPIE();
+			bIsPIE = true;
+			//bPaused = false;
+		}
+	}
+	else
+	{
+		if (ImGui::Button("■ Stop"))
+		{
+			//PIEWorld->CleanupWorld();
+			//delete PIEWorld;
+			//PIEWorld = nullptr;
+			//App->SetGWorld(EditorWorld);
+			App->EndPIE();
+			bIsPIE = false;
+			//bPaused = false;
+		}
+
+		//ImGui::SameLine();
+		//
+		//if (ImGui::Button(bPaused ? "▶ Resume" : "⏸ Pause"))
+		//{
+		//	bPaused = !bPaused;
+		//}
+		//
+		//ImGui::SameLine();
+		//
+		//if (ImGui::Button("Step"))
+		//{
+		//	if (bPaused)
+		//	{
+		//		bStepOnce = true; // 다음 프레임에 한 번만 Tick
+		//	}
+		//}
+	}
 }
 
 /**

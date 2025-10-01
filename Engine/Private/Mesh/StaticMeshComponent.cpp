@@ -91,6 +91,17 @@ FAABB UStaticMeshComponent::GetWorldBounds() const
 	return CachedWorldBounds;
 }
 
+void UStaticMeshComponent::DuplicateSubObjects()
+{
+}
+
+UStaticMeshComponent* UStaticMeshComponent::Duplicate()
+{
+	UStaticMeshComponent* NewComp = new UStaticMeshComponent(*this);
+
+	return NewComp;
+}
+
 const void* UStaticMeshComponent::GetRawVertexData() const
 {
 	if (UStaticMesh* StaticMesh = GetStaticMesh())

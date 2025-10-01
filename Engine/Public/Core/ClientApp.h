@@ -25,6 +25,10 @@ public:
 	void StartPIE();
 	void EndPIE();
 
+	UEditorEngine* GetEditorEngine() { return GEditor; }
+
+	void SetGWorld(UWorld* InWorld) { GWorld = InWorld; }
+
 private:
     int InitializeSystem();
     void UpdateSystem(float DeltaSeconds);
