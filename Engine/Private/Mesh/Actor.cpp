@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Mesh/Actor.h"
 #include "Mesh/SceneComponent.h"
+#include "Mesh/StaticMeshComponent.h"
 
 IMPLEMENT_CLASS(AActor, UObject)
 
@@ -132,18 +133,24 @@ void AActor::DuplicateSubObjects()
 	if (RootComponent)
 	{
 		RootComponent = RootComponent->Duplicate();
+		RootComponent->SetOwner(this);
 	}
 
 	for (auto& Comp : OwnedComponents)
 	{
-		Comp = Comp->Duplicate();
-		Comp->SetOwner(this);
+		if (Comp)
+		{
+			Comp = Comp->Duplicate();
+			Comp->SetOwner(this);
+		}
 	}
 }
 
 AActor* AActor::Duplicate()
 {
 	AActor* NewActor = new AActor(*this);
+
+	//NewActor->UObject::Duplicate();
 
 	NewActor->DuplicateSubObjects();
 

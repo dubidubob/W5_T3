@@ -7,7 +7,7 @@ ACubeActor::ACubeActor()
 {
 	CubeComponent = CreateDefaultSubobject<UCubeComponent>("CubeComponent");
 	CubeComponent->SetOwner(this);
-	TextComponent = CreateDefaultSubobject<UTextComponent>("TextComponent");
+	TextComponent = CreateDefaultSubobject<UTextRenderComponent>("TextComponent");
 	TextComponent->SetOwner(this);
 	TextComponent->SetParentAttachment(CubeComponent);
 	SetRootComponent(CubeComponent);

@@ -97,7 +97,11 @@ void UStaticMeshComponent::DuplicateSubObjects()
 
 UStaticMeshComponent* UStaticMeshComponent::Duplicate()
 {
+	//UStaticMeshComponent* NewComp = static_cast<UStaticMeshComponent*>(UPrimitiveComponent::Duplicate());
+
 	UStaticMeshComponent* NewComp = new UStaticMeshComponent(*this);
+
+	NewComp->DuplicateSubObjects();
 
 	return NewComp;
 }

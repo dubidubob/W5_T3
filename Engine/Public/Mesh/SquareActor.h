@@ -1,6 +1,6 @@
 #pragma once
 #include "Mesh/Actor.h"
-class UTextComponent;
+class UTextRenderComponent;
 
 class ASquareActor : public AActor
 {
@@ -12,5 +12,5 @@ public:
 
 private:
 	USquareComponent* SquareComponent = nullptr;
-	UTextComponent* TextComponent = nullptr;
+	UTextRenderComponent* TextComponent = nullptr;
 };

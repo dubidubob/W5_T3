@@ -157,14 +157,18 @@ const FMatrix& USceneComponent::GetWorldTransformMatrixInverse() const
 
 void USceneComponent::DuplicateSubObjects()
 {
-
+	for (auto& Comp : Children)
+	{
+		Comp = Comp->Duplicate();
+	}
 }		
 
 USceneComponent* USceneComponent::Duplicate()
 {
-	USceneComponent* NewComp = new USceneComponent(*this);
-
-	return NewComp;
+    USceneComponent* NewComp = new USceneComponent(*this);
+    NewComp->UObject::DuplicateSubObjects();
+    NewComp->DuplicateSubObjects();
+    return NewComp;
 }
 
 const void* UPrimitiveComponent::GetRawVertexData() const
@@ -217,6 +221,10 @@ void UPrimitiveComponent::DuplicateSubObjects()
 UPrimitiveComponent* UPrimitiveComponent::Duplicate()
 {
 	UPrimitiveComponent* NewComp = new UPrimitiveComponent(*this);
+
+	//NewComp->USceneComponent::Duplicate();
+
+	NewComp->DuplicateSubObjects();
 
 	return NewComp;
 }

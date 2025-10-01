@@ -366,7 +366,7 @@ TArray<UPrimitiveComponent*> UEditor::FindCandidatePrimitives(ULevel* InLevel)
 		for (auto& ActorComponent : Actor->GetOwnedComponents())
 		{
 			// UUID Text는 피킹에서 제외
-			if (ActorComponent->IsA(UTextComponent::StaticClass()))
+			if (ActorComponent->IsA(UTextRenderComponent::StaticClass()))
 			{
 				continue;
 			}

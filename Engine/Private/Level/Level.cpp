@@ -5,6 +5,7 @@
 #include "Mesh/StaticMeshComponent.h"
 #include "Mesh/TextComponent.h"
 #include "Render/Renderer/Renderer.h"
+#include "Editor/Gizmo.h"
 
 IMPLEMENT_CLASS(ULevel, UObject)
 
@@ -81,6 +82,9 @@ void ULevel::Cleanup()
 		SafeDelete(Actor);
 	}
 	LevelActors.Empty();
+	LevelPrimitiveComponents.Empty();
+	LevelStaticMeshComponents.Empty();
+	TextComponents.Empty();
 }
 
 void ULevel::AddLevelActor(AActor* Actor)
@@ -102,7 +106,7 @@ void ULevel::AddLevelActor(AActor* Actor)
 		}
 		else if (Component->GetComponentType() == EComponentType::Text)
 		{
-			UTextComponent* TextComponent = static_cast<UTextComponent*>(Component);
+			UTextRenderComponent* TextComponent = static_cast<UTextRenderComponent*>(Component);
 			if (TextComponent->IsVisible())
 				TextComponents.push_back(TextComponent);
 		}
@@ -128,7 +132,7 @@ void ULevel::AddLevelPrimitiveComponent(AActor* Actor)
 		}
 		else if (Component->GetComponentType() == EComponentType::Text)
 		{
-			UTextComponent* TextComponent = static_cast<UTextComponent*>(Component);
+			UTextRenderComponent* TextComponent = static_cast<UTextRenderComponent*>(Component);
 			if(TextComponent->IsVisible())
 				TextComponents.push_back(TextComponent);
 		}
@@ -182,18 +186,43 @@ bool ULevel::DestroyActor(AActor* InActor)
 	}
 	URenderer::GetInstance().SetSortingBatchMapDirty();
 
-	// LevelActors 리스트에서 제거
-	int LevelActorCount = LevelActors.size();
-	for (int i = 0; i < LevelActorCount; i++)
-	{
-		if (InActor == LevelActors[i])
-		{
-			LevelActors.erase(LevelActors.begin() + i);
-			LevelPrimitiveComponents.erase(LevelPrimitiveComponents.begin() + i);
-			LevelStaticMeshComponents.erase(LevelStaticMeshComponents.begin() + i);
-			break;
-		}
-	}
+    // LevelActors 리스트에서 제거
+    for (int i = 0; i < static_cast<int>(LevelActors.size()); ++i)
+    {
+        if (LevelActors[i] == InActor)
+        {
+            LevelActors.erase(LevelActors.begin() + i);
+            break;
+        }
+    }
+
+    // 이 Actor가 소유한 Primitive/StaticMesh/Text 컴포넌트 전부 제거 (인덱스 정합성에 의존하지 않음)
+    {
+        // Primitive
+        for (int i = static_cast<int>(LevelPrimitiveComponents.size()) - 1; i >= 0; --i)
+        {
+            if (LevelPrimitiveComponents[i] && LevelPrimitiveComponents[i]->GetOwner() == InActor)
+            {
+                LevelPrimitiveComponents.erase(LevelPrimitiveComponents.begin() + i);
+            }
+        }
+        // StaticMesh
+        for (int i = static_cast<int>(LevelStaticMeshComponents.size()) - 1; i >= 0; --i)
+        {
+            if (LevelStaticMeshComponents[i] && LevelStaticMeshComponents[i]->GetOwner() == InActor)
+            {
+                LevelStaticMeshComponents.erase(LevelStaticMeshComponents.begin() + i);
+            }
+        }
+        // Text
+        for (int i = static_cast<int>(TextComponents.size()) - 1; i >= 0; --i)
+        {
+            if (TextComponents[i] && TextComponents[i]->GetOwner() == InActor)
+            {
+                TextComponents.erase(TextComponents.begin() + i);
+            }
+        }
+    }
 
 	//Deprecated : EditorPrimitive는 에디터에서 처리
 	// 필요하다면 EditorActors 리스트에서도 제거
@@ -294,18 +323,43 @@ void ULevel::ProcessPendingDeletions()
 			}*/
 		}
 
-		// LevelActors 리스트에서 제거
-		int LevelActorCount = LevelActors.size();
-		for (int i=0;i< LevelActorCount;i++)
-		{
-			if (ActorToDelete == LevelActors[i])
-			{
-				LevelActors.erase(LevelActors.begin() + i);
-				LevelPrimitiveComponents.erase(LevelPrimitiveComponents.begin() + i);
-				LevelStaticMeshComponents.erase(LevelStaticMeshComponents.begin() + i);
-				break;
-			}
-		}
+        // LevelActors 리스트에서 제거
+        for (int i = 0; i < static_cast<int>(LevelActors.size()); ++i)
+        {
+            if (LevelActors[i] == ActorToDelete)
+            {
+                LevelActors.erase(LevelActors.begin() + i);
+                break;
+            }
+        }
+
+        // 이 Actor가 소유한 Primitive/StaticMesh/Text 컴포넌트 전부 제거 (인덱스 정합성에 의존하지 않음)
+        {
+            // Primitive
+            for (int i = static_cast<int>(LevelPrimitiveComponents.size()) - 1; i >= 0; --i)
+            {
+                if (LevelPrimitiveComponents[i] && LevelPrimitiveComponents[i]->GetOwner() == ActorToDelete)
+                {
+                    LevelPrimitiveComponents.erase(LevelPrimitiveComponents.begin() + i);
+                }
+            }
+            // StaticMesh
+            for (int i = static_cast<int>(LevelStaticMeshComponents.size()) - 1; i >= 0; --i)
+            {
+                if (LevelStaticMeshComponents[i] && LevelStaticMeshComponents[i]->GetOwner() == ActorToDelete)
+                {
+                    LevelStaticMeshComponents.erase(LevelStaticMeshComponents.begin() + i);
+                }
+            }
+            // Text
+            for (int i = static_cast<int>(TextComponents.size()) - 1; i >= 0; --i)
+            {
+                if (TextComponents[i] && TextComponents[i]->GetOwner() == ActorToDelete)
+                {
+                    TextComponents.erase(TextComponents.begin() + i);
+                }
+            }
+        }
 		URenderer::GetInstance().SetSortingBatchMapDirty();
 
 
@@ -332,36 +386,27 @@ void ULevel::ProcessPendingDeletions()
 
 void ULevel::DuplicateSubObjects()
 {
+	TArray<AActor*> NewLevelActors;
+
+	LevelPrimitiveComponents.clear();
+	LevelStaticMeshComponents.clear();
+	TextComponents.clear();
+
 	for (auto& Actor : LevelActors)
 	{
 		if (Actor)
 		{
 			Actor = Actor->Duplicate();
+			Actor->SetOuter(this);
+			NewLevelActors.push_back(Actor);
 		}
 	}
 
-	for (auto& PrimComp : LevelPrimitiveComponents)
-	{
-		if (PrimComp)
-		{
-			PrimComp = PrimComp->Duplicate();
-		}
-	}
+	LevelActors.clear();
 
-	for (auto& SMComp : LevelStaticMeshComponents)
+	for (auto& Actor : NewLevelActors)
 	{
-		if (SMComp)
-		{
-			SMComp = SMComp->Duplicate();
-		}
-	}
-
-	for (auto& TextComp : TextComponents)
-	{
-		if (TextComp)
-		{
-			TextComp = TextComp->Duplicate();
-		}
+		AddLevelActor(Actor);
 	}
 }
 
@@ -369,11 +414,14 @@ ULevel* ULevel::Duplicate()
 {
 	ULevel* NewLevel = new ULevel(*this);
 
-	NewLevel->Gizmo = nullptr;
+	//ULevel* NewLevel = new ULevel(*this);
+	//
+	//NewLevel static_cast<ULevel*>=UObject::Duplicate();
+
 	NewLevel->SelectedActor = nullptr;
-	NewLevel->Axis = nullptr;
-	NewLevel->Grid = nullptr;
-	NewLevel->CameraPtr = nullptr;
+	//NewLevel->Axis = nullptr;
+	//NewLevel->Grid = nullptr;
+	//NewLevel->CameraPtr = nullptr;
 
 	NewLevel->DuplicateSubObjects();
 

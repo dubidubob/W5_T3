@@ -36,6 +36,8 @@ public:
 	virtual void DuplicateSubObjects();
 	virtual UObject* Duplicate();
 
+	void AddSelfToArray();
+
 private:
 	uint32 UUID = -1;
 	uint32 InternalIndex = -1;

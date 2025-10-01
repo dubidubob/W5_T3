@@ -94,6 +94,10 @@ bool UObject::IsA(const UClass* InClass) const
 void UObject::DuplicateSubObjects()
 {
 	UUID = UEngineStatics::GenUUID();
+	Name = FNameTable::GetInstance().GetUniqueName(GetClass()->GetName());
+
+	GUObjectArray.push_back(this);
+	InternalIndex = static_cast<uint32>(GUObjectArray.size()) - 1;
 }
 
 UObject* UObject::Duplicate()
@@ -103,4 +107,8 @@ UObject* UObject::Duplicate()
 	NewObject->DuplicateSubObjects();
 
 	return NewObject;
+}
+
+void UObject::AddSelfToArray()
+{
 }

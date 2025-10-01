@@ -31,6 +31,7 @@ public:
 	void InitializeActorsForPlay();
 
 	bool IsPIEWorld() { return WorldType == EWorldType::PIE; }
+	void CleanupWorld();
 
 private:
 	ULevel* Level;

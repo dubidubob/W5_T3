@@ -32,6 +32,8 @@ void FClientApp::StartPIE()
 
 	GWorld = PIEWorld;
 
+	URenderer::GetInstance().SetSortingBatchMapDirty();
+
 	// AActor::BeginPlay()
 	//PIEWorld->InitializeActorsForPlay();
 }
@@ -40,9 +42,11 @@ void FClientApp::EndPIE()
 {
 	if (GWorld && GWorld->IsPIEWorld())
 	{
-		//GWorld->CleanupWorld();
+		GWorld->CleanupWorld();
 		delete GWorld;
 	}
+
+	URenderer::GetInstance().SetSortingBatchMapDirty();
 
 	GWorld = GEditor->GetEditorWorldContext().World();
 	ULevelManager::GetInstance().SetCurrentLevel(GWorld->GetLevel());
@@ -236,4 +240,5 @@ void FClientApp::ShutdownSystem()
 	// ULevelManager::GetInstance().Release();
 	delete Editor;
 	delete Window;
+	delete GEditor;
 }

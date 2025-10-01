@@ -7,7 +7,7 @@ ASphereActor::ASphereActor()
 {
 	SphereComponent = CreateDefaultSubobject<USphereComponent>("SphereComponent");
 	SphereComponent->SetOwner(this);
-	TextComponent = CreateDefaultSubobject<UTextComponent>("TextComponent");
+	TextComponent = CreateDefaultSubobject<UTextRenderComponent>("TextComponent");
 	TextComponent->SetOwner(this);
 	TextComponent->SetParentAttachment(SphereComponent);
 	SetRootComponent(SphereComponent);

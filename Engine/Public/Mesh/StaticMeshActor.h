@@ -2,7 +2,7 @@
 #include "Mesh/Actor.h"
 
 class UStaticMeshComponent;
-class UTextComponent;
+class UTextRenderComponent;
 
 class AStaticMeshActor : public AActor
 {
@@ -13,7 +13,7 @@ public:
 	UStaticMeshComponent* GetStaticMeshComponent() { return StaticMeshComponent; }
 private:
 	UStaticMeshComponent* StaticMeshComponent;
-	UTextComponent* TextComponent = nullptr;
+	UTextRenderComponent* TextComponent = nullptr;
 
 };
 

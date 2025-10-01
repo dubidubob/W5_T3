@@ -9,6 +9,7 @@
 #endif
 
 IMPLEMENT_CLASS(UTargetActorTransformWidget, UWidget)
+
 UTargetActorTransformWidget::UTargetActorTransformWidget()
 {
 }

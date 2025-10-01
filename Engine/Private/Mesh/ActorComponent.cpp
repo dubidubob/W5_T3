@@ -35,9 +35,9 @@ void UActorComponent::DuplicateSubObjects()
 
 UActorComponent* UActorComponent::Duplicate()
 {
-	UActorComponent* NewComp = new UActorComponent(*this);
-
-	NewComp->DuplicateSubObjects();
-
-	return NewComp;
+    UActorComponent* NewComp = new UActorComponent(*this);
+    // Fix up UObject state (e.g., UUID) without allocating another object
+    NewComp->UObject::DuplicateSubObjects();
+    NewComp->DuplicateSubObjects();
+    return NewComp;
 }

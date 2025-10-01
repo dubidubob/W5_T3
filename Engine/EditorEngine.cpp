@@ -12,6 +12,10 @@ UEditorEngine::UEditorEngine()
 
 UEditorEngine::~UEditorEngine()
 {
+	for (auto& WContext : WorldContexts)
+	{
+		delete WContext.OnWorld;
+	}
 }
 
 void UEditorEngine::Tick(float DeltaSeconds)

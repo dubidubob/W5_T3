@@ -46,7 +46,7 @@ void UActorListWidget::RenderWidget()
 
 void UActorListWidget::RenderActorList()
 {
-	const TArray<AActor*>& Actors = CurrentLevel->GetLevelActors();
+	const TArray<AActor*>& Actors = ULevelManager::GetInstance().GetCurrentLevel()->GetLevelActors();
 
 	if (Actors.empty())
 	{

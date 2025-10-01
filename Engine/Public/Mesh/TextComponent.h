@@ -1,12 +1,12 @@
 #pragma once
 #include "Mesh/SceneComponent.h"
 
-class UTextComponent : public UPrimitiveComponent
+class UTextRenderComponent : public UPrimitiveComponent
 {
-	DECLARE_CLASS(UTextComponent, UPrimitiveComponent)
+	DECLARE_CLASS(UTextRenderComponent, UPrimitiveComponent)
 public:
-	UTextComponent();
-	~UTextComponent();
+	UTextRenderComponent();
+	~UTextRenderComponent();
 
 	void SetInstanceData(const FWstring& Characters);
 	TArray<FTextInstance>* GetInstanceData() { return &InstanceData; }
@@ -15,7 +15,7 @@ public:
 	FWstring GetText() const { return Text; }
 
 	virtual void DuplicateSubObjects() override;
-	virtual UTextComponent* Duplicate() override;
+	virtual UTextRenderComponent* Duplicate() override;
 
 private:
 	FWstring Text;

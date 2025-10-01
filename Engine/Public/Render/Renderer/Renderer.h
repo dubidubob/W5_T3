@@ -15,7 +15,7 @@ class UPrimitiveComponent;
 class AActor;
 class AGizmo;
 class UEditor;
-class UTextComponent;
+class UTextRenderComponent;
 class SWindow;
 struct FPipelineInfo;
 struct FStaticMesh;
@@ -367,7 +367,7 @@ private:
 	// ================== Render Object for Text Sorting ==================
 	struct TextRenderObject
 	{
-		UTextComponent* Component;
+		UTextRenderComponent* Component;
 		float DistanceToCamera;
 		bool operator<(const TextRenderObject& Other) const
 		{
@@ -411,13 +411,13 @@ private:
 	void RenderStaticMeshSections(const UStaticMeshComponent* OwnerComponent, FStaticMesh* MeshData);
 	void SetupMaterialForSection(const UStaticMeshComponent* OwnerComponent, FStaticMesh* MeshData, const struct FStaticMeshSection& Section);
 	void SetupTextRendering();
-	void RenderTextComponent(UTextComponent* Component);
+	void RenderTextComponent(UTextRenderComponent* Component);
 
 #if IS_OBJ_VIEWER
 	void RenderObjectViewer(UEditor* Editor);
 #endif
 
-	FVector CalculateTextPosition(UTextComponent* Component);
+	FVector CalculateTextPosition(UTextRenderComponent* Component);
 	void RenderWindow(SWindow* Window, const FVector2& MouseCoord);
 
 	// ================== Pipeline Creation ==================

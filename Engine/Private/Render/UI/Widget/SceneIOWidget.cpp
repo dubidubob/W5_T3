@@ -6,6 +6,7 @@
 #include "Core/ClientApp.h"
 #include "World.h"
 #include "EditorEngine.h"
+#include "Editor/Gizmo.h"
 
 IMPLEMENT_CLASS(USceneIOWidget, UWidget)
 
@@ -104,6 +105,10 @@ void USceneIOWidget::RenderWidget()
 			//PIEWorld->InitializeActorsForPlay();
 
 			App->StartPIE();
+			if (App->GetEditor()->GetGizmo())
+			{
+				App->GetEditor()->GetGizmo()->ResetTarget();
+			}
 			bIsPIE = true;
 			//bPaused = false;
 		}
@@ -117,6 +122,10 @@ void USceneIOWidget::RenderWidget()
 			//PIEWorld = nullptr;
 			//App->SetGWorld(EditorWorld);
 			App->EndPIE();
+			if (App->GetEditor()->GetGizmo())
+			{
+				App->GetEditor()->GetGizmo()->ResetTarget();
+			}
 			bIsPIE = false;
 			//bPaused = false;
 		}

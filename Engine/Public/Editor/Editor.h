@@ -40,6 +40,8 @@ public:
 	/** Performance Metrics Management */
 	void ResetPickingStatistics() { TotalPickTime = 0.0; TotalPickCount = 0; LastPickTime = 0.0; }
 
+	UGizmo* GetGizmo() { return Gizmo; }
+
 	bool GetIsRayPicking();
 	/** Picking Configuration Variables */
 	bool bRayPicking = false;
@@ -59,6 +61,7 @@ private:
 	FVector GetGizmoDragRotation(const FRay& WorldRay);
 	FQuat GetGizmoDragRotationQuat(const FRay& WorldRay);
 	FVector GetGizmoDragScale(const FRay& WorldRay);
+
 
 	UCamera* Camera;
 	UObjectPicker* ObjectPicker;

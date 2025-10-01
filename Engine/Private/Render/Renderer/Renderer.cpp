@@ -354,14 +354,48 @@ void URenderer::UpdateViewProjConstants(const FViewProjConstants& ViewProj)
 // ================== Universal Update Functions ==================
 void URenderer::UpdateInstance(const TArray<FTextInstance>* Instances)
 {
-	if (!TextInstanceBuffer || !Instances || Instances->empty()) return;
+    if (!Instances || Instances->empty()) return;
+
+    // Ensure instance buffer is large enough
+    const UINT RequiredBytes = static_cast<UINT>(sizeof(FTextInstance) * Instances->size());
+    if (!TextInstanceBuffer)
+    {
+        // Create buffer to exact required size (at least 1 element)
+        D3D11_BUFFER_DESC Desc = {};
+        Desc.ByteWidth = RequiredBytes > 0 ? RequiredBytes : static_cast<UINT>(sizeof(FTextInstance));
+        Desc.Usage = D3D11_USAGE_DYNAMIC;
+        Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        Desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+        GetDevice()->CreateBuffer(&Desc, nullptr, &TextInstanceBuffer);
+    }
+    else
+    {
+        D3D11_BUFFER_DESC CurrentDesc = {};
+        TextInstanceBuffer->GetDesc(&CurrentDesc);
+        if (RequiredBytes > CurrentDesc.ByteWidth)
+        {
+            // Grow buffer (double until large enough)
+            UINT NewSize = CurrentDesc.ByteWidth ? CurrentDesc.ByteWidth : static_cast<UINT>(sizeof(FTextInstance));
+            while (NewSize < RequiredBytes)
+                NewSize *= 2u;
+
+            SafeRelease(TextInstanceBuffer);
+
+            D3D11_BUFFER_DESC Desc = {};
+            Desc.ByteWidth = NewSize;
+            Desc.Usage = D3D11_USAGE_DYNAMIC;
+            Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+            Desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+            GetDevice()->CreateBuffer(&Desc, nullptr, &TextInstanceBuffer);
+        }
+    }
 
 	D3D11_MAPPED_SUBRESOURCE MappedResource;
-	if (SUCCEEDED(GetDeviceContext()->Map(TextInstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource)))
-	{
-		memcpy(MappedResource.pData, Instances->data(), sizeof(FTextInstance) * Instances->size());
-		GetDeviceContext()->Unmap(TextInstanceBuffer, 0);
-	}
+    if (SUCCEEDED(GetDeviceContext()->Map(TextInstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource)))
+    {
+        memcpy(MappedResource.pData, Instances->data(), sizeof(FTextInstance) * Instances->size());
+        GetDeviceContext()->Unmap(TextInstanceBuffer, 0);
+    }
 }
 
 void URenderer::UpdateInstanceDrawConstants(bool UseInstancing, uint32 BaseOffset, uint32 InstanceCount) const
@@ -495,13 +529,20 @@ void URenderer::ReSetSortingBatchMap()
         return;
     }
     bSortingBatchMapDirty = false;
-    const TArray<UStaticMeshComponent*>& StaticMeshComps =
-        ULevelManager::GetInstance().GetCurrentLevel()->GetStaticMeshComponents();
+    const TArray<UStaticMeshComponent*>& StaticMeshComps = ULevelManager::GetInstance().GetCurrentLevel()->GetStaticMeshComponents();
 
     TArray<UStaticMeshComponent*> AllComps;
     for (auto& StaticMeshComp : StaticMeshComps)
     {
-        if (StaticMeshComp->IsVisible()) AllComps.push_back(StaticMeshComp);
+        if (!StaticMeshComp) continue;
+        if (!StaticMeshComp->IsVisible()) continue;
+        if (UStaticMesh* Mesh = StaticMeshComp->GetStaticMesh())
+        {
+            if (Mesh->GetStaticMeshAsset())
+            {
+                AllComps.push_back(StaticMeshComp);
+            }
+        }
     }
     SceneBVH.Build(AllComps);
 }
@@ -606,11 +647,17 @@ void URenderer::SetRenderStream()
 	{
 		MeshCount = 0;
 	}
-	for (UStaticMeshComponent* Comp : Candidate)
-	{
-		FVector4 ViewPos = FVector4(Comp->GetWorldLocation(), 1) * ViewMat;
-		FStaticMesh* StaticMeshAsset = Comp->GetStaticMesh()->GetStaticMeshAsset();
-		int MaterialSize = StaticMeshAsset->Materials.size();
+    for (UStaticMeshComponent* Comp : Candidate)
+    {
+        if (!Comp) continue;
+        if (!Comp->IsVisible()) continue;
+        UStaticMesh* StaticMesh = Comp->GetStaticMesh();
+        if (!StaticMesh) continue;
+        FStaticMesh* StaticMeshAsset = StaticMesh->GetStaticMeshAsset();
+        if (!StaticMeshAsset) continue;
+
+        FVector4 ViewPos = FVector4(Comp->GetWorldLocation(), 1) * ViewMat;
+        int MaterialSize = StaticMeshAsset->Materials.size();
 		int ZAreaDepthValueCount = ZAreaDepthValue.size();
 		int ZAreaIdx = ZAreaDepthValueCount;
 		for (int i = 0; i < ZAreaDepthValueCount; i++)
@@ -1144,13 +1191,13 @@ void URenderer::RenderText(const FVector& CameraLocation)
 
 	struct TextRenderObject
 	{
-		UTextComponent* Component;
+		UTextRenderComponent* Component;
 		float DistanceToCamera;
 		bool operator<(const TextRenderObject& Other) const { return DistanceToCamera > Other.DistanceToCamera; }
 	};
 
 	TArray<TextRenderObject> RenderList;
-	for (UTextComponent* Component : ULevelManager::GetInstance().GetCurrentLevel()->GetTextComponents())
+	for (UTextRenderComponent* Component : ULevelManager::GetInstance().GetCurrentLevel()->GetTextComponents())
 	{
 		TextRenderObject Object;
 		Object.Component = Component;
@@ -1181,24 +1228,26 @@ void URenderer::SetupTextRendering()
 	Pipeline->SetSamplerState(0, false, SamplerState);
 }
 
-void URenderer::RenderTextComponent(UTextComponent* Component)
+void URenderer::RenderTextComponent(UTextRenderComponent* Component)
 {
-	Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
+    Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
 
 	FVector TextPosition = CalculateTextPosition(Component);
 	FMatrix ModelMatrix = FMatrix::GetModelMatrix(TextPosition, FVector::GetDegreeToRadian(FVector()), FVector());
 	UpdateBuffer(ConstantBufferModels, ModelMatrix);
 
-	Pipeline->SetVertexBuffer(Component->GetVertexBuffer(), StrideTextVertex);
-	Pipeline->SetInstanceBuffer(TextInstanceBuffer, StrideTextInstance);
+    Pipeline->SetVertexBuffer(Component->GetVertexBuffer(), StrideTextVertex);
+    Pipeline->SetInstanceBuffer(TextInstanceBuffer, StrideTextInstance);
 
-	TArray<FTextInstance>* InstanceData = Component->GetInstanceData();
-	UpdateInstance(InstanceData);
+    TArray<FTextInstance>* InstanceData = Component->GetInstanceData();
+    UpdateInstance(InstanceData);
+    // In case UpdateInstance reallocated TextInstanceBuffer, re-bind it
+    Pipeline->SetInstanceBuffer(TextInstanceBuffer, StrideTextInstance);
 
 	Pipeline->DrawInstanced(Component->GetVertexNum(), InstanceData->size(), 0, 0);
 }
 
-FVector URenderer::CalculateTextPosition(UTextComponent* Component)
+FVector URenderer::CalculateTextPosition(UTextRenderComponent* Component)
 {
 	USceneComponent* RootComponent = Component->GetOwner()->GetRootComponent();
 

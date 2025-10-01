@@ -26,6 +26,7 @@ public:
 	void EndPIE();
 
 	UEditorEngine* GetEditorEngine() { return GEditor; }
+	UEditor* GetEditor() { return Editor; }
 
 	void SetGWorld(UWorld* InWorld) { GWorld = InWorld; }
 

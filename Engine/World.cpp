@@ -16,8 +16,8 @@ UWorld::~UWorld()
 
 void UWorld::Tick(float DeltaTime)
 {
-	ULevelManager::GetInstance().Update(DeltaTime);
-	//Level->Update(DeltaTime);
+	//ULevelManager::GetInstance().Update(DeltaTime);
+	Level->Update(DeltaTime);
 }
 
 
@@ -38,4 +38,10 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* InWorld)
 
 void UWorld::InitializeActorsForPlay()
 {
+}
+
+void UWorld::CleanupWorld()
+{
+	Level->Cleanup();
+	delete Level;
 }

@@ -4,9 +4,9 @@
 #include "Render/Renderer/Renderer.h"
 #include <string>
 
-IMPLEMENT_CLASS(UTextComponent, UPrimitiveComponent)
+IMPLEMENT_CLASS(UTextRenderComponent, UPrimitiveComponent)
 
-UTextComponent::UTextComponent()
+UTextRenderComponent::UTextRenderComponent()
 {
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
 	RenderState.CullMode = ECullMode::None;
@@ -18,12 +18,12 @@ UTextComponent::UTextComponent()
 	SetText(L"[크래프톤정글게임테크랩] UID:" + std::to_wstring(GetUUID()));
 }
 
-UTextComponent::~UTextComponent()
+UTextRenderComponent::~UTextRenderComponent()
 {
 
 }
 
-void UTextComponent::SetInstanceData(const FWstring& Characters)
+void UTextRenderComponent::SetInstanceData(const FWstring& Characters)
 {
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
 	InstanceData.clear();
@@ -39,19 +39,21 @@ void UTextComponent::SetInstanceData(const FWstring& Characters)
 	}
 }
 
-void UTextComponent::SetText(const FWstring& InText)
+void UTextRenderComponent::SetText(const FWstring& InText)
 {
 	Text = InText;
 	SetInstanceData(Text);
 }
 
-void UTextComponent::DuplicateSubObjects()
+void UTextRenderComponent::DuplicateSubObjects()
 {
+	SetText(std::to_wstring(GetUUID()));
 }
 
-UTextComponent* UTextComponent::Duplicate()
+UTextRenderComponent* UTextRenderComponent::Duplicate()
 {
-	UTextComponent* NewComp = new UTextComponent(*this);
-
-	return NewComp;
+    UTextRenderComponent* NewComp = new UTextRenderComponent(*this);
+    NewComp->UObject::DuplicateSubObjects();
+    NewComp->DuplicateSubObjects();
+    return NewComp;
 }

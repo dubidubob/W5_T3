@@ -9,7 +9,7 @@ ASquareActor::ASquareActor()
 	SquareComponent->SetRelativeRotation({ 90, 0, 0 });
 	SquareComponent->SetOwner(this);
 
-	TextComponent = CreateDefaultSubobject<UTextComponent>("TextComponent");
+	TextComponent = CreateDefaultSubobject<UTextRenderComponent>("TextComponent");
 	TextComponent->SetOwner(this);
 	TextComponent->SetParentAttachment(SquareComponent);
 	SetRootComponent(SquareComponent);

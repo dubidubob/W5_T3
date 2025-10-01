@@ -14,7 +14,7 @@ AStaticMeshActor::AStaticMeshActor()
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("StaticMeshComponent");
 	StaticMeshComponent->SetOwner(this);
 
-	TextComponent = CreateDefaultSubobject<UTextComponent>("TextComponent");
+	TextComponent = CreateDefaultSubobject<UTextRenderComponent>("TextComponent");
 	TextComponent->SetOwner(this);
 	TextComponent->SetParentAttachment(StaticMeshComponent);
 	SetRootComponent(StaticMeshComponent);

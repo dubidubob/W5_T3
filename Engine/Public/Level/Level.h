@@ -4,11 +4,11 @@
 #include "Editor/Camera.h"
 
 class AAxis;
-class AGizmo;
+class UGizmo;
 class AGrid;
 class AActor;
 class UPrimitiveComponent;
-class UTextComponent;
+class UTextRenderComponent;
 class UStaticMeshComponent;
 
 class ULevel : public UObject
@@ -27,7 +27,7 @@ public:
 	TArray<UPrimitiveComponent*>& GetLevelPrimitiveComponents() { return LevelPrimitiveComponents; }
 	TArray<UStaticMeshComponent*>& GetStaticMeshComponents() { return LevelStaticMeshComponents; }
 
-	TArray<UTextComponent*> GetTextComponents() const { return TextComponents; }
+	TArray<UTextRenderComponent*> GetTextComponents() const { return TextComponents; }
 	//Deprecated : EditorPrimitive는 에디터에서 처리
 	//TArray<AActor*> GetEditorActors() const { return EditorActors; }
 	//TArray<UPrimitiveComponent*> GetEditorPrimitiveComponents() const { return EditorPrimitiveComponents; }
@@ -46,7 +46,7 @@ public:
 
 	void SetSelectedActor(AActor* InActor);
 	AActor* GetSelectedActor() const { return SelectedActor; }
-	AGizmo* GetGizmo() const { return Gizmo; }
+	UGizmo* GetGizmo() const { return Gizmo; }
 
 	void SetCamera(UCamera* InCamera) { CameraPtr = InCamera; }
 	UCamera* GetCamera() const { return CameraPtr; }
@@ -60,7 +60,7 @@ private:
 	TArray<AActor*> LevelActors;
 	TArray<UPrimitiveComponent*> LevelPrimitiveComponents;
 	TArray<UStaticMeshComponent*> LevelStaticMeshComponents;
-	TArray<UTextComponent*> TextComponents;
+	TArray<UTextRenderComponent*> TextComponents;
 
 	//Deprecated : EditorPrimitive는 에디터에서 처리
 	//TArray<AActor*> EditorActors;
@@ -70,7 +70,7 @@ private:
 	TArray<AActor*> ActorsToDelete;
 
 	AActor* SelectedActor = nullptr;
-	AGizmo* Gizmo = nullptr;
+	UGizmo* Gizmo = nullptr;
 	AAxis* Axis = nullptr;
 	AGrid* Grid = nullptr;
 	//////////////////////////////////////////////////////////////////////////
