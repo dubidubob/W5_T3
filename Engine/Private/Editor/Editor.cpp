@@ -181,6 +181,18 @@ void UEditor::ProcessKeyboardInput()
 		Gizmo->ChangeGizmoMode();
 	}
 
+	if (InputManager.IsKeyPressed(EKeyInput::MouseRight))
+	{
+		bRayPicking = true;
+		bColorPicking = false;
+	}
+	else if (InputManager.IsKeyReleased(EKeyInput::MouseRight))
+	{
+		bRayPicking = false;
+		bColorPicking = true;
+	}
+
+
 	// Gizmo 표시 중 Tab: 월드→로컬 토글 (기본: 토글, 최초 누르면 로컬 보장)
 	if (InputManager.IsKeyPressed(EKeyInput::Tab))
 	{

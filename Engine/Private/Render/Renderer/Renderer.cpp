@@ -16,6 +16,7 @@
 #include "Slate/Viewport.h"
 #include "Manager/Input/InputManager.h"
 #include "Math/Frustum.h"
+#include "Render/Renderer/StatsOverlayD2D.h"
 
 #include "Global/PlatformTime.h"
 
@@ -83,6 +84,9 @@ void URenderer::Init(HWND WindowHandle)
 	CachedColorPickingData.clear();
 
 	ULineBatchRenderer::GetInstance().Init();
+
+	UStatsOverlayD2D::Get().Initialize(GetDevice(), GetDeviceContext(), GetSwapChain());
+    // Enable basic stats by default
 
 	uint32 ZAreaCount = 4;
 	ZAreaMeshCount.resize(ZAreaCount);
@@ -222,7 +226,6 @@ void URenderer::InitializeRenderStateChangeCount()
 {
 	MaterialChangeCount = 0;
 	StaticMeshChangeCount = 0;
-	StaticMeshComponentChagneCount = 0;
 	MeshSectionDrawCount = 0;
 }
 #endif
@@ -410,7 +413,7 @@ void URenderer::Update(UEditor* Editor)
 		RenderObjectViewer(Editor);
 #endif
 	if ((bForceReRenderPicking || ShouldPerformColorPicking())
-		&& !Editor->GetIsRayPicking())
+		/*&& !Editor->GetIsRayPicking()*/)
 	{
 		RenderColorPicking();
 
@@ -497,6 +500,7 @@ void URenderer::RenderBegin()
 void URenderer::RenderEnd() const
 {
 	TIME_PROFILE(SwapChain)
+	UStatsOverlayD2D::Get().Draw();
 	GetSwapChain()->Present(0, 0);
 }
 
@@ -768,9 +772,6 @@ void URenderer::SetupStaticMeshAsset(FStaticMesh* StaticMeshAsset)
 void URenderer::SetupStaticMeshComponent(UStaticMeshComponent* StaticMeshComponent)
 {
 	UpdateBuffer(ConstantBufferModels, StaticMeshComponent->GetWorldTransformMatrix());
-#ifdef _DEVELOP
-	StaticMeshComponentChagneCount++;
-#endif
 }
 bool URenderer::ShouldPerformColorPicking()
 {
@@ -897,8 +898,11 @@ void URenderer::RenderColorPicking()
 {
 	if (!ULevelManager::GetInstance().GetCurrentLevel())
 	{
+		UStatsOverlayD2D::Get().SetPickingTimeMs(0.0f);
 		return;
 	}
+
+	const uint64 PickingStart = FPlatformTime::Cycles64();
 
 	// ColorPickingTexture RTV, DSV 가져옴
 	ID3D11RenderTargetView* ColorPickingRTV = DeviceResources->GetColorPickingRTV();
@@ -1003,6 +1007,11 @@ void URenderer::RenderColorPicking()
 	{
 		UE_LOG("RenderColorPicking: ColorPickingTexture is null");
 	}
+
+	// Measure picking pass duration and report to overlay
+	const uint64 PickingEnd = FPlatformTime::Cycles64();
+	double PickingMs = FWindowsPlatformTime::ToMilliseconds(PickingEnd - PickingStart);
+	UStatsOverlayD2D::Get().SetPickingTimeMs(static_cast<float>(PickingMs));
 }
 
 void URenderer::RenderStaticMeshComponentForPicking(UPrimitiveComponent* Component)

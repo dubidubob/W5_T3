@@ -305,6 +305,7 @@
     <ClInclude Include="Public\Math\AABB.h" />
     <ClInclude Include="Public\Math\Frustum.h" />
     <ClInclude Include="Public\Math\BVH.h" />
+    <ClInclude Include="Public\Math\MeshBVH.h" />
     <ClInclude Include="Public\Mesh\Material\Material.h" />
     <ClInclude Include="Public\Mesh\MeshComponent.h" />
     <ClInclude Include="Public\Mesh\StaticMeshActor.h" />
@@ -313,6 +314,7 @@
     <ClInclude Include="Public\Mesh\StaticMesh\ObjManager.h" />
     <ClInclude Include="Public\Mesh\StaticMesh\StaticMesh.h" />
     <ClInclude Include="Public\Mesh\TextComponent.h" />
+    <ClInclude Include="Public\Render\Renderer\StatsOverlayD2D.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorDetailWidget.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorListWidget.h" />
     <ClInclude Include="Public\DirectXTK\DDSTextureLoader.h" />
@@ -410,6 +412,7 @@
     <ClCompile Include="Private\Math\AABB.cpp" />
     <ClCompile Include="Private\Math\Frustum.cpp" />
     <ClCompile Include="Private\Math\BVH.cpp" />
+    <ClCompile Include="Private\Math\MeshBVH.cpp" />
     <ClCompile Include="Private\Mesh\Material\Material.cpp" />
     <ClCompile Include="Private\Mesh\MeshComponent.cpp" />
     <ClCompile Include="Private\Mesh\StaticMeshActor.cpp" />
@@ -494,6 +497,7 @@
     <ClCompile Include="Private\\Render\UI\Window\\UIWindow.cpp" />
     <ClCompile Include="Private\\Utility\\LevelSerializer.cpp" />
     <ClCompile Include="Global\Rect.cpp" />
+    <ClCompile Include="Public\Render\Renderer\StatsOverlayD2D.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

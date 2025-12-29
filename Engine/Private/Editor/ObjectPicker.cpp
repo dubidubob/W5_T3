@@ -13,6 +13,7 @@
 #include "ImGui/imgui.h"
 #include "Render/Renderer/Renderer.h"
 #include "Mesh/StaticMeshComponent.h"
+#include "Global/PlatformTime.h"
 
 IMPLEMENT_CLASS(UObjectPicker, UObject)
 
@@ -41,18 +42,13 @@ FRay UObjectPicker::GetModelRay(const FRay& Ray, UPrimitiveComponent* Primitive)
 
 UStaticMeshComponent* UObjectPicker::PickPrimitive(const FRay& WorldRay, TArray<UStaticMeshComponent*> Candidate, float* Distance)
 {
+	TIME_PROFILE(PickPrimitive)
 	UStaticMeshComponent* ShortestPrimitive = nullptr;
 	float ShortestDistance = D3D11_FLOAT32_MAX;
 	float PrimitiveDistance = D3D11_FLOAT32_MAX;
-	
+
 	for (UStaticMeshComponent* Primitive : Candidate)
 	{
-		FAABB WorldBounds = Primitive->GetWorldBounds();
-		if (!WorldBounds.IntersectsRay(WorldRay.Origin, WorldRay.Direction))
-		{
-			continue;
-		}
-
 		FMatrix ModelMat = Primitive->GetWorldTransformMatrix();
 		FRay ModelRay = GetModelRay(WorldRay, Primitive);
 		if (IsRayPrimitiveCollided(ModelRay, Primitive, ModelMat, &PrimitiveDistance))
@@ -69,6 +65,73 @@ UStaticMeshComponent* UObjectPicker::PickPrimitive(const FRay& WorldRay, TArray<
 
 	return ShortestPrimitive;
 }
+
+
+bool UObjectPicker::IsRayPrimitiveCollided(const FRay& ModelRay, UStaticMeshComponent* Primitive, const FMatrix& ModelMatrix, float* ShortestDistance)
+{
+	// 후보 Vertex 3개
+	TArray<FMeshBVHItem*> Candidates;
+	Primitive->GetStaticMesh()->GetStaticMeshAsset()->GetMeshBVH()->QueryRayLocalMesh(ModelRay, 8, Candidates);
+
+	// 해당 Vertex에 대해 for문으로 돌면서, 하나라도 맞으면 true 반환
+	for (int i = 0; i < Candidates.size(); i++)
+	{
+		FVector V1 = { Candidates[i]->VertexPosX[0], Candidates[i]->VertexPosY[0], Candidates[i]->VertexPosZ[0] };
+		FVector V2 = { Candidates[i]->VertexPosX[1], Candidates[i]->VertexPosY[1], Candidates[i]->VertexPosZ[1] };
+		FVector V3 = { Candidates[i]->VertexPosX[2], Candidates[i]->VertexPosY[2], Candidates[i]->VertexPosZ[2] };
+
+		if (IsRayTriangleCollided(ModelRay, V1, V2, V3, ModelMatrix, ShortestDistance))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool UObjectPicker::IsRayPrimitiveCollided(const FRay& ModelRay, UPrimitiveComponent* Primitive, const FMatrix& ModelMatrix, float* ShortestDistance)
+{
+	const void* RawVertices = Primitive->GetRawVertexData();
+	const uint32 VertexCount = Primitive->GetVertexCount();
+	const uint32 VertexStride = Primitive->GetVertexStride();
+	const uint32 PositionOffset = Primitive->GetVertexPositionOffset();
+
+	const TArray<uint32>* Indices = Primitive->GetIndicesData();
+	const uint32 IndicesCount = Indices->Num();
+
+	if (!RawVertices || !Indices) { return false; }
+
+	bool bIsHit = false;
+	float CurrentDistance = D3D11_FLOAT32_MAX;
+
+	for (uint32 Idx = 0; Idx < IndicesCount; Idx += 3)
+	{
+		const uint32 Index1 = (*Indices)[Idx];
+		const uint32 Index2 = (*Indices)[Idx + 1];
+		const uint32 Index3 = (*Indices)[Idx + 2];
+
+		const FVector& Vertex1 = *reinterpret_cast<const FVector*>(static_cast<const char*>(RawVertices) + (Index1 * VertexStride) + PositionOffset);
+		const FVector& Vertex2 = *reinterpret_cast<const FVector*>(static_cast<const char*>(RawVertices) + (Index2 * VertexStride) + PositionOffset);
+		const FVector& Vertex3 = *reinterpret_cast<const FVector*>(static_cast<const char*>(RawVertices) + (Index3 * VertexStride) + PositionOffset);
+
+		float TriangleDistance = 0.0f;
+		if (IsRayTriangleCollided(ModelRay, Vertex1, Vertex2, Vertex3, ModelMatrix, &TriangleDistance))
+		{
+			bIsHit = true;
+			if (TriangleDistance < CurrentDistance)
+			{
+				CurrentDistance = TriangleDistance;
+			}
+		}
+	}
+
+	if (bIsHit)
+	{
+		*ShortestDistance = CurrentDistance;
+	}
+
+	return bIsHit;
+}
+
 
 UPrimitiveComponent* UObjectPicker::PickPrimitiveByColor(int32 MouseX, int32 MouseY)
 {
@@ -243,51 +306,6 @@ void UObjectPicker::PickGizmo( const FRay& WorldRay, UGizmo* Gizmo, FVector& Col
 	}
 	
 	Gizmo->SetGizmoDirection(EGizmoDirection::None);
-}
-
-//개별 primitive와 ray 충돌 검사
-bool UObjectPicker::IsRayPrimitiveCollided(const FRay& ModelRay, UPrimitiveComponent* Primitive, const FMatrix& ModelMatrix, float* ShortestDistance)
-{
-	const void* RawVertices = Primitive->GetRawVertexData();
-	const uint32 VertexCount = Primitive->GetVertexCount();
-	const uint32 VertexStride = Primitive->GetVertexStride();
-	const uint32 PositionOffset = Primitive->GetVertexPositionOffset();
-
-	const TArray<uint32>* Indices = Primitive->GetIndicesData();
-	const uint32 IndicesCount = Indices->Num();
-
-	if (!RawVertices || !Indices) { return false; }
-
-	bool bIsHit = false;
-	float CurrentDistance = D3D11_FLOAT32_MAX;
-
-	for (uint32 Idx = 0; Idx < IndicesCount; Idx += 3)
-	{
-		const uint32 Index1 = (*Indices)[Idx];
-		const uint32 Index2 = (*Indices)[Idx + 1];
-		const uint32 Index3 = (*Indices)[Idx + 2];
-
-		const FVector& Vertex1 = *reinterpret_cast<const FVector*>(static_cast<const char*>(RawVertices) + (Index1 * VertexStride) + PositionOffset);
-		const FVector& Vertex2 = *reinterpret_cast<const FVector*>(static_cast<const char*>(RawVertices) + (Index2 * VertexStride) + PositionOffset);
-		const FVector& Vertex3 = *reinterpret_cast<const FVector*>(static_cast<const char*>(RawVertices) + (Index3 * VertexStride) + PositionOffset);
-
-		float TriangleDistance = 0.0f;
-		if (IsRayTriangleCollided(ModelRay, Vertex1, Vertex2, Vertex3, ModelMatrix, &TriangleDistance))
-		{
-			bIsHit = true;
-			if (TriangleDistance < CurrentDistance)
-			{
-				CurrentDistance = TriangleDistance;
-			}
-		}
-	}
-
-	if (bIsHit)
-	{
-		*ShortestDistance = CurrentDistance;
-	}
-
-	return bIsHit;
 }
 
 bool UObjectPicker::IsRayTriangleCollided(const FRay& Ray, const FVector& Vertex1, const FVector& Vertex2, const FVector& Vertex3,
